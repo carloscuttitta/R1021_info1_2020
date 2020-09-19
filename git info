@@ -1,0 +1,52 @@
+-informacion para GIT-
+
+# Antes de empezar:
+git config --global user.name "Mi nombre"
+git config --global user.email "mi@mail.com"
+
+# Crear repositorio para mi codigo
+git init
+
+# Agregar todos los archivos
+git add hello.c
+git add Makefile
+git add . --all
+
+# Commitear codigo localmente
+git commit -m "Un mensaje para el commit"
+git commit -am "Agrega cambios y commitea directamente"
+
+# Agregar un origen remoto
+git remote add origin git://...
+
+# Pushear repositorio al remoto
+git push -u origin master
+
+# Para repositorios que ya existen
+git clone git://...
+
+
+yo uso así:
+1- creo una carpeta en mi github    ( carloscuttitta )
+2- en mi PC elijo el directorio que voy a usar para compartir 
+
+3-
+echo "# R1021_info1_2020_parciales" >> README.md
+git init
+git add README.md
+git add .
+git commit -m "first commit"
+git branch -M master
+git remote add origin https://github.com/carloscuttitta/R1021_info1_2020_parciales.git
+git push -u origin master
+
+4-
+para actualizar
+
+agrego o saco los archivos 
+git add .
+git commit -m "coment commit"
+git remote -v
+git push
+
+
