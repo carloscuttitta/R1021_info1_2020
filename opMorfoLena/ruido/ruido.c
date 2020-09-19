@@ -90,5 +90,6 @@ int main( int argc, char **argv )
 
     fclose( fdin );
     fclose( fdout );
+
     return 0;
 }
