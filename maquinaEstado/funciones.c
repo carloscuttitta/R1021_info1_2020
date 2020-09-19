@@ -270,7 +270,7 @@ void promAceleracion( sensor_t ** reg , int lineas_reg )
     
 }
 
-void pronFuerza( sensor_t ** reg , int lineas_reg )  
+void promFuerza( sensor_t ** reg , int lineas_reg )  
 {
     int i , cont=0;
     float   promedio=0;

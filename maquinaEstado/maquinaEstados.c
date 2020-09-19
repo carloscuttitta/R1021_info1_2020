@@ -1,6 +1,6 @@
 /*
    Programa que tiene como objetivos:
-   Leer un archivo.
+   Leer el archivo creado por el programa crear_datos.
    Crear un registro usando vector de memoria dinámica.
    Utilizar un puntero a función para que actúe como maquina de estados ( por ahora usar 
    random luego usaremos IPC para usar esos datos).
@@ -8,7 +8,10 @@
    Generar nombres para los nuevos archivos de salida ( para datos: [nombe de archivco]-salida.dat
    y para texto: [nombe de archivco]-salida.txt).
    Crear los nuevos archivos de salida  y guardar el contenido del registro ordenado.
-*/
+
+   Juan Carlos Cuttitta        
+   carloscuttitta@gmail.com
+   */
 #include"my.h"
 
 int main( int argc, char **argv )
@@ -16,10 +19,11 @@ int main( int argc, char **argv )
     FILE * fd;
     FILE *fd_txt;
     int i,cont_reg=0;
-    sensor_t **reg=NULL;
     char *arch_salida=NULL;
     char *arch_salida_txt=NULL;
-    
+    sensor_t **reg=NULL;
+    union seleccion aleatorio;
+// Puntero a funcion    
     void (* comoOrdeno[]) (sensor_t **, int ) ={ordTime,            //  0x00 
                                                 ordUnidad,          //  0x01
                                                 promAmpere,         //  0x02
@@ -27,10 +31,9 @@ int main( int argc, char **argv )
                                                 promVelocidad,      //  0x04
                                                 promFrecuencia,     //  0x05
                                                 promAceleracion,    //  0x06
-                                                pronFuerza          //  0x07
+                                                promFuerza          //  0x07
                                                 };
 
-    union seleccion aleatorio;
     
     if(argc<2){
         printf("ERROR - cantidad de argumentos incorrectos\n");
@@ -45,12 +48,13 @@ int main( int argc, char **argv )
     printf("Archivo Ingresado:\t%s\n", *(argv+1) );
     
 //CANTIDAD DE REGISTROS
-    cont_reg = cuenta_reg( fd );    //retorna la cantidad de lineas leídas en el archivo (NO incluye el EOF)
+//retorna la cantidad de lineas leídas en el archivo (NO incluye el EOF)    
+    cont_reg = cuenta_reg( fd );    
     printf("Cantidad de registros: %d\n", cont_reg );
     SEPARADOR;
     
 //MEMORIA PARA EL VECTOR REGISTRO
-// crea para vector de direcciones    
+// crea para vector de direcciones que va a apuntar a cada estructura leida   
     reg = (sensor_t **) malloc( sizeof(sensor_t * ) * cont_reg );   
     if(reg == NULL){
         printf("ERROR CON MEMORIA EN reg");
@@ -61,13 +65,15 @@ int main( int argc, char **argv )
     rewind( fd );
     
 //CARGA DEL VECTOR REGISTRO
-//extrae los strings de un archivo y carga el vector registro    
+//extrae los datos del archivo y carga el vector registro    
     carga_reg( fd , reg , cont_reg );   
     
 // MAQUINA DE ESTADOS con puntero a funcion
+// inicializo la semilla para que rand() sea siempre distinto cada vez que se ejecute    
     srand (time(NULL));
-W// Proximamente este número me lo tiene que entregar otro proceso que esté ejecutandose en otra terminal 
+// Proximamente este número me lo tiene que entregar otro proceso que esté ejecutandose en otra terminal 
 // utilizando alguna IPC y en caso de usar socket , desde otra computadora !!     
+    aleatorio.estado = rand()%1024;
     aleatorio.estado = aleatorio.estado & 0x07;
     
     printf("random es %d \n",aleatorio.estado);

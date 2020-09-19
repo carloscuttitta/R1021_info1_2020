@@ -40,4 +40,4 @@ void promTension( sensor_t **, int  );
 void promVelocidad( sensor_t **, int  );  
 void promFrecuencia( sensor_t **, int  );  
 void promAceleracion( sensor_t **, int  );  
-void pronFuerza( sensor_t **, int  );  
+void promFuerza( sensor_t **, int  );  
