@@ -36,5 +36,5 @@ all: clean $(EXE)
 
 # regla para generar el archivo comprimido del proyecto
 zip:
-	tar -czvf $(ZIPFILE) $(HEADERS) *.c Makefile
+	tar -czvf $(ZIPFILE) $(HEADERS) $(SOURCES) Makefile
 
