@@ -1,0 +1,214 @@
+\documentclass[12pt]{article} % Clase de documento: artículo y tamaño de letra
+ 
+% \usepackage[spanish]{babel} % Manejo de idiomas
+\usepackage[utf8]{inputenc} % Escritura en castellano con acentos
+\usepackage[T1]{fontenc} % Escritura en castellano con acentos
+\usepackage{calligra} 
+\usepackage{listings}
+\usepackage{pslatex}  % Fuente de letras
+\usepackage{graphicx}
+\usepackage{array}
+%\usepackage{times} % Fuente de letras
+\usepackage[margin=2.5cm]{geometry}
+%Coloca 2.5 cm de margenes superior, inferior,derecho e izquierdo.
+\usepackage{caption}
+\usepackage{txfonts}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+
+\usepackage[spanish,activeacute]{babel}
+\usepackage{float}
+\usepackage{multicol}
+\usepackage{color}
+\usepackage{times}
+
+\usepackage{tikz}
+\usepackage{verbatim}
+\usepackage{mdwlist}
+
+
+\usetikzlibrary{chains,fit,shapes,arrows,calc,shapes,decorations.pathreplacing}
+\usetikzlibrary{through}
+
+
+\DeclareCaptionFont{white}{\color{white}}
+\DeclareCaptionFormat{listing}{\colorbox[cmyk]{0.43, 0.35, 0.35,0.01}{\parbox{\textwidth}{\hspace{15pt}#1#2#3}}}
+
+%Paquetes para hacer tablas lindas...
+% \usepackage{amsmath,amssymb,amsfonts,latexsym,stmaryrd}
+\usepackage{tabularx}
+\usepackage{colortbl}
+\usepackage{shadow}
+\usepackage{fancybox}
+\usepackage{url}
+\usepackage[hidelinks]{hyperref}
+\usepackage{subfigure}
+\usepackage{multirow}
+
+
+\definecolor{OliveGreen}{RGB}{2,80,1}
+\definecolor{LigthOrange}{RGB}{255,255,200}
+\definecolor{gray97}{gray}{.97}
+\definecolor{Gray}{RGB}{171,174,178}
+
+\newcommand{\instr}[1]{{\sffamily{\small{\textsl{\textbf{#1}}}}}}
+\newcommand{\code}[1]{{\sffamily{\smal\textheight = 24cm \textwidth = 16cm \topmargin = -1cm \oddsidemargin= 0cm {\textsl{#1}}}}}
+
+\lstdefinelanguage {x86nasm}
+{morekeywords={resb,resw,resd,resq,endstruc,at,istruc,iend}}
+
+\pagestyle{fancy}
+\headheight=50pt %para cambiar el tamaño del encabezado
+\fancyhead[L]    %la "L" indica a la izquierda
+{	
+ \begin{minipage}{3.3cm}
+  \includegraphics[width=1.0\textwidth]{Logo-UTN-BA.jpeg}
+ \end{minipage}	
+ \begin{minipage}{7.7cm}
+\fontsize{13.5pt}{12pt}\selectfont
+%   \normalsize
+   {
+     \textsl 
+     {
+       \calligra{Universidad Tecnológica Nacional\\ Facultad Regional Buenos Aires \\ Departamento de {Ingeniería} {Electrónica}} 
+     }
+   }
+ \end{minipage}
+}
+
+\fancyhead[R] %la "R" indica a la derecha
+{
+  \begin{minipage}{4.0cm}
+   \small
+   {
+     \emph{\textbf{Informática I}} \\ \emph{14 de noviembre de 2020} \\ \emph{Practica $2^o$Parcial}\\ \emph{Curso R1021}  
+   }
+  \end{minipage}}
+
+\definecolor{OliveGreen}{RGB}{2,80,1}
+\definecolor{LigthOrange}{RGB}{255,255,200}
+\definecolor{gray97}{gray}{.97}
+
+
+
+\begin{document} % Inicio del documento
+\newpage
+%Cambia de página, el texto después de este comando aparecerá en la siguiente página en adelante.
+
+
+\noindent
+  \begin{center}
+   \begin{tabular}{| c | c | c |}
+    \hline
+     Apellido y Nombres \hspace{8cm} &  Legajo & {Calificación} \\ \hline 
+      &	& \\ \hline
+   \end{tabular}	
+  \end{center}
+
+\noindent
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Comienzo del tema del examen
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\lstset{
+	frame=Ltb,
+	framerule=0pt,
+	aboveskip=0.5cm,
+	framextopmargin=3pt,
+	framexbottommargin=3pt,
+	framexleftmargin=0.4cm,
+	framesep=0pt,
+	rulesep=.4pt,
+	backgroundcolor=\color{gray97},
+	rulesepcolor=\color{black},
+ 	language=C,
+	captionpos=b,
+	tabsize=3,
+	frame=lines,
+	keywordstyle=\color{blue},
+	commentstyle=\color{Gray},
+	stringstyle=\color{red},
+	numbers=left,
+	numberstyle=\tiny,
+	numbersep=5pt,
+	breaklines=true,
+	showstringspaces=false,
+	basicstyle=\ttfamily\scriptsize,
+	emph={label},
+	framerule=0pt,
+}
+
+El programa consiste en leer los datos que se obtuvieron de diferentes sensores y se encuentran almacenados en  un archivo con la siguiente estructura de datos:
+\begin{lstlisting}[escapechar=\|,label=noint]
+typedef struct{
+    int id;
+    int timestamp;
+    float valor;
+    char unidad[10];
+} sensor_t;
+\end{lstlisting}
+Los datos de cada sensor son los siguientes:
+\begin{itemize}
+\item Id
+\item timestamp del momento de la medición
+\item valor de la medición 
+\item unidad de medida
+\end{itemize}
+Se pide que el programa:
+\begin{itemize}
+\item cuente la cantidad de registros almacenados en el archivo 
+\item Despliegue un menú para seleccionar con que unidad de medida se debe ordenar el archivo
+\begin{enumerate}
+\item TENSION (V)
+\item CORRIENTE (A)
+\item RESISTENCIA (OHM)
+\item CAPACIDAD (uF)
+\item FRECUENCIA (Hz)
+\item PRESION (Pa)
+\item FUERZA (N)
+\item VELOCIDAD (m/seg)
+\item ACELERACION (m/$seg^2$)
+\item LUZ (Cd)
+\end{enumerate} 
+\item guardar el archivo ordenado conservando la estructura de los datos con el nuevo nombre [nombre del archivo]-salida.dat ( ejemplo: el archivo de datos se llama {\color{blue}datos.dat} y el de salida será {\color{blue}datos-salida.dat}
+\item guardar el archivo ordenado y en formato texto con el nuevo nombre [nombre del archivo]-salida.txt ( ejemplo: el archivo de datos se llama {\color{blue}datos.dat} y el de salida será {\color{blue}datos-salida.txt}
+\item Calcule y presente las 10 últimas mediciones para la unidad seleccionada
+\end{itemize}  
+{\bf Ejemplo de salida:}\\
+\\
+Unidad: A\\
+Cantidad de Mediciones: 53\\
+Promedio: 10.5 A\\
+Máximo: 11.3 A\\
+Mínimo: 10.232 A\\ \\
+   \begin{tabular}{c c c c c}
+    
+     {\bf Posición}&{\bf ID}&{\bf Timestamp}&{\bf Valor}&{\bf Unidad} \\  
+     $1$  &$4$&$03/10/2019 \hspace{0.2cm} 03:22:45$&$11.30$&$A$\\  
+     $2$  &$4$&$03/10/2019 \hspace{0.2cm} 03:22:25$&$11.05$&$A$\\  
+     $3$  &$4$&$03/10/2019 \hspace{0.2cm} 03:21:35$&$10.30$&$A$\\  
+     $...$&   &                                    &       &   \\  
+     $10$ &$4$&$03/10/2019 \hspace{0.2cm} 03:20:55$&$10.95$&$A$\\  
+   \end{tabular}
+\vspace{5mm}
+
+{\bf Notas:}\\
+\begin{itemize}
+\item La memoria para cada estructura debe ser pedida dinámicamente (malloc)
+\item Utilice el archivo “mediciones.dat” provisto para probar el programa
+\item Para realizar el ordenamiento no debe realizar ningún tipo de copia de datos,
+solamente hacer un swap de los punteros
+\item No olvide liberar la memoria una vez finalizado el programa y cerrar los archivos que se encuentren abiertos
+\item Recuerde que el timestamp es la cantidad de segundos que pasaron desde el 1
+de enero de 1970 a las 0hs en el Meridiano de Greenwich. El header “time.h”
+contiene los prototipos de las funciones para utilizarlo
+\end{itemize}
+
+ 
+\end{document} % Fin del documento.
+ 
+
+  

@@ -1,0 +1,1109 @@
+\documentclass{beamer}
+\usepackage[latin1]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{multicol}
+\usepackage{fancybox}
+\usepackage{beamerthemeshadow}
+\usepackage{times} %font times
+\usepackage[T1]{fontenc} %para que cuando se seleccione un texto las letras acentuadad y las ñ se copien bien Usar la codificación T1
+\usepackage{enumerate}
+\usepackage{listings}
+\usepackage{calligra} 
+
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{caption}
+
+\usepackage{tikz}
+\usepackage{verbatim}
+\usepackage{mdwlist}
+\usetikzlibrary{chains,fit,shapes}
+
+\usetikzlibrary{chains,fit,shapes,arrows,calc,shapes,decorations.pathreplacing}
+%\usepackage[active,tightpage]{preview}
+%\PreviewEnvironment{tikzpicture}
+
+\usefonttheme{professionalfonts}
+
+\newtheorem{defi}{Definición} 
+\hypersetup{pdfpagemode=FullScreen}
+
+\mode<presentation>{
+\usetheme{Warsaw}
+\setbeamercovered{transparent}
+}
+
+
+\lstset{
+	frame=Ltb,
+	framerule=0pt,
+	aboveskip=0.5cm,
+	framextopmargin=3pt,
+	framexbottommargin=3pt,
+	framexleftmargin=0.4cm,
+	framesep=0pt,
+	rulesep=.4pt,
+%	backgroundcolor=\color{gray!20},
+	rulesepcolor=\color{black},
+	language=C,
+	captionpos=b,
+	tabsize=3,
+	frame=lines,
+	keywordstyle=\color{blue},
+	commentstyle=\color{gray},
+	stringstyle=\color{red},
+	numbers=left,
+	numberstyle=\tiny,
+	numbersep=5pt,
+	breaklines=true,
+	showstringspaces=false,
+	basicstyle=\small,
+	emph={label},
+	framerule=0pt,
+}
+
+\title{\em INFORMATICA I}
+\subtitle{Introducción a {\color{yellow}funciones} en {\color{yellow}"C"}}
+\author{\em Ing.Juan Carlos Cuttitta}
+\institute{\calligra{\fontsize{16pt}{7pt}\selectfont{Universidad Tecnológica Nacional\\ Facultad Regional Buenos Aires \\ Departamento de {Ingeniería} {Electrónica}}}}
+\date{\today}
+
+%portada
+
+\begin{document}
+
+\begin{figure}[ht!]
+  \centering
+  \includegraphics [width=0.25\textwidth]{informacion.jpg}
+\end{figure}
+\vspace{-1.2cm} % para subir el titulo 
+\titlepage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Template de aqui en mas ;)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pgfdeclareimage[height=0.9cm]{left-logo}{arania.png}
+%\pgfdeclareimage[height=0.9cm]{right-logo}{arania.png}
+%\logo{\pgfuseimage{right-logo}}
+\setbeamertemplate{sidebar left}
+{
+\logo{\pgfuseimage{left-logo}}
+\vfill%
+\rlap{\hskip0.15cm\insertlogo}%
+\vskip10pt%
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\tikzstyle{every picture}+=[remember picture]
+\tikzstyle{na} = [baseline=-.5ex]
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Ejemplo de un programa que \textbf{\textit{\color{yellow}suma}}}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \node at (6.5,7) {\normalsize Código en programa fuente};
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+\end{tikzpicture}
+  \column{2.9\textwidth}
+  \lstset{basicstyle=\tiny}
+   \begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+
+int main (void)
+{
+int a,b,c;
+
+	a = 6;
+	b = 9;
+	c = a + b;
+	printf("El resultado es % d \n",c);
+
+	a = 3;
+	b = 1;
+	c = a + b;
+	printf("El resultado es % d \n",c);
+
+	a = 12;
+	b = 4;
+	c = a + b;
+	printf("El resultado es % d \n",c);
+
+	return (0);
+}   
+	\end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Tareas \textbf{\textit{\color{yellow}repetidas}}}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \node at (6.5,7) {\normalsize Código en programa fuente};
+% usado para hacer sombreado de un sector
+  \fill[color=green] (5.7,5.25) -- (7.7,5.25) -- (7.7,4.4) -- (5.7,4.4) -- cycle;
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+\end{tikzpicture}
+  \column{6\textwidth}
+  \lstset{basicstyle=\tiny}
+   \begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+
+int main (void)
+{
+int a,b,c;
+
+	a = 6;
+	b = 9;
+	c = a + b;
+	printf("El resultado es % d \n",c);
+
+	a = 3;
+	b = 1;
+	c = a + b;
+	printf("El resultado es % d \n",c);
+
+	a = 12;
+	b = 4;
+	c = a + b;
+	printf("El resultado es % d \n",c);
+
+	return (0);
+}   
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Tareas \textbf{\textit{\color{yellow}repetidas}}}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \node at (6.5,7) {\normalsize Código en programa fuente};
+% usado para hacer sombreado de un sector
+  \fill[color=green] (5.7,5.25) -- (7.7,5.25) -- (7.7,4.4) -- (5.7,4.4) -- cycle;
+  \fill[color=green] (5.7,4) -- (7.7,4) -- (7.7,3.17) -- (5.7,3.17) -- cycle;
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+\end{tikzpicture}
+  \column{6\textwidth}
+  \lstset{basicstyle=\tiny}
+   \begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+
+int main (void)
+{
+int a,b,c;
+
+	a = 6;
+	b = 9;
+	c = a + b;
+	printf("El resultado es % d \n",c);
+
+	a = 3;
+	b = 1;
+	c = a + b;
+	printf("El resultado es % d \n",c);
+
+	a = 12;
+	b = 4;
+	c = a + b;
+	printf("El resultado es % d \n",c);
+
+	return (0);
+}   
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Tareas \textbf{\textit{\color{yellow}repetidas}}}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \node at (6.5,7) {\normalsize Código en programa fuente};
+% usado para hacer sombreado de un sector
+  \fill[color=green] (5.7,5.25) -- (7.7,5.25) -- (7.7,4.4) -- (5.7,4.4) -- cycle;
+  \fill[color=green] (5.7,4) -- (7.7,4) -- (7.7,3.17) -- (5.7,3.17) -- cycle;
+  \fill[color=green] (5.7,2.8) -- (7.7,2.8) -- (7.7,1.9) -- (5.7,1.9) -- cycle;
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+\end{tikzpicture}
+  \column{6\textwidth}
+  \lstset{basicstyle=\tiny}
+   \begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+
+int main (void)
+{
+int a,b,c;
+
+	a = 6;
+	b = 9;
+	c = a + b;
+	printf("El resultado es % d \n",c);
+
+	a = 3;
+	b = 1;
+	c = a + b;
+	printf("El resultado es % d \n",c);
+
+	a = 12;
+	b = 4;
+	c = a + b;
+	printf("El resultado es % d \n",c);
+
+	return (0);
+}   
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Tareas \textbf{\textit{\color{yellow}repetidas}}}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \node at (6.5,7) {\normalsize Código en programa fuente};
+  \node at (3,3.8) {\fbox{\LARGE{c = a + b;}}};
+% usado para hacer sombreado de un sector
+  \fill[color=green] (5.7,5.25) -- (7.7,5.25) -- (7.7,4.4) -- (5.7,4.4) -- cycle;
+  \fill[color=green] (5.7,4) -- (7.7,4) -- (7.7,3.17) -- (5.7,3.17) -- cycle;
+  \fill[color=green] (5.7,2.8) -- (7.7,2.8) -- (7.7,1.9) -- (5.7,1.9) -- cycle;
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+\end{tikzpicture}
+  \column{6\textwidth}
+  \lstset{basicstyle=\tiny}
+   \begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+
+int main (void)
+{
+int a,b,c;
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	return (0);
+}   
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Tareas \textbf{\textit{\color{yellow}repetidas}}}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \node at (6.5,7) {\normalsize Código en programa fuente};
+  \node at (3,3.8) {\fbox{\LARGE{c = a + b;}}};
+% usado para hacer sombreado de un sector
+  \fill[color=green] (5.7,5.25) -- (7.7,5.25) -- (7.7,4.4) -- (5.7,4.4) -- cycle;
+  \fill[color=green] (5.7,4) -- (7.7,4) -- (7.7,3.17) -- (5.7,3.17) -- cycle;
+  \fill[color=green] (5.7,2.8) -- (7.7,2.8) -- (7.7,1.9) -- (5.7,1.9) -- cycle;
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+  \draw[red!60,very thick,->](6.0,5)to [out=180,in=90]node[right,midway]{} ++(-2.9,-0.8) ; 
+\end{tikzpicture}
+  \column{6\textwidth}
+  \lstset{basicstyle=\tiny}
+   \begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+
+int main (void)
+{
+int a,b,c;
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	return (0);
+}   
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Tareas \textbf{\textit{\color{yellow}repetidas}}}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \node at (6.5,7) {\normalsize Código en programa fuente};
+  \node at (3,3.8) {\fbox{\LARGE{c = a + b;}}};
+% usado para hacer sombreado de un sector
+  \fill[color=green] (5.7,5.25) -- (7.7,5.25) -- (7.7,4.4) -- (5.7,4.4) -- cycle;
+  \fill[color=green] (5.7,4) -- (7.7,4) -- (7.7,3.17) -- (5.7,3.17) -- cycle;
+  \fill[color=green] (5.7,2.8) -- (7.7,2.8) -- (7.7,1.9) -- (5.7,1.9) -- cycle;
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+  \draw[red!60,very thick,->](6.0,5)to [out=180,in=90]node[right,midway]{} ++(-2.9,-0.8) ; 
+  \draw[red!60,very thick,->](3.1,3.4)to [out=-90,in=-90]node[right,midway]{} ++(2.9,1.2) ; 
+\end{tikzpicture}
+  \column{6\textwidth}
+  \lstset{basicstyle=\tiny}
+   \begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+
+int main (void)
+{
+int a,b,c;
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	return (0);
+}   
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Tareas \textbf{\textit{\color{yellow}repetidas}}}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \node at (6.5,7) {\normalsize Código en programa fuente};
+  \node at (3,3.8) {\fbox{\LARGE{c = a + b;}}};
+% usado para hacer sombreado de un sector
+  \fill[color=green] (5.7,5.25) -- (7.7,5.25) -- (7.7,4.4) -- (5.7,4.4) -- cycle;
+  \fill[color=green] (5.7,4) -- (7.7,4) -- (7.7,3.17) -- (5.7,3.17) -- cycle;
+  \fill[color=green] (5.7,2.8) -- (7.7,2.8) -- (7.7,1.9) -- (5.7,1.9) -- cycle;
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+  \draw[red!60,very thick,->](6.0,3.8)to [out=150,in=90]node[right,midway]{} ++(-2.9,0.5) ; 
+\end{tikzpicture}
+  \column{6\textwidth}
+  \lstset{basicstyle=\tiny}
+   \begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+
+int main (void)
+{
+int a,b,c;
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	return (0);
+}   
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Tareas \textbf{\textit{\color{yellow}repetidas}}}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \node at (6.5,7) {\normalsize Código en programa fuente};
+  \node at (3,3.8) {\fbox{\LARGE{c = a + b;}}};
+% usado para hacer sombreado de un sector
+  \fill[color=green] (5.7,5.25) -- (7.7,5.25) -- (7.7,4.4) -- (5.7,4.4) -- cycle;
+  \fill[color=green] (5.7,4) -- (7.7,4) -- (7.7,3.17) -- (5.7,3.17) -- cycle;
+  \fill[color=green] (5.7,2.8) -- (7.7,2.8) -- (7.7,1.9) -- (5.7,1.9) -- cycle;
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+  \draw[red!60,very thick,->](6.0,3.8)to [out=150,in=90]node[right,midway]{} ++(-2.9,0.5) ; 
+  \draw[red!60,very thick,->](3.1,3.4)to [out=-90,in=180]node[right,midway]{} ++(2.9,0.2) ; 
+\end{tikzpicture}
+  \column{6\textwidth}
+  \lstset{basicstyle=\tiny}
+   \begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+
+int main (void)
+{
+int a,b,c;
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	return (0);
+}   
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Tareas \textbf{\textit{\color{yellow}repetidas}}}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \node at (6.5,7) {\normalsize Código en programa fuente};
+  \node at (3,3.8) {\fbox{\LARGE{c = a + b;}}};
+% usado para hacer sombreado de un sector
+  \fill[color=green] (5.7,5.25) -- (7.7,5.25) -- (7.7,4.4) -- (5.7,4.4) -- cycle;
+  \fill[color=green] (5.7,4) -- (7.7,4) -- (7.7,3.17) -- (5.7,3.17) -- cycle;
+  \fill[color=green] (5.7,2.8) -- (7.7,2.8) -- (7.7,1.9) -- (5.7,1.9) -- cycle;
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+  \draw[red!60,very thick,->](6.0,2.5)to [out=180,in=-90]node[right,midway]{} ++(-2.9,0.9) ; 
+\end{tikzpicture}
+  \column{6\textwidth}
+  \lstset{basicstyle=\tiny}
+   \begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+
+int main (void)
+{
+int a,b,c;
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	return (0);
+}   
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Tareas \textbf{\textit{\color{yellow}repetidas}}}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \node at (6.5,7) {\normalsize Código en programa fuente};
+  \node at (3,3.8) {\fbox{\LARGE{c = a + b;}}};
+% usado para hacer sombreado de un sector
+  \fill[color=green] (5.7,5.25) -- (7.7,5.25) -- (7.7,4.4) -- (5.7,4.4) -- cycle;
+  \fill[color=green] (5.7,4) -- (7.7,4) -- (7.7,3.17) -- (5.7,3.17) -- cycle;
+  \fill[color=green] (5.7,2.8) -- (7.7,2.8) -- (7.7,1.9) -- (5.7,1.9) -- cycle;
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+  \draw[red!60,very thick,->](6.0,2.5)to [out=180,in=-90]node[right,midway]{} ++(-2.9,0.9) ; 
+  \draw[red!60,very thick,->](3.1,4.2)to [out= 90,in= 90]node[right,midway]{} ++(3.6,-1.6) ; 
+\end{tikzpicture}
+  \column{6\textwidth}
+  \lstset{basicstyle=\tiny}
+   \begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+
+int main (void)
+{
+int a,b,c;
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	return (0);
+}   
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{\textbf{\textit{\color{yellow}Funciones}}}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \node at (6.5,7) {\normalsize Código en programa fuente};
+  \node at (2.8,3.8) {\fbox{
+						\begin{minipage}{3.5cm}
+							\fontsize{8pt}{8pt}\selectfont
+		{\tiny{1}} \hspace{0.05cm} {\color{blue}int} Mi\_suma ( {\color{blue}int} x , {\color{blue}int} y ) \\
+		{\tiny{2}} \hspace{0.05cm} \{ \\
+		{\tiny{3}} \hspace{0.05cm} {\color{blue}int} z; \\
+		{\tiny{4}} \hspace{0.5cm} z = x + y; \\
+		{\tiny{5}} \hspace{0.5cm} {\color{blue}return} z; \\
+		{\tiny{6}} \hspace{0.05cm} \{
+						\end{minipage}}};						  
+% usado para hacer sombreado de un sector
+  \fill[color=green] (5.7,5.25) -- (7.7,5.25) -- (7.7,4.4) -- (5.7,4.4) -- cycle;
+  \fill[color=green] (5.7,4) -- (7.7,4) -- (7.7,3.17) -- (5.7,3.17) -- cycle;
+  \fill[color=green] (5.7,2.8) -- (7.7,2.8) -- (7.7,1.9) -- (5.7,1.9) -- cycle;
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+\end{tikzpicture}
+  \column{6\textwidth}
+  \lstset{basicstyle=\tiny}
+   \begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+
+int main (void)
+{
+int a,b,c;
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	return (0);
+}   
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{\textbf{\textit{\color{yellow}Funciones}}}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \node at (6.5,7) {\normalsize Código en programa fuente};
+%  \node at (3,3.8) {\fbox{\small{c = a + b;}}};
+  \node at (2.8,3.8) {\fbox{
+						\begin{minipage}{3.5cm}
+							\fontsize{8pt}{8pt}\selectfont
+		{\tiny{1}} \hspace{0.05cm} {\color{blue}int} Mi\_suma ( {\color{blue}int} x , {\color{blue}int} y ) \\
+		{\tiny{2}} \hspace{0.05cm} \{ \\
+		{\tiny{3}} \hspace{0.05cm} {\color{blue}int} z; \\
+		{\tiny{4}} \hspace{0.5cm} z = x + y; \\
+		{\tiny{5}} \hspace{0.5cm} {\color{blue}return} z; \\
+		{\tiny{6}} \hspace{0.05cm} \{
+						\end{minipage}}};						  
+% usado para hacer sombreado de un sector
+  \fill[color=green] (5.7,5.25) -- (7.7,5.25) -- (7.7,4.4) -- (5.7,4.4) -- cycle;
+  \fill[color=green] (5.7,4) -- (7.7,4) -- (7.7,3.17) -- (5.7,3.17) -- cycle;
+  \fill[color=green] (5.7,2.8) -- (7.7,2.8) -- (7.7,1.9) -- (5.7,1.9) -- cycle;
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+  \draw[red,decorate,decoration={brace,raise=6pt,amplitude=12pt},thick] (1.4,4.5) -- (4.6,4.5) node [black,midway,xshift=0.1cm,yshift=1cm]{\footnotesize $\acute{u}nico$ $punto$ $de$ $entrada$};
+\end{tikzpicture}
+  \column{6\textwidth}
+  \lstset{basicstyle=\tiny}
+   \begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+
+int main (void)
+{
+int a,b,c;
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	return (0);
+}   
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{\textbf{\textit{\color{yellow}Funciones}}}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \node at (6.5,7) {\normalsize Código en programa fuente};
+%  \node at (3,3.8) {\fbox{\small{c = a + b;}}};
+  \node at (2.8,3.8) {\fbox{
+						\begin{minipage}{3.5cm}
+							\fontsize{8pt}{8pt}\selectfont
+		{\tiny{1}} \hspace{0.05cm} {\color{blue}int} Mi\_suma ( {\color{blue}int} x , {\color{blue}int} y ) \\
+		{\tiny{2}} \hspace{0.05cm} \{ \\
+		{\tiny{3}} \hspace{0.05cm} {\color{blue}int} z; \\
+		{\tiny{4}} \hspace{0.5cm} z = x + y; \\
+		{\tiny{5}} \hspace{0.5cm} {\color{blue}return} z; \\
+		{\tiny{6}} \hspace{0.05cm} \{
+						\end{minipage}}};						  
+% usado para hacer sombreado de un sector
+  \fill[color=green] (5.7,5.25) -- (7.7,5.25) -- (7.7,4.4) -- (5.7,4.4) -- cycle;
+  \fill[color=green] (5.7,4) -- (7.7,4) -- (7.7,3.17) -- (5.7,3.17) -- cycle;
+  \fill[color=green] (5.7,2.8) -- (7.7,2.8) -- (7.7,1.9) -- (5.7,1.9) -- cycle;
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+  \draw[red,decorate,decoration={brace,raise=6pt,amplitude=6pt},thick] (2.9,3.3) -- (1.8,3.3) node [black,midway,xshift=0.1cm,yshift=-1cm]{\footnotesize $\acute{u}nico$ $punto$ $de$ $salida$};
+\end{tikzpicture}
+  \column{6\textwidth}
+  \lstset{basicstyle=\tiny}
+   \begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+
+int main (void)
+{
+int a,b,c;
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	return (0);
+}   
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{\textbf{\textit{\color{yellow}Funciones}}}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \node at (6.5,7) {\normalsize Código en programa fuente};
+  \node at (2.8,3.8) {\fbox{
+						\begin{minipage}{3.5cm}
+							\fontsize{8pt}{8pt}\selectfont
+		{\tiny{1}} \hspace{0.05cm} {\color{blue}int} Mi\_suma ( {\color{blue}int} x , {\color{blue}int} y ) \\
+		{\tiny{2}} \hspace{0.05cm} \{ \\
+		{\tiny{3}} \hspace{0.05cm} {\color{blue}int} z; \\
+		{\tiny{4}} \hspace{0.5cm} z = x + y; \\
+		{\tiny{5}} \hspace{0.5cm} {\color{blue}return} z; \\
+		{\tiny{6}} \hspace{0.05cm} \{
+						\end{minipage}}};						  
+% usado para hacer sombreado de un sector
+  \fill[color=green] (5.7,5.25) -- (7.7,5.25) -- (7.7,4.4) -- (5.7,4.4) -- cycle;
+  \fill[color=green] (5.7,4) -- (7.7,4) -- (7.7,3.17) -- (5.7,3.17) -- cycle;
+  \fill[color=green] (5.7,2.8) -- (7.7,2.8) -- (7.7,1.9) -- (5.7,1.9) -- cycle;
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+  \draw[red,decorate,decoration={brace,raise=6pt,amplitude=6pt},thick] (1.7,4.5) -- (3,4.5) node [black,midway,xshift=0.1cm,yshift=1cm]{\footnotesize $nombre$ $de$ $la$ $funci\acute{o}n$};
+\end{tikzpicture}
+  \column{6\textwidth}
+  \lstset{basicstyle=\tiny}
+   \begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+
+int main (void)
+{
+int a,b,c;
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	return (0);
+}   
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{\textbf{\textit{\color{yellow}Funciones}}}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \node at (6.5,7) {\normalsize Código en programa fuente};
+  \node at (2.8,3.8) {\fbox{
+						\begin{minipage}{3.5cm}
+							\fontsize{8pt}{8pt}\selectfont
+		{\tiny{1}} \hspace{0.05cm} {\color{blue}int} Mi\_suma ( {\color{blue}int} x , {\color{blue}int} y ) \\
+		{\tiny{2}} \hspace{0.05cm} \{ \\
+		{\tiny{3}} \hspace{0.05cm} {\color{blue}int} z; \\
+		{\tiny{4}} \hspace{0.5cm} z = x + y; \\
+		{\tiny{5}} \hspace{0.5cm} {\color{blue}return} z; \\
+		{\tiny{6}} \hspace{0.05cm} \{
+						\end{minipage}}};						  
+% usado para hacer sombreado de un sector
+  \fill[color=green] (5.7,5.25) -- (7.7,5.25) -- (7.7,4.4) -- (5.7,4.4) -- cycle;
+  \fill[color=green] (5.7,4) -- (7.7,4) -- (7.7,3.17) -- (5.7,3.17) -- cycle;
+  \fill[color=green] (5.7,2.8) -- (7.7,2.8) -- (7.7,1.9) -- (5.7,1.9) -- cycle;
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+  \draw[red,decorate,decoration={brace,raise=6pt,amplitude=6pt},thick] (3,4.5) -- (4.5,4.5) node [black,midway,xshift=-1cm,yshift=1cm]{\footnotesize $par\acute{a}metros$ $o$ $argumentos$};
+\end{tikzpicture}
+  \column{6\textwidth}
+  \lstset{basicstyle=\tiny}
+   \begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+
+int main (void)
+{
+int a,b,c;
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	return (0);
+}   
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{\textbf{\textit{\color{yellow}Funciones}}}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \node at (6.5,7) {\normalsize Código en programa fuente};
+%  \node at (3,3.8) {\fbox{\small{c = a + b;}}};
+  \node at (2.8,3.8) {\fbox{
+						\begin{minipage}{3.5cm}
+							\fontsize{8pt}{8pt}\selectfont
+		{\tiny{1}} \hspace{0.05cm} {\color{blue}int} Mi\_suma ( {\color{blue}int} x , {\color{blue}int} y ) \\
+		{\tiny{2}} \hspace{0.05cm} \{ \\
+		{\tiny{3}} \hspace{0.05cm} {\color{blue}int} z; \\
+		{\tiny{4}} \hspace{0.5cm} z = x + y; \\
+		{\tiny{5}} \hspace{0.5cm} {\color{blue}return} z; \\
+		{\tiny{6}} \hspace{0.05cm} \{
+						\end{minipage}}};						  
+% usado para hacer sombreado de un sector
+  \fill[color=green] (5.7,5.25) -- (7.7,5.25) -- (7.7,4.4) -- (5.7,4.4) -- cycle;
+  \fill[color=green] (5.7,4) -- (7.7,4) -- (7.7,3.17) -- (5.7,3.17) -- cycle;
+  \fill[color=green] (5.7,2.8) -- (7.7,2.8) -- (7.7,1.9) -- (5.7,1.9) -- cycle;
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+  \draw[red,decorate,decoration={brace,raise=8pt,amplitude=2pt},thick] (1.2,4.5) -- (1.8,4.5) node [black,midway,xshift=0.1cm,yshift=0.8cm]{\footnotesize $tipo$ $de$ $retorno$};
+\end{tikzpicture}
+  \column{6\textwidth}
+  \lstset{basicstyle=\tiny}
+   \begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+
+int main (void)
+{
+int a,b,c;
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	return (0);
+}   
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{\textbf{\textit{\color{yellow}Funciones}}}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \node at (6.5,7) {\normalsize Código en programa fuente};
+%  \node at (3,3.8) {\fbox{\small{c = a + b;}}};
+  \node at (2.8,3.8) {\fbox{
+						\begin{minipage}{3.5cm}
+							\fontsize{8pt}{8pt}\selectfont
+		{\tiny{1}} \hspace{0.05cm} {\color{blue}int} Mi\_suma ( {\color{blue}int} x , {\color{blue}int} y ) \\
+		{\tiny{2}} \hspace{0.05cm} \{ \\
+		{\tiny{3}} \hspace{0.05cm} {\color{blue}int} z; \\
+		{\tiny{4}} \hspace{0.5cm} z = x + y; \\
+		{\tiny{5}} \hspace{0.5cm} {\color{blue}return} z; \\
+		{\tiny{6}} \hspace{0.05cm} \{
+						\end{minipage}}};						  
+% usado para hacer sombreado de un sector
+  \fill[color=green] (5.7,5.25) -- (7.7,5.25) -- (7.7,4.4) -- (5.7,4.4) -- cycle;
+  \fill[color=green] (5.7,4) -- (7.7,4) -- (7.7,3.17) -- (5.7,3.17) -- cycle;
+  \fill[color=green] (5.7,2.8) -- (7.7,2.8) -- (7.7,1.9) -- (5.7,1.9) -- cycle;
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+  \draw[red,decorate,decoration={brace,raise=8pt,amplitude=2pt},thick] (1.2,4.5) -- (1.8,4.5) node [black,midway,xshift=0.1cm,yshift=0.8cm]{\footnotesize $\color{blue}tipo$ $de$ $retorno$};
+  \draw[red,decorate,decoration={brace,raise=6pt,amplitude=6pt},thick] (2.9,3.3) -- (1.8,3.3) 
+  node [black,midway,xshift=0.1cm,yshift=-1cm]{\footnotesize $la$ $variable$ $de$ $retorno$}
+  node [black,midway,xshift=0.1cm,yshift=-1.4cm]{\footnotesize $tiene$ $que$ $ser$ $del$ $mismo$ $\color{blue}tipo$};
+\draw[red,thick] (2.75,3.4) circle (0.2cm);
+\draw[red,thick] (1.55,4.5) circle (0.22cm);
+\end{tikzpicture}
+  \column{6\textwidth}
+  \lstset{basicstyle=\tiny}
+   \begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+
+int main (void)
+{
+int a,b,c;
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	
+	
+	
+	printf("El resultado es % d \n",c);
+
+	return (0);
+}   
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Ejemplo de un programa con una \textbf{\textit{\color{yellow}función}}}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \node at (6.5,7.8) {\normalsize Código en programa fuente};
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+  \fill[color=green] (5.4,6.9) -- (8.8,6.9) -- (8.8,6.5) -- (5.4,6.5) -- cycle;
+  \draw[red!60,very thick,->](5.4,6.75)to [out=180,in=90]node[right,midway]{} ++(-2.9,-0.8) ; 
+  \node at (2.5,5.5) {\normalsize PROTOTIPO};
+  \node at (2.5,5.1) {\normalsize $informa$ $como$ $tiene$};
+  \node at (2.5,4.7) {\normalsize $que$ $ser$ $la$ $funci\acute{o}n$};
+\end{tikzpicture}
+  \column{2.9\textwidth}
+  \lstset{basicstyle=\tiny}
+   \begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+
+int Mi_suma ( int , int );
+
+int main (void)
+{
+int a;
+
+	a = Mi_suma ( 6 , 9 );
+	printf("El resultado es % d \n",a);
+
+	a = Mi_suma ( 3 , 1 );
+	printf("El resultado es % d \n",a);
+
+	a = Mi_suma ( 12 , 4 );
+	printf("El resultado es % d \n",a);
+
+	return (0);
+}   
+
+int Mi_suma ( int x , int y )
+{
+int z;
+    z = x + y;
+    return z;
+}    
+	\end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Ejemplo de un programa con una \textbf{\textit{\color{yellow}función}}}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \node at (6.5,7.8) {\normalsize Código en programa fuente};
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+  \fill[color=green] (6.3,5.15) -- (8.8,5.15) -- (8.8,5.45) -- (6.3,5.45) -- cycle;
+  \draw[red!60,very thick,->](6.8,5.4)to [out=135,in=180]node[right,midway]{} ++(-1.7,-3) ; 
+  \node at (2.5,5.1) {\normalsize $llama$ $a$ $la$ $funci\acute{o}n$};
+\end{tikzpicture}
+  \column{2.9\textwidth}
+  \lstset{basicstyle=\tiny}
+   \begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+
+int Mi_suma ( int , int );
+
+int main (void)
+{
+int a;
+
+	a = Mi_suma ( 6 , 9 );
+	printf("El resultado es % d \n",a);
+
+	a = Mi_suma ( 3 , 1 );
+	printf("El resultado es % d \n",a);
+
+	a = Mi_suma ( 12 , 4 );
+	printf("El resultado es % d \n",a);
+
+	return (0);
+}   
+
+int Mi_suma ( int x , int y )
+{
+int z;
+    z = x + y;
+    return z;
+}    
+	\end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Ejemplo de un programa con una \textbf{\textit{\color{yellow}función}}}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \node at (6.5,7.8) {\normalsize Código en programa fuente};
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+  \fill[color=green] (5.6,5.15) -- (6,5.15) -- (6,5.45) -- (5.6,5.45) -- cycle;
+  \draw[red!60,very thick,<-](5.6,5.2)to [out=180,in=180]node[right,midway]{} ++(0.3,-3.9) ; 
+  \node at (2.5,5.1) {\normalsize $retorna$ $de$ $la$ $funci\acute{o}n$};
+  \node at (2.5,4.6) {\normalsize $y$ $guarda$ $el$ $valorn$ $de$};
+  \node at (2.5,4.1) {\normalsize $\color{red}z$ $en$ $\color{red}a$};
+\end{tikzpicture}
+  \column{2.9\textwidth}
+  \lstset{basicstyle=\tiny}
+   \begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+
+int Mi_suma ( int , int );
+
+int main (void)
+{
+int a;
+
+	a = Mi_suma ( 6 , 9 );
+	printf("El resultado es % d \n",a);
+
+	a = Mi_suma ( 3 , 1 );
+	printf("El resultado es % d \n",a);
+
+	a = Mi_suma ( 12 , 4 );
+	printf("El resultado es % d \n",a);
+
+	return (0);
+}   
+
+int Mi_suma ( int x , int y )
+{
+int z;
+    z = x + y;
+    return z;
+}    
+	\end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\end{document}
+
+

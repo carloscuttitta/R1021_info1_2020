@@ -1,0 +1,3603 @@
+\documentclass{beamer}
+\usepackage[latin1]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{multicol}
+\usepackage{fancybox}
+\usepackage{beamerthemeshadow}
+\usepackage{times} %font times
+\usepackage[T1]{fontenc} %para que cuando se seleccione un texto las letras acentuadad y las ñ se copien bien Usar la codificación T1
+\usepackage{enumerate}
+\usepackage{listings}
+\usepackage{calligra} 
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{caption}
+\usepackage{tikz}
+\usepackage{verbatim}
+\usepackage{mdwlist}
+
+\usetikzlibrary{chains,fit,shapes,arrows,calc,decorations.pathreplacing}
+\usetikzlibrary{shapes.geometric,matrix,fit,backgrounds}
+\usetikzlibrary{shapes.arrows}
+
+\usefonttheme{professionalfonts}
+
+\newtheorem{defi}{Definición} 
+\hypersetup{pdfpagemode=FullScreen}
+
+\mode<presentation>{
+\usetheme{Warsaw}
+\setbeamercovered{transparent}
+
+}
+\lstset{
+	frame=Ltb,
+	framerule=0pt,
+	aboveskip=0.5cm,
+	framextopmargin=3pt,
+	framexbottommargin=3pt,
+	framexleftmargin=0.4cm,
+	framesep=0pt,
+	rulesep=.4pt,
+%	backgroundcolor=\color{gray!20},
+	rulesepcolor=\color{black},
+	language=C,
+	captionpos=b,
+	tabsize=3,
+	frame=lines,
+	keywordstyle=\color{blue},
+	commentstyle=\color{gray},
+	stringstyle=\color{red},
+	numbers=left,
+	numberstyle=\tiny,
+	numbersep=5pt,
+breaklines=true,
+	showstringspaces=false,
+	basicstyle=\small,
+	emph={label},
+	framerule=0pt,
+}
+
+\title{\em INFORMATICA I}
+\subtitle{{Matriz dinamica con \color{yellow}malloc}}
+\author{\em Ing.Juan Carlos Cuttitta}
+\institute{\Large \calligra{Universidad Tecnológica Nacional\\ Facultad Regional Buenos Aires \\ Departamento de {Ingeniería} {Electrónica}}}
+\date{\today}
+
+%portada
+
+\setbeamertemplate{footline}[frame number]
+%para sacar la barra que tiene beamer por defoult
+\setbeamertemplate{navigation symbols}{} 
+
+\begin{document}
+
+\begin{figure}[ht!]
+  \centering
+  \includegraphics [width=0.2\textwidth]{informacion.jpg}
+\end{figure}
+\vspace{-1.0cm} % para subir el titulo 
+\titlepage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\tikzstyle{every picture}+=[remember picture]
+\tikzstyle{na} = [baseline=-.5ex]
+
+
+\begin{frame}[fragile]
+\frametitle{Enunciado del problema}
+\fontsize{16pt}{18pt}\selectfont
+Ejemplo para armar una matriz (N x N) en forma dinamica utilizando malloc. \\
+\vspace{1cm}
+En éste ejemplo la matriz será de (2 x 3) quedando de la siguente forma: \\
+\vspace{1cm}
+\begin{equation*}
+\begin{bmatrix}
+\color{blue}11  & \color{blue}12 & \color{blue}13 \\
+\color{blue}21 & \color{blue}22 & \color{blue}23 
+\end{bmatrix} 
+\end{equation*}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!60,green!60,green!60,green!60,green!60,red!0,red!0,red!0,red!0,red!0,red!0,red!0,blue!0,red!0,red!0,red!0,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 0
+    		\nodepart{two}\tiny 0
+    		\nodepart{three}\tiny 0
+    		\nodepart{four}\tiny 0
+    		\nodepart{five}\tiny  0xXXXXXXXX
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}
+    		\nodepart{eight}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}
+    		\nodepart{eleven}
+    		\nodepart{twelve}
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,6.1) {\color{white}0xFFE07600};
+  \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (2.8,7.3) -- (6.1,7.3) -- (6.1,6.7) -- (2.8,6.7) -- cycle;
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!0,green!0,green!60,green!60,green!0,red!0,red!0,red!0,red!0,red!0,red!0,red!0,blue!0,red!0,red!0,red!0,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 0
+    		\nodepart{two}\tiny 0
+    		\nodepart{three}\tiny {\color{red}2}
+    		\nodepart{four}\tiny {\color{red}3}
+    		\nodepart{five}\tiny  0xXXXXXXXX
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}
+    		\nodepart{eight}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}
+    		\nodepart{eleven}
+    		\nodepart{twelve}
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,6.1) {\color{white}0xFFE07600};
+  \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (2.8,6.3) -- (6.3,6.3) -- (6.3,6) -- (2.8,6) -- cycle;
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!0,green!0,green!0,green!0,green!60,red!0,blue!30,blue!30,red!0,red!0,red!0,red!0,blue!0,red!0,red!0,red!0,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 0
+    		\nodepart{two}\tiny 0
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny {\color{red}0x5E1D4A80}
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}
+    		\nodepart{eight}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}
+    		\nodepart{eleven}
+    		\nodepart{twelve}
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (2.8,6) -- (7.6,6) -- (7.6,5.75) -- (2.8,5.75) -- cycle;
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!30,green!0,green!0,green!0,green!0,red!0,blue!30,blue!30,red!0,red!30,red!30,red!30,blue!0,red!0,red!0,red!0,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 0
+    		\nodepart{two}\tiny 0
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny 0x5E1D4A80
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny {\color{red}0x5E1D4AA0}
+    		\nodepart{eight}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}
+    		\nodepart{eleven}
+    		\nodepart{twelve}
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (0.8,5.8) {\color{red}mtz[0]};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-2,4.45) {\color{red}0x5E1D4AA0};
+  \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (2.8,5.55) -- (7.6,5.55) -- (7.6,5.25) -- (2.8,5.25) -- cycle;
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!30,green!0,green!0,green!0,green!0,red!0,blue!30,blue!30,red!0,red!30,red!30,red!30,blue!0,red!30,red!30,red!30,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 1
+    		\nodepart{two}\tiny 0
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny 0x5E1D4A80
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny {\color{red}0x5E1D4AA0}
+    		\nodepart{eight}\tiny {\color{red}0x5E1D4AC0}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}
+    		\nodepart{eleven}
+    		\nodepart{twelve}
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (0.8,5.8) {\color{red}mtz[0]};
+  \node at (0.8,5.45) {\color{red}mtz[1]};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-2,4.45) {\color{red}0x5E1D4AA0};
+  \node at (-2,2.8) {\color{red}0x5E1D4AC0};
+    \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (2.8,5.55) -- (7.6,5.55) -- (7.6,5.25) -- (2.8,5.25) -- cycle;
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!30,green!0,green!0,green!0,green!0,red!0,blue!30,blue!30,red!0,red!30,red!30,red!30,blue!0,red!30,red!30,red!30,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 0
+    		\nodepart{two}\tiny 0
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny 0x5E1D4A80
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny 0x5E1D4AA0
+    		\nodepart{eight}\tiny 0x5E1D4AC0
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}
+    		\nodepart{eleven}
+    		\nodepart{twelve}
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (0.8,5.8) {\color{red}mtz[0]};
+  \node at (0.8,5.45) {\color{red}mtz[1]};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-2,4.45) {\color{red}0x5E1D4AA0};
+  \node at (-2,2.8) {\color{red}0x5E1D4AC0};
+    \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (2.8,5.1) -- (4,5.1) -- (4,4.8) -- (2.8,4.8) -- cycle;
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!30,green!0,green!30,green!0,green!0,red!0,blue!30,blue!30,red!0,red!30,red!30,red!30,blue!0,red!30,red!30,red!30,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 0
+    		\nodepart{two}\tiny 0
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny 0x5E1D4A80
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny 0x5E1D4AA0
+    		\nodepart{eight}\tiny 0x5E1D4AC0
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}
+    		\nodepart{eleven}
+    		\nodepart{twelve}
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (0.8,5.8) {\color{red}mtz[0]};
+  \node at (0.8,5.45) {\color{red}mtz[1]};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-2,4.45) {\color{red}0x5E1D4AA0};
+  \node at (-2,2.8) {\color{red}0x5E1D4AC0};
+    \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (4.2,5.1) -- (5,5.1) -- (5,4.8) -- (4.2,4.8) -- cycle;
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!0,green!30,green!0,green!0,green!0,red!0,blue!30,blue!30,red!0,red!30,red!30,red!30,blue!0,red!30,red!30,red!30,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 0
+    		\nodepart{two}\tiny 0
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny 0x5E1D4A80
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny 0x5E1D4AA0
+    		\nodepart{eight}\tiny 0x5E1D4AC0
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}
+    		\nodepart{eleven}
+    		\nodepart{twelve}
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (0.8,5.8) {\color{red}mtz[0]};
+  \node at (0.8,5.45) {\color{red}mtz[1]};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-2,4.45) {\color{red}0x5E1D4AA0};
+  \node at (-2,2.8) {\color{red}0x5E1D4AC0};
+    \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (3.6,4.8) -- (4.4,4.8) -- (4.4,4.55) -- (3.6,4.55) -- cycle;
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!0,green!30,green!0,green!30,green!0,red!0,blue!30,blue!30,red!0,red!30,red!30,red!30,blue!0,red!30,red!30,red!30,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 0
+    		\nodepart{two}\tiny 0
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny 0x5E1D4A80
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny 0x5E1D4AA0
+    		\nodepart{eight}\tiny 0x5E1D4AC0
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}
+    		\nodepart{eleven}
+    		\nodepart{twelve}
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (0.8,5.8) {\color{red}mtz[0]};
+  \node at (0.8,5.45) {\color{red}mtz[1]};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-2,4.45) {\color{red}0x5E1D4AA0};
+  \node at (-2,2.8) {\color{red}0x5E1D4AC0};
+    \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (4.4,4.8) -- (5.4,4.8) -- (5.4,4.55) -- (4.4,4.55) -- cycle;
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!30,green!30,green!0,green!0,green!0,red!0,blue!30,blue!30,red!0,red!30,red!30,red!30,blue!0,red!30,red!30,red!30,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 0
+    		\nodepart{two}\tiny 0
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny 0x5E1D4A80
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny 0x5E1D4AA0
+    		\nodepart{eight}\tiny 0x5E1D4AC0
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}\tiny {\color{red}11}
+    		\nodepart{eleven}
+    		\nodepart{twelve}
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (0.8,5.8) {\color{red}mtz[0]};
+  \node at (0.8,5.45) {\color{red}mtz[1]};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-2,4.45) {\color{red}0x5E1D4AA0};
+  \node at (0.8,4.45) {\color{red}mtz[0][0]};
+  \node at (-2,2.8) {\color{red}0x5E1D4AC0};
+    \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (3.2,4.3) -- (6.4,4.3) -- (6.4,4.0) -- (3.2,4.0) -- cycle;
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!30,green!30,green!0,green!0,green!0,red!0,blue!30,blue!30,red!0,red!30,red!30,red!30,blue!0,red!30,red!30,red!30,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 0
+    		\nodepart{two}\tiny {\color{red}1}
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny 0x5E1D4A80
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny 0x5E1D4AA0
+    		\nodepart{eight}\tiny 0x5E1D4AC0
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}\tiny 11
+    		\nodepart{eleven}
+    		\nodepart{twelve}
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (0.8,5.8) {\color{red}mtz[0]};
+  \node at (0.8,5.45) {\color{red}mtz[1]};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-2,4.45) {\color{red}0x5E1D4AA0};
+  \node at (0.8,4.45) {\color{red}mtz[0][0]};
+  \node at (-2,2.8) {\color{red}0x5E1D4AC0};
+    \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (5.4,4.8) -- (5.9,4.8) -- (5.9,4.55) -- (5.4,4.55) -- cycle;
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!30,green!30,green!0,green!30,green!0,red!0,blue!30,blue!30,red!0,red!30,red!30,red!30,blue!0,red!30,red!30,red!30,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 0
+    		\nodepart{two}\tiny 1
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny 0x5E1D4A80
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny 0x5E1D4AA0
+    		\nodepart{eight}\tiny 0x5E1D4AC0
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}\tiny 11
+    		\nodepart{eleven}
+    		\nodepart{twelve}
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (0.8,5.8) {\color{red}mtz[0]};
+  \node at (0.8,5.45) {\color{red}mtz[1]};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-2,4.45) {\color{red}0x5E1D4AA0};
+  \node at (0.8,4.45) {\color{red}mtz[0][0]};
+  \node at (-2,2.8) {\color{red}0x5E1D4AC0};
+    \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (4.4,4.8) -- (5.4,4.8) -- (5.4,4.55) -- (4.4,4.55) -- cycle;
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!30,green!30,green!0,green!0,green!0,red!0,blue!30,blue!30,red!0,red!30,red!30,red!30,blue!0,red!30,red!30,red!30,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 0
+    		\nodepart{two}\tiny 1
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny 0x5E1D4A80
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny 0x5E1D4AA0
+    		\nodepart{eight}\tiny 0x5E1D4AC0
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}\tiny 11
+    		\nodepart{eleven}\tiny {\color{red}12}
+    		\nodepart{twelve}
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (0.8,5.8) {\color{red}mtz[0]};
+  \node at (0.8,5.45) {\color{red}mtz[1]};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-2,4.45) {\color{red}0x5E1D4AA0};
+  \node at (0.8,4.45) {\color{red}mtz[0][0]};
+  \node at (0.8,4.1) {\color{red}mtz[0][1]};
+  \node at (-2,2.8) {\color{red}0x5E1D4AC0};
+    \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (3.2,4.3) -- (6.4,4.3) -- (6.4,4.0) -- (3.2,4.0) -- cycle;
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!30,green!30,green!0,green!0,green!0,red!0,blue!30,blue!30,red!0,red!30,red!30,red!30,blue!0,red!30,red!30,red!30,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 0
+    		\nodepart{two}\tiny {\color{red}2}
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny 0x5E1D4A80
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny 0x5E1D4AA0
+    		\nodepart{eight}\tiny 0x5E1D4AC0
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}\tiny 11
+    		\nodepart{eleven}\tiny 12
+    		\nodepart{twelve}
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (0.8,5.8) {\color{red}mtz[0]};
+  \node at (0.8,5.45) {\color{red}mtz[1]};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-2,4.45) {\color{red}0x5E1D4AA0};
+  \node at (0.8,4.45) {\color{red}mtz[0][0]};
+  \node at (0.8,4.1) {\color{red}mtz[0][1]};
+  \node at (-2,2.8) {\color{red}0x5E1D4AC0};
+    \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (5.4,4.8) -- (5.9,4.8) -- (5.9,4.55) -- (5.4,4.55) -- cycle;
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!30,green!30,green!0,green!30,green!0,red!0,blue!30,blue!30,red!0,red!30,red!30,red!30,blue!0,red!30,red!30,red!30,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 0
+    		\nodepart{two}\tiny {\color{red}2}
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny 0x5E1D4A80
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny 0x5E1D4AA0
+    		\nodepart{eight}\tiny 0x5E1D4AC0
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}\tiny 11
+    		\nodepart{eleven}\tiny 12
+    		\nodepart{twelve}
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (0.8,5.8) {\color{red}mtz[0]};
+  \node at (0.8,5.45) {\color{red}mtz[1]};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-2,4.45) {\color{red}0x5E1D4AA0};
+  \node at (0.8,4.45) {\color{red}mtz[0][0]};
+  \node at (0.8,4.1) {\color{red}mtz[0][1]};
+  \node at (-2,2.8) {\color{red}0x5E1D4AC0};
+    \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (4.4,4.8) -- (5.4,4.8) -- (5.4,4.55) -- (4.4,4.55) -- cycle;
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!30,green!30,green!0,green!0,green!0,red!0,blue!30,blue!30,red!0,red!30,red!30,red!30,blue!0,red!30,red!30,red!30,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 0
+    		\nodepart{two}\tiny 2
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny 0x5E1D4A80
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny 0x5E1D4AA0
+    		\nodepart{eight}\tiny 0x5E1D4AC0
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}\tiny 11
+    		\nodepart{eleven}\tiny 12
+    		\nodepart{twelve}\tiny {\color{red}13}
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (0.8,5.8) {\color{red}mtz[0]};
+  \node at (0.8,5.45) {\color{red}mtz[1]};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-2,4.45) {\color{red}0x5E1D4AA0};
+  \node at (0.8,4.45) {\color{red}mtz[0][0]};
+  \node at (0.8,4.1) {\color{red}mtz[0][1]};
+  \node at (0.8,3.75) {\color{red}mtz[0][2]};
+  \node at (-2,2.8) {\color{red}0x5E1D4AC0};
+    \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (3.2,4.3) -- (6.4,4.3) -- (6.4,4.0) -- (3.2,4.0) -- cycle;
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!30,green!30,green!0,green!0,green!0,red!0,blue!30,blue!30,red!0,red!30,red!30,red!30,blue!0,red!30,red!30,red!30,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 0
+    		\nodepart{two}\tiny {\color{red}3}
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny 0x5E1D4A80
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny 0x5E1D4AA0
+    		\nodepart{eight}\tiny 0x5E1D4AC0
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}\tiny 11
+    		\nodepart{eleven}\tiny 12
+    		\nodepart{twelve}\tiny 13
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (0.8,5.8) {\color{red}mtz[0]};
+  \node at (0.8,5.45) {\color{red}mtz[1]};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-2,4.45) {\color{red}0x5E1D4AA0};
+  \node at (0.8,4.45) {\color{red}mtz[0][0]};
+  \node at (0.8,4.1) {\color{red}mtz[0][1]};
+  \node at (0.8,3.75) {\color{red}mtz[0][2]};
+  \node at (-2,2.8) {\color{red}0x5E1D4AC0};
+    \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (5.4,4.8) -- (5.9,4.8) -- (5.9,4.55) -- (5.4,4.55) -- cycle;
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!30,green!30,green!0,green!30,green!0,red!0,blue!30,blue!30,red!0,red!30,red!30,red!30,blue!0,red!30,red!30,red!30,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 0
+    		\nodepart{two}\tiny {\color{red}3}
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny {\color{red}3}
+    		\nodepart{five}\tiny 0x5E1D4A80
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny 0x5E1D4AA0
+    		\nodepart{eight}\tiny 0x5E1D4AC0
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}\tiny 11
+    		\nodepart{eleven}\tiny 12
+    		\nodepart{twelve}\tiny 13
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (0.8,5.8) {\color{red}mtz[0]};
+  \node at (0.8,5.45) {\color{red}mtz[1]};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-2,4.45) {\color{red}0x5E1D4AA0};
+  \node at (0.8,4.45) {\color{red}mtz[0][0]};
+  \node at (0.8,4.1) {\color{red}mtz[0][1]};
+  \node at (0.8,3.75) {\color{red}mtz[0][2]};
+  \node at (-2,2.8) {\color{red}0x5E1D4AC0};
+    \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (4.4,4.8) -- (5.4,4.8) -- (5.4,4.55) -- (4.4,4.55) -- cycle;
+
+  \node [fill=green] at (0.2,4.8) {\fbox{
+						\begin{minipage}{3cm}
+							\fontsize{8pt}{8pt}\selectfont
+		 {No cumple la condicion} \\
+		  \\
+		 {y sale del ciclo for} \\
+						\end{minipage}}};						  
+
+
+
+
+
+
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!30,green!0,green!0,green!0,green!0,red!0,blue!30,blue!30,red!0,red!30,red!30,red!30,blue!0,red!30,red!30,red!30,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny {\color{red}1}
+    		\nodepart{two}\tiny 3
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny 0x5E1D4A80
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny 0x5E1D4AA0
+    		\nodepart{eight}\tiny 0x5E1D4AC0
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}\tiny 11
+    		\nodepart{eleven}\tiny 12
+    		\nodepart{twelve}\tiny 13
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (0.8,5.8) {\color{red}mtz[0]};
+  \node at (0.8,5.45) {\color{red}mtz[1]};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-2,4.45) {\color{red}0x5E1D4AA0};
+  \node at (0.8,4.45) {\color{red}mtz[0][0]};
+  \node at (0.8,4.1) {\color{red}mtz[0][1]};
+  \node at (0.8,3.75) {\color{red}mtz[0][2]};
+  \node at (-2,2.8) {\color{red}0x5E1D4AC0};
+    \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (5.3,5.1) -- (5.8,5.1) -- (5.8,4.8) -- (5.3,4.8) -- cycle;
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!30,green!0,green!30,green!0,green!0,red!0,blue!30,blue!30,red!0,red!30,red!30,red!30,blue!0,red!30,red!30,red!30,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 1
+    		\nodepart{two}\tiny 3
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny 0x5E1D4A80
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny 0x5E1D4AA0
+    		\nodepart{eight}\tiny 0x5E1D4AC0
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}\tiny 11
+    		\nodepart{eleven}\tiny 12
+    		\nodepart{twelve}\tiny 13
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (0.8,5.8) {\color{red}mtz[0]};
+  \node at (0.8,5.45) {\color{red}mtz[1]};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-2,4.45) {\color{red}0x5E1D4AA0};
+  \node at (0.8,4.45) {\color{red}mtz[0][0]};
+  \node at (0.8,4.1) {\color{red}mtz[0][1]};
+  \node at (0.8,3.75) {\color{red}mtz[0][2]};
+  \node at (-2,2.8) {\color{red}0x5E1D4AC0};
+    \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (4.2,5.1) -- (5,5.1) -- (5,4.8) -- (4.2,4.8) -- cycle;
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!0,green!30,green!0,green!0,green!0,red!0,blue!30,blue!30,red!0,red!30,red!30,red!30,blue!0,red!30,red!30,red!30,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 1
+    		\nodepart{two}\tiny {\color{red}0}
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny 0x5E1D4A80
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny 0x5E1D4AA0
+    		\nodepart{eight}\tiny 0x5E1D4AC0
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}\tiny 11
+    		\nodepart{eleven}\tiny 12
+    		\nodepart{twelve}\tiny 13
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (0.8,5.8) {\color{red}mtz[0]};
+  \node at (0.8,5.45) {\color{red}mtz[1]};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-2,4.45) {\color{red}0x5E1D4AA0};
+  \node at (0.8,4.45) {\color{red}mtz[0][0]};
+  \node at (0.8,4.1) {\color{red}mtz[0][1]};
+  \node at (0.8,3.75) {\color{red}mtz[0][2]};
+  \node at (-2,2.8) {\color{red}0x5E1D4AC0};
+    \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (3.6,4.8) -- (4.4,4.8) -- (4.4,4.55) -- (3.6,4.55) -- cycle;
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!0,green!30,green!0,green!30,green!0,red!0,blue!30,blue!30,red!0,red!30,red!30,red!30,blue!0,red!30,red!30,red!30,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 1
+    		\nodepart{two}\tiny 0
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny 0x5E1D4A80
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny 0x5E1D4AA0
+    		\nodepart{eight}\tiny 0x5E1D4AC0
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}\tiny 11
+    		\nodepart{eleven}\tiny 12
+    		\nodepart{twelve}\tiny 13
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (0.8,5.8) {\color{red}mtz[0]};
+  \node at (0.8,5.45) {\color{red}mtz[1]};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-2,4.45) {\color{red}0x5E1D4AA0};
+  \node at (0.8,4.45) {\color{red}mtz[0][0]};
+  \node at (0.8,4.1) {\color{red}mtz[0][1]};
+  \node at (0.8,3.75) {\color{red}mtz[0][2]};
+  \node at (-2,2.8) {\color{red}0x5E1D4AC0};
+    \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (4.4,4.8) -- (5.4,4.8) -- (5.4,4.55) -- (4.4,4.55) -- cycle;
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!0,green!30,green!0,green!30,green!0,red!0,blue!30,blue!30,red!0,red!30,red!30,red!30,blue!0,red!30,red!30,red!30,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 1
+    		\nodepart{two}\tiny 0
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny 0x5E1D4A80
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny 0x5E1D4AA0
+    		\nodepart{eight}\tiny 0x5E1D4AC0
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}\tiny 11
+    		\nodepart{eleven}\tiny 12
+    		\nodepart{twelve}\tiny 13
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}\tiny {\color{red}21}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (0.8,5.8) {\color{red}mtz[0]};
+  \node at (0.8,5.45) {\color{red}mtz[1]};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-2,4.45) {\color{red}0x5E1D4AA0};
+  \node at (0.8,4.45) {\color{red}mtz[0][0]};
+  \node at (0.8,4.1) {\color{red}mtz[0][1]};
+  \node at (0.8,3.75) {\color{red}mtz[0][2]};
+  \node at (0.8,2.8) {\color{red}mtz[1][0]};
+  \node at (-2,2.8) {\color{red}0x5E1D4AC0};
+    \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (3.2,4.3) -- (6.4,4.3) -- (6.4,4.0) -- (3.2,4.0) -- cycle;
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!0,green!30,green!0,green!0,green!0,red!0,blue!30,blue!30,red!0,red!30,red!30,red!30,blue!0,red!30,red!30,red!30,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 1
+    		\nodepart{two}\tiny {\color{red}1}
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny 0x5E1D4A80
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny 0x5E1D4AA0
+    		\nodepart{eight}\tiny 0x5E1D4AC0
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}\tiny 11
+    		\nodepart{eleven}\tiny 12
+    		\nodepart{twelve}\tiny 13
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}\tiny 21
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (0.8,5.8) {\color{red}mtz[0]};
+  \node at (0.8,5.45) {\color{red}mtz[1]};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-2,4.45) {\color{red}0x5E1D4AA0};
+  \node at (0.8,4.45) {\color{red}mtz[0][0]};
+  \node at (0.8,4.1) {\color{red}mtz[0][1]};
+  \node at (0.8,3.75) {\color{red}mtz[0][2]};
+  \node at (0.8,2.8) {\color{red}mtz[1][0]};
+  \node at (-2,2.8) {\color{red}0x5E1D4AC0};
+    \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (5.4,4.8) -- (5.9,4.8) -- (5.9,4.55) -- (5.4,4.55) -- cycle;
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!0,green!30,green!0,green!30,green!0,red!0,blue!30,blue!30,red!0,red!30,red!30,red!30,blue!0,red!30,red!30,red!30,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 1
+    		\nodepart{two}\tiny 1
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny 0x5E1D4A80
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny 0x5E1D4AA0
+    		\nodepart{eight}\tiny 0x5E1D4AC0
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}\tiny 11
+    		\nodepart{eleven}\tiny 12
+    		\nodepart{twelve}\tiny 13
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}\tiny 21
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (0.8,5.8) {\color{red}mtz[0]};
+  \node at (0.8,5.45) {\color{red}mtz[1]};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-2,4.45) {\color{red}0x5E1D4AA0};
+  \node at (0.8,4.45) {\color{red}mtz[0][0]};
+  \node at (0.8,4.1) {\color{red}mtz[0][1]};
+  \node at (0.8,3.75) {\color{red}mtz[0][2]};
+  \node at (0.8,2.8) {\color{red}mtz[1][0]};
+  \node at (-2,2.8) {\color{red}0x5E1D4AC0};
+    \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (4.4,4.8) -- (5.4,4.8) -- (5.4,4.55) -- (4.4,4.55) -- cycle;
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!0,green!0,green!0,green!0,green!0,red!0,blue!30,blue!30,red!0,red!30,red!30,red!30,blue!0,red!30,red!30,red!30,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 1
+    		\nodepart{two}\tiny 1
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny 0x5E1D4A80
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny 0x5E1D4AA0
+    		\nodepart{eight}\tiny 0x5E1D4AC0
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}\tiny 11
+    		\nodepart{eleven}\tiny 12
+    		\nodepart{twelve}\tiny 13
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}\tiny 21
+    		\nodepart{fifteen}\tiny {\color{red}22}
+    		\nodepart{sixteen}
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (0.8,5.8) {\color{red}mtz[0]};
+  \node at (0.8,5.45) {\color{red}mtz[1]};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-2,4.45) {\color{red}0x5E1D4AA0};
+  \node at (0.8,4.45) {\color{red}mtz[0][0]};
+  \node at (0.8,4.1) {\color{red}mtz[0][1]};
+  \node at (0.8,3.75) {\color{red}mtz[0][2]};
+  \node at (0.8,2.8) {\color{red}mtz[1][0]};
+  \node at (0.8,2.5) {\color{red}mtz[1][1]};
+  \node at (-2,2.8) {\color{red}0x5E1D4AC0};
+    \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (3.2,4.3) -- (6.4,4.3) -- (6.4,4.0) -- (3.2,4.0) -- cycle;
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!0,green!30,green!0,green!0,green!0,red!0,blue!30,blue!30,red!0,red!30,red!30,red!30,blue!0,red!30,red!30,red!30,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 1
+    		\nodepart{two}\tiny {\color{red}2}
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny 0x5E1D4A80
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny 0x5E1D4AA0
+    		\nodepart{eight}\tiny 0x5E1D4AC0
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}\tiny 11
+    		\nodepart{eleven}\tiny 12
+    		\nodepart{twelve}\tiny 13
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}\tiny 21
+    		\nodepart{fifteen}\tiny 22
+    		\nodepart{sixteen}
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (0.8,5.8) {\color{red}mtz[0]};
+  \node at (0.8,5.45) {\color{red}mtz[1]};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-2,4.45) {\color{red}0x5E1D4AA0};
+  \node at (0.8,4.45) {\color{red}mtz[0][0]};
+  \node at (0.8,4.1) {\color{red}mtz[0][1]};
+  \node at (0.8,3.75) {\color{red}mtz[0][2]};
+  \node at (0.8,2.8) {\color{red}mtz[1][0]};
+  \node at (0.8,2.5) {\color{red}mtz[1][1]};
+  \node at (-2,2.8) {\color{red}0x5E1D4AC0};
+    \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (5.4,4.8) -- (5.9,4.8) -- (5.9,4.55) -- (5.4,4.55) -- cycle;
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!0,green!30,green!0,green!30,green!0,red!0,blue!30,blue!30,red!0,red!30,red!30,red!30,blue!0,red!30,red!30,red!30,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 1
+    		\nodepart{two}\tiny 2
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny 0x5E1D4A80
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny 0x5E1D4AA0
+    		\nodepart{eight}\tiny 0x5E1D4AC0
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}\tiny 11
+    		\nodepart{eleven}\tiny 12
+    		\nodepart{twelve}\tiny 13
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}\tiny 21
+    		\nodepart{fifteen}\tiny 22
+    		\nodepart{sixteen}
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (0.8,5.8) {\color{red}mtz[0]};
+  \node at (0.8,5.45) {\color{red}mtz[1]};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-2,4.45) {\color{red}0x5E1D4AA0};
+  \node at (0.8,4.45) {\color{red}mtz[0][0]};
+  \node at (0.8,4.1) {\color{red}mtz[0][1]};
+  \node at (0.8,3.75) {\color{red}mtz[0][2]};
+  \node at (0.8,2.8) {\color{red}mtz[1][0]};
+  \node at (0.8,2.5) {\color{red}mtz[1][1]};
+  \node at (-2,2.8) {\color{red}0x5E1D4AC0};
+    \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (4.4,4.8) -- (5.4,4.8) -- (5.4,4.55) -- (4.4,4.55) -- cycle;
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!0,green!0,green!0,green!0,green!0,red!0,blue!30,blue!30,red!0,red!30,red!30,red!30,blue!0,red!30,red!30,red!30,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 1
+    		\nodepart{two}\tiny 2
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny 0x5E1D4A80
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny 0x5E1D4AA0
+    		\nodepart{eight}\tiny 0x5E1D4AC0
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}\tiny 11
+    		\nodepart{eleven}\tiny 12
+    		\nodepart{twelve}\tiny 13
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}\tiny 21
+    		\nodepart{fifteen}\tiny 22
+    		\nodepart{sixteen}\tiny {\color{red}23}
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (0.8,5.8) {\color{red}mtz[0]};
+  \node at (0.8,5.45) {\color{red}mtz[1]};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-2,4.45) {\color{red}0x5E1D4AA0};
+  \node at (0.8,4.45) {\color{red}mtz[0][0]};
+  \node at (0.8,4.1) {\color{red}mtz[0][1]};
+  \node at (0.8,3.75) {\color{red}mtz[0][2]};
+  \node at (0.8,2.8) {\color{red}mtz[1][0]};
+  \node at (0.8,2.5) {\color{red}mtz[1][1]};
+  \node at (0.8,2.2) {\color{red}mtz[1][2]};
+  \node at (-2,2.8) {\color{red}0x5E1D4AC0};
+    \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (3.2,4.3) -- (6.4,4.3) -- (6.4,4.0) -- (3.2,4.0) -- cycle;
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!0,green!0,green!0,green!0,green!0,red!0,blue!30,blue!30,red!0,red!30,red!30,red!30,blue!0,red!30,red!30,red!30,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 1
+    		\nodepart{two}\tiny {\color{red}3}
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny 0x5E1D4A80
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny 0x5E1D4AA0
+    		\nodepart{eight}\tiny 0x5E1D4AC0
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}\tiny 11
+    		\nodepart{eleven}\tiny 12
+    		\nodepart{twelve}\tiny 13
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}\tiny 21
+    		\nodepart{fifteen}\tiny 22
+    		\nodepart{sixteen}\tiny 23
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (0.8,5.8) {\color{red}mtz[0]};
+  \node at (0.8,5.45) {\color{red}mtz[1]};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-2,4.45) {\color{red}0x5E1D4AA0};
+  \node at (0.8,4.45) {\color{red}mtz[0][0]};
+  \node at (0.8,4.1) {\color{red}mtz[0][1]};
+  \node at (0.8,3.75) {\color{red}mtz[0][2]};
+  \node at (0.8,2.8) {\color{red}mtz[1][0]};
+  \node at (0.8,2.5) {\color{red}mtz[1][1]};
+  \node at (0.8,2.2) {\color{red}mtz[1][2]};
+  \node at (-2,2.8) {\color{red}0x5E1D4AC0};
+    \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (5.4,4.8) -- (5.9,4.8) -- (5.9,4.55) -- (5.4,4.55) -- cycle;
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!0,green!30,green!0,green!30,green!0,red!0,blue!30,blue!30,red!0,red!30,red!30,red!30,blue!0,red!30,red!30,red!30,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 1
+    		\nodepart{two}\tiny 3
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny 0x5E1D4A80
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny 0x5E1D4AA0
+    		\nodepart{eight}\tiny 0x5E1D4AC0
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}\tiny 11
+    		\nodepart{eleven}\tiny 12
+    		\nodepart{twelve}\tiny 13
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}\tiny 21
+    		\nodepart{fifteen}\tiny 22
+    		\nodepart{sixteen}\tiny 23
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (0.8,5.8) {\color{red}mtz[0]};
+  \node at (0.8,5.45) {\color{red}mtz[1]};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-2,4.45) {\color{red}0x5E1D4AA0};
+  \node at (0.8,4.45) {\color{red}mtz[0][0]};
+  \node at (0.8,4.1) {\color{red}mtz[0][1]};
+  \node at (0.8,3.75) {\color{red}mtz[0][2]};
+  \node at (0.8,2.8) {\color{red}mtz[1][0]};
+  \node at (0.8,2.5) {\color{red}mtz[1][1]};
+  \node at (0.8,2.2) {\color{red}mtz[1][2]};
+  \node at (-2,2.8) {\color{red}0x5E1D4AC0};
+    \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (4.4,4.8) -- (5.4,4.8) -- (5.4,4.55) -- (4.4,4.55) -- cycle;
+
+
+  \node [fill=green] at (0.2,4.8) {\fbox{
+						\begin{minipage}{3cm}
+							\fontsize{8pt}{8pt}\selectfont
+		 {No cumple la condicion} \\
+		  \\
+		 {y sale del ciclo for} \\
+						\end{minipage}}};						  
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!30,green!0,green!0,green!0,green!0,red!0,blue!30,blue!30,red!0,red!30,red!30,red!30,blue!0,red!30,red!30,red!30,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny {\color{red}2}
+    		\nodepart{two}\tiny 3
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny 0x5E1D4A80
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny 0x5E1D4AA0
+    		\nodepart{eight}\tiny 0x5E1D4AC0
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}\tiny 11
+    		\nodepart{eleven}\tiny 12
+    		\nodepart{twelve}\tiny 13
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}\tiny 21
+    		\nodepart{fifteen}\tiny 22
+    		\nodepart{sixteen}\tiny 23
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (0.8,5.8) {\color{red}mtz[0]};
+  \node at (0.8,5.45) {\color{red}mtz[1]};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-2,4.45) {\color{red}0x5E1D4AA0};
+  \node at (0.8,4.45) {\color{red}mtz[0][0]};
+  \node at (0.8,4.1) {\color{red}mtz[0][1]};
+  \node at (0.8,3.75) {\color{red}mtz[0][2]};
+  \node at (0.8,2.8) {\color{red}mtz[1][0]};
+  \node at (0.8,2.5) {\color{red}mtz[1][1]};
+  \node at (0.8,2.2) {\color{red}mtz[1][2]};
+  \node at (-2,2.8) {\color{red}0x5E1D4AC0};
+    \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (5.3,5.1) -- (5.8,5.1) -- (5.8,4.8) -- (5.3,4.8) -- cycle;
+
+
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!30,green!0,green!30,green!0,green!0,red!0,blue!30,blue!30,red!0,red!30,red!30,red!30,blue!0,red!30,red!30,red!30,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 2
+    		\nodepart{two}\tiny 3
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny 0x5E1D4A80
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny 0x5E1D4AA0
+    		\nodepart{eight}\tiny 0x5E1D4AC0
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}\tiny 11
+    		\nodepart{eleven}\tiny 12
+    		\nodepart{twelve}\tiny 13
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}\tiny 21
+    		\nodepart{fifteen}\tiny 22
+    		\nodepart{sixteen}\tiny 23
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (0.8,5.8) {\color{red}mtz[0]};
+  \node at (0.8,5.45) {\color{red}mtz[1]};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-2,4.45) {\color{red}0x5E1D4AA0};
+  \node at (0.8,4.45) {\color{red}mtz[0][0]};
+  \node at (0.8,4.1) {\color{red}mtz[0][1]};
+  \node at (0.8,3.75) {\color{red}mtz[0][2]};
+  \node at (0.8,2.8) {\color{red}mtz[1][0]};
+  \node at (0.8,2.5) {\color{red}mtz[1][1]};
+  \node at (0.8,2.2) {\color{red}mtz[1][2]};
+  \node at (-2,2.8) {\color{red}0x5E1D4AC0};
+    \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (4.2,5.1) -- (5,5.1) -- (5,4.8) -- (4.2,4.8) -- cycle;
+
+  \node [fill=green] at (0.2,4.8) {\fbox{
+						\begin{minipage}{3.3cm}
+							\fontsize{8pt}{8pt}\selectfont
+		 {No cumple la condicion y} \\
+		  \\
+		 {sale del ciclo for de {\color{blue}i}} \\
+						\end{minipage}}};						  
+
+
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!30,green!0,green!30,green!0,green!0,red!0,blue!30,blue!30,red!0,red!30,red!30,red!30,blue!0,red!30,red!30,red!30,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 2
+    		\nodepart{two}\tiny 3
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny 0x5E1D4A80
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny 0x5E1D4AA0
+    		\nodepart{eight}\tiny 0x5E1D4AC0
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}\tiny 11
+    		\nodepart{eleven}\tiny 12
+    		\nodepart{twelve}\tiny 13
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}\tiny 21
+    		\nodepart{fifteen}\tiny 22
+    		\nodepart{sixteen}\tiny 23
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+  \node at (-2,5.8) {\color{red}0x5E1D4A80};
+  \node at (0.8,5.8) {\color{red}mtz[0]};
+  \node at (0.8,5.45) {\color{red}mtz[1]};
+  \node at (-2,5.45) {\color{red}0x5E1D4A84};
+  \node at (-2,4.45) {\color{red}0x5E1D4AA0};
+  \node at (0.8,4.45) {\color{red}mtz[0][0]};
+  \node at (0.8,4.1) {\color{red}mtz[0][1]};
+  \node at (0.8,3.75) {\color{red}mtz[0][2]};
+  \node at (0.8,2.8) {\color{red}mtz[1][0]};
+  \node at (0.8,2.5) {\color{red}mtz[1][1]};
+  \node at (0.8,2.2) {\color{red}mtz[1][2]};
+  \node at (-2,2.8) {\color{red}0x5E1D4AC0};
+    \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (2.7,3.4) -- (7,3.4) -- (7,2.2) -- (2.7,2.2) -- cycle;
+
+  \node [fill=green] at (0.2,1.4) {\fbox{
+						\begin{minipage}{2.4cm}
+							\fontsize{8pt}{8pt}\selectfont
+\begin{equation*}
+\begin{bmatrix}
+\color{blue}11  & \color{blue}12 & \color{blue}13 \\
+\color{blue}21 & \color{blue}22 & \color{blue}23 
+\end{bmatrix} 
+\end{equation*}
+						\end{minipage}}};						  
+
+
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Matriz {\color{yellow}NxN} con {\color{yellow}malloc} en Arquitectura \textcolor{yellow}{X86-32} bits }
+ \begin{columns}[c]
+  \column{0.4\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=19, 
+    rectangle split part fill={green!0,green!0,green!0,green!0,green!0,red!0,blue!0,blue!0,red!0,red!0,red!0,red!0,blue!0,red!0,red!0,red!0,red!0,red!0,red!0,red!0},
+    minimum width=0.6cm}]
+    \node (R) at (-0.5,8){ 
+    		\nodepart{one}\tiny 2
+    		\nodepart{two}\tiny 3
+    		\nodepart{three}\tiny 2
+    		\nodepart{four}\tiny 3
+    		\nodepart{five}\tiny 0xXXXXXXXX
+    		\nodepart{six}{$\vdots$}
+    		\nodepart{seven}\tiny 
+    		\nodepart{eight}\tiny 
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}\tiny 11
+    		\nodepart{eleven}\tiny 12
+    		\nodepart{twelve}\tiny 13
+    		\nodepart{thirteen}{$\vdots$}
+    		\nodepart{fourteen}\tiny 21
+    		\nodepart{fifteen}\tiny 22
+    		\nodepart{sixteen}\tiny 23
+    		\nodepart{seventeen}{$\vdots$}
+    		\nodepart{eighteen}
+    		\nodepart{nineteen}};
+    		
+  \end{scope}
+    \node at (-1.4,8.1) {\color{red}i};
+  \node at (-1.4,7.75) {\color{red}j};
+  \node at (-1.4,7.4) {\color{red}file};
+  \node at (-1.4,7.1) {\color{red}row};
+  \node at (-1.4,6.8) {\color{red}mtz};
+
+  \node at (0,8.6) {\footnotesize\itshape\color{blue} {$ejemplo$ $para$ $matriz$ $(2$ x $3)$}};
+  \fill[color=green] (2.7,2.15) -- (6,2.15) -- (6,1.15) -- (2.7,1.15) -- cycle;
+
+  \node [fill=green] at (0.2,1.4) {\fbox{
+						\begin{minipage}{3cm}
+							\fontsize{8pt}{8pt}\selectfont
+		 {Libero toda la memoria} \\
+		  \\
+		 {pedida con malloc} \\
+						\end{minipage}}};						  
+
+
+
+  \draw[white,-](-1.9,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; % para fijar rectangulos
+\end{tikzpicture}
+						
+  \column{0.5\textwidth}
+  \lstset{basicstyle=\tiny}
+ \begin{lstlisting}
+#include<stdio.h>
+#include <stdlib.h>
+
+int main (void)
+{
+  int file=0,row=0,i=0,j=0;
+  int **mtz;
+
+  printf("ingrese filas y columnas \n");
+  scanf("% d % d",&file,&row);
+  mtz=(int **)malloc(file*sizeof(int *));
+  for (i=0 ; i<file ; i++){
+   mtz[i]=(int *)malloc(row*sizeof(int));
+  }
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("file% d  rows% d\n",i,j);
+       scanf("% d",&mtz[i][j]);
+    }
+  }
+  printf("\n");
+  for (i=0 ; i<file ; i++){
+    for (j=0 ; j<row ; j++){
+       printf("% d \t",mtz[i][j]);
+    }
+  }
+  for (i=0 ; i<file ; i++){
+    free(mtz[i]);
+  }
+  free(mtz);
+  return (0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\end{document}
+
+i++
+  \fill[color=green] (5.3,5.1) -- (5.8,5.1) -- (5.8,4.8) -- (5.3,4.8) -- cycle;
+
+
+compara i
+  \fill[color=green] (4.2,5.1) -- (5,5.1) -- (5,4.8) -- (4.2,4.8) -- cycle;
+
+j=0
+  \fill[color=green] (3.6,4.8) -- (4.4,4.8) -- (4.4,4.55) -- (3.6,4.55) -- cycle;
+
+compara j
+  \fill[color=green] (4.4,4.8) -- (5.4,4.8) -- (5.4,4.55) -- (4.4,4.55) -- cycle;
+j++
+  \fill[color=green] (5.4,4.8) -- (5.9,4.8) -- (5.9,4.55) -- (5.4,4.55) -- cycle;
+scanf
+
+  \fill[color=green] (3.2,4.3) -- (6.4,4.3) -- (6.4,4.0) -- (3.2,4.0) -- cycle;
+
+
+  \fill[color=green] (4.4,4.8) -- (5.4,4.8) -- (5.4,4.55) -- (4.4,4.55) -- cycle;
+
+
+
+no cumple condicion
+  \node [fill=green] at (0.2,4.8) {\fbox{
+						\begin{minipage}{3cm}
+							\fontsize{8pt}{8pt}\selectfont
+		 {No cumple la condicion} \\
+		  \\
+		 {y sale del ciclo for} \\
+						\end{minipage}}};						  
+
+
+\begin{equation*}
+\begin{bmatrix}
+\color{blue}11  & \color{blue}12 & \color{blue}13 \\
+\color{blue}21 & \color{blue}22 & \color{blue}23 
+\end{bmatrix} 
+\end{equation*}

@@ -1,0 +1,848 @@
+\documentclass{beamer}
+\usepackage[latin1]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{multicol}
+\usepackage{fancybox}
+\usepackage{beamerthemeshadow}
+\usepackage{times} %font times
+\usepackage[T1]{fontenc} %para que cuando se seleccione un texto las letras acentuadad y las ñ se copien bien Usar la codificación T1
+\usepackage{enumerate}
+\usepackage{listings}
+\usepackage{calligra} 
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{caption}
+\usepackage{tikz}
+\usepackage{verbatim}
+\usepackage{mdwlist}
+\usepackage{colortbl}
+
+\usetikzlibrary{chains,fit,shapes,arrows,calc,decorations.pathreplacing}
+\usetikzlibrary{shapes.geometric,matrix,fit,backgrounds}
+
+\usefonttheme{professionalfonts}
+
+\newtheorem{defi}{Definición} 
+\hypersetup{pdfpagemode=FullScreen}
+
+\mode<presentation>{
+\usetheme{Warsaw}
+\setbeamercovered{transparent}
+}
+
+\lstset{
+	frame=Ltb,
+	framerule=0pt,
+	aboveskip=0.5cm,
+	framextopmargin=3pt,
+	framexbottommargin=3pt,
+	framexleftmargin=0.4cm,
+	framesep=0pt,
+	rulesep=.4pt,
+%	backgroundcolor=\color{gray!20},
+	rulesepcolor=\color{black},
+	language=C,
+	captionpos=b,
+	tabsize=3,
+	frame=lines,
+	keywordstyle=\color{blue},
+	commentstyle=\color{gray},
+	stringstyle=\color{red},
+	numbers=left,
+	numberstyle=\tiny,
+	numbersep=5pt,
+	breaklines=true,
+	showstringspaces=false,
+	basicstyle=\small,
+	emph={label},
+	framerule=0pt,
+}
+
+\title{\em INFORMATICA I}
+\subtitle{Practica con punteros}
+\author{\em Ing.Juan Carlos Cuttitta}
+\institute{\calligra{\fontsize{16pt}{7pt}\selectfont{Universidad Tecnológica Nacional\\ Facultad Regional Buenos Aires \\ Departamento de {Ingeniería} {Electrónica}}}}
+\date{\today}
+
+%portada
+
+\setbeamertemplate{footline}[frame number]
+%para sacar la barra que tiene beamer por defoult
+\setbeamertemplate{navigation symbols}{} 
+\begin{document}
+
+\begin{figure}[ht!]
+  \centering
+  \includegraphics [width=0.3\textwidth]{informacion.jpg}
+\end{figure}
+\vspace{-1.2cm} % para subir el titulo 
+\titlepage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\tikzstyle{every picture}+=[remember picture]
+\tikzstyle{na} = [baseline=-.5ex]
+% n°1
+\begin{frame}[fragile]
+Dada la declaración de las siguientes variables y su representación en memoria \\
+{\color{blue}int}	a , b , *p , *q , **r , **s;\\
+Complete la siguiente tabla con los valores que tomarán las variables y lo apuntado por sus contenidos en las columnas correspondientes.\\
+Cuando no sea posible indicar un valor, señalelo con el signo  {\color{red}?}  \\
+Las letras {\color{red}$\alpha$} , {\color{red}$\beta$} ,{\color{red}$\chi$} ,{\color{red}$\delta$} ,{\color{red}$\epsilon$} y {\color{red}$\phi$} simbolizan las direcciones de memoria en las que se encuentran ubicadas las variables.\\ 
+\end{frame}
+
+
+\begin{frame}[fragile]
+\begin{minipage}[t]{0.48\linewidth}
+{\normalsize Arquitectura X86-\textcolor{red}{32} bits }
+   \begin{center}
+\fontsize{6pt}{7pt}\selectfont
+   \begin{tabular}{| c | c | c | c | c | c | c | c | c | c | c | c | c |}
+    \hline
+     expresión 					& a & b & p & q & *p & *q & r & s & *r & *s & **r & **s \\ \hline 
+\multicolumn{1}{|>{\columncolor{green}}c|}{a=9 ; b=4} & \multicolumn{1}{|>{\columncolor{cyan}}c|}{9}  & \multicolumn{1}{|>{\columncolor{cyan}}c|}{4}  & \multicolumn{1}{|>{\columncolor{cyan}}c|}{?}  & \multicolumn{1}{|>{\columncolor{cyan}}c|}{?}  & \multicolumn{1}{|>{\columncolor{cyan}}c|}{?}   & \multicolumn{1}{|>{\columncolor{cyan}}c|}{?}   & \multicolumn{1}{|>{\columncolor{cyan}}c|}{?}  & \multicolumn{1}{|>{\columncolor{cyan}}c|}{?}  & \multicolumn{1}{|>{\columncolor{cyan}}c|}{?}   & \multicolumn{1}{|>{\columncolor{cyan}}c|}{?}   & \multicolumn{1}{|>{\columncolor{cyan}}c|}{?}    & \multicolumn{1}{|>{\columncolor{cyan}}c|}{?}    \\ \hline
+ 
+     p=\& a ; q=\& b  		&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     r=\& p ; s=\& q		&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     **r = *q  				&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     *p = *q + **s		   	&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     r = s ; q = p			&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     *(\& a) = *(\& b)		&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     b = a - **r + *p		&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     *p = a	   				&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     q=\& b ; r =\& p		&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     *q=*q -**s+**(\& p)	&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+   \end{tabular}	
+  \end{center}
+\end{minipage}\hfill
+
+\begin{minipage}[t]{0.48\linewidth}
+\begin{tikzpicture}
+  \begin{scope}[	every node/.style={draw,anchor=text,rectangle split,rectangle split parts=8, 
+rectangle split part fill={green!30,green!30,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.5cm}]
+    \node (R) at (4.5,2)
+    {
+    	\nodepart{one}{\footnotesize 9}
+    	\nodepart{two}{\footnotesize 4}
+    	\nodepart{three}	
+    	\nodepart{four}
+    	\nodepart{five}
+    	\nodepart{six}
+    	\nodepart{seven}{$\vdots$}
+    	\nodepart{eight}
+    };
+  \end{scope}
+
+  \node at (3,2.1) {\color{blue}$\alpha$};
+  \node at (3,1.6) {\color{blue}$\beta$};
+  \node at (3,1.2) {\color{blue}$\chi$};
+  \node at (3,0.75) {\color{blue}$\delta$};
+  \node at (3,0.3) {\color{blue}$\epsilon$};
+  \node at (3,-0.1) {\color{blue}$\phi$};
+
+  \node at (6.1,2.1) {\color{red}$a$};
+  \node at (6.1,1.6) {\color{red}$b$};
+  \node at (6.1,1.15) {\color{red}$p$};
+  \node at (6.1,0.7) {\color{red}$q$};
+  \node at (6.1,0.25) {\color{red}$r$};
+  \node at (6.1,-0.2) {\color{red}$s$};
+
+  \node at (1.1,1.1) {\footnotesize {{ direcciones de }}};
+  \node at (1.1,0.7) {\footnotesize {{ memoria}}};
+  \node at (8,2.1) {\footnotesize {{ solo almacena enteros}}};
+  \node at (8,1.6) {\footnotesize {{ solo almacena enteros}}};
+ 
+  \node at (0,2.6) {\color{white}};
+\end{tikzpicture}
+\end{minipage}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\begin{minipage}[t]{0.48\linewidth}
+{\normalsize Arquitectura X86-\textcolor{red}{32} bits }
+   \begin{center}
+\fontsize{6pt}{7pt}\selectfont
+   \begin{tabular}{| c | c | c | c | c | c | c | c | c | c | c | c | c |}
+    \hline
+     expresión 					& a & b & p & q & *p & *q & r & s & *r & *s & **r & **s \\ \hline 
+a=9 ; b=4 & 9  & 4  &  ? & ?  &  ?  & ?   & ?  & ?  & ?   & ?   & ?    & ?    \\ \hline
+ 
+\multicolumn{1}{|>{\columncolor{green}}c|}{ p=\& a ; q=\& b}  		& 9  & 4  & \multicolumn{1}{|>{\columncolor{cyan}}c|}{$\alpha$}  & \multicolumn{1}{|>{\columncolor{cyan}}c|}{$\beta$}  & \multicolumn{1}{|>{\columncolor{cyan}}c|}{9}   & \multicolumn{1}{|>{\columncolor{cyan}}c|}{4}   & \multicolumn{1}{|>{\columncolor{cyan}}c|}{?}  & \multicolumn{1}{|>{\columncolor{cyan}}c|}{?}  & \multicolumn{1}{|>{\columncolor{cyan}}c|}{?}   & \multicolumn{1}{|>{\columncolor{cyan}}c|}{?}   & \multicolumn{1}{|>{\columncolor{cyan}}c|}{?}    & \multicolumn{1}{|>{\columncolor{cyan}}c|}{?}    \\ \hline 
+     r=\& p ; s=\& q			&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     **r = *q  					&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     *p = *q + **s		   		&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     r = s ; q = p				&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     *(\& a) = *(\& b)		&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     b = a - **r + *p			&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     *p = a	   					&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     q=\& b ; r =\& p		&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     *q=*q -**s+**(\& p)	&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+   \end{tabular}	
+  \end{center}
+\end{minipage}\hfill
+
+\begin{minipage}[t]{0.48\linewidth}
+\begin{tikzpicture}
+  \begin{scope}[	every node/.style={draw,anchor=text,rectangle split,rectangle split parts=8, 
+rectangle split part fill={green!0,green!0,green!30,green!30,green!0,green!0,green!0,green!0,green!0,green!0,green!0},minimum width=2.5cm}]
+    \node (R) at (4.5,2)
+    {
+    	\nodepart{one}{\footnotesize 9}
+    	\nodepart{two}{\footnotesize 4}
+    	\nodepart{three}{\footnotesize $\alpha$}	
+    	\nodepart{four}{\footnotesize $\beta$}
+    	\nodepart{five}
+    	\nodepart{six}
+    	\nodepart{seven}{$\vdots$}
+    	\nodepart{eight}
+    };
+  \end{scope}
+
+  \node at (3,2.1) {\color{blue}$\alpha$};
+  \node at (3,1.6) {\color{blue}$\beta$};
+  \node at (3,1.2) {\color{blue}$\chi$};
+  \node at (3,0.75) {\color{blue}$\delta$};
+  \node at (3,0.3) {\color{blue}$\epsilon$};
+  \node at (3,-0.1) {\color{blue}$\phi$};
+
+  \node at (6.1,2.1) {\color{red}$a$};
+  \node at (6.1,1.6) {\color{red}$b$};
+  \node at (6.1,1.15) {\color{red}$p$};
+  \node at (6.1,0.7) {\color{red}$q$};
+  \node at (6.1,0.25) {\color{red}$r$};
+  \node at (6.1,-0.2) {\color{red}$s$};
+
+  \node at (1.1,1.1) {\footnotesize {{ direcciones de }}};
+  \node at (1.1,0.7) {\footnotesize {{ memoria}}};
+
+  \draw[decorate,decoration={brace,raise=3pt,amplitude=3pt},thick] (6.4,1.3) -- (6.4,0.4) node [black,midway,xshift=1.6cm,yshift=0cm]{\tiny solo almacena direcciones};
+  \draw[red,->](4,1.2)to [out=180,in=180]node[right,midway]{} ++(-0.1,0.91) ; 
+  \node at (7.9,0.6) {\tiny {{ que apuntan a un entero}}};
+
+  \node at (0,2.6) {\color{white}};
+\end{tikzpicture}
+\end{minipage}
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{minipage}[t]{0.48\linewidth}
+{\normalsize Arquitectura X86-\textcolor{red}{32} bits }
+   \begin{center}
+\fontsize{6pt}{7pt}\selectfont
+   \begin{tabular}{| c | c | c | c | c | c | c | c | c | c | c | c | c |}
+    \hline
+     expresión 					& a & b & p & q & *p & *q & r & s & *r & *s & **r & **s \\ \hline 
+a=9 ; b=4 & 9  & 4  & ?  &  ? & ?   & ?   & ?  & ?  &  ?  &  ?  & ?    & ?    \\ \hline
+ 
+ p=\& a ; q=\& b  		& 9  & 4  & $\alpha$  & $\beta$  &  9  & 4   & ?  & ?  & ?   & ?   & ?    & ?    \\ \hline 
+\multicolumn{1}{|>{\columncolor{green}}c|}{r=\& p ; s=\& q}			& 9  & 4 & {$\alpha$}  & {$\beta$}  & 9   & 4    & \multicolumn{1}{|>{\columncolor{cyan}}c|}{$\chi$}  & \multicolumn{1}{|>{\columncolor{cyan}}c|}{$\delta$}  & \multicolumn{1}{|>{\columncolor{cyan}}c|}{$\alpha$}   & \multicolumn{1}{|>{\columncolor{cyan}}c|}{$\beta$}   & \multicolumn{1}{|>{\columncolor{cyan}}c|}{9}    & \multicolumn{1}{|>{\columncolor{cyan}}c|}{4}    \\ \hline 
+     **r = *q  					&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     *p = *q + **s		   		&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     r = s ; q = p				&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     *(\& a) = *(\& b)		&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     b = a - **r + *p			&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     *p = a	   					&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     q=\& b ; r =\& p		&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     *q=*q -**s+**(\& p)	&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+   \end{tabular}	
+  \end{center}
+\end{minipage}\hfill
+
+\begin{minipage}[t]{0.48\linewidth}
+\begin{tikzpicture}
+  \begin{scope}[	every node/.style={draw,anchor=text,rectangle split,rectangle split parts=8, 
+rectangle split part fill={green!0,green!0,green!0,green!0,green!30,green!30,green!0,green!0,green!0,green!0,green!0},minimum width=2.5cm}]
+    \node (R) at (4.5,2)
+    {
+    	\nodepart{one}{\footnotesize 9}
+    	\nodepart{two}{\footnotesize 4}
+    	\nodepart{three}{\footnotesize $\alpha$}	
+    	\nodepart{four}{\footnotesize $\beta$}
+    	\nodepart{five}{\footnotesize $\chi$}
+    	\nodepart{six}{\footnotesize $\delta$}
+    	\nodepart{seven}{$\vdots$}
+    	\nodepart{eight}
+    };
+  \end{scope}
+
+  \node at (3,2.1) {\color{blue}$\alpha$};
+  \node at (3,1.6) {\color{blue}$\beta$};
+  \node at (3,1.2) {\color{blue}$\chi$};
+  \node at (3,0.75) {\color{blue}$\delta$};
+  \node at (3,0.3) {\color{blue}$\epsilon$};
+  \node at (3,-0.1) {\color{blue}$\phi$};
+
+  \node at (6.1,2.1) {\color{red}$a$};
+  \node at (6.1,1.6) {\color{red}$b$};
+  \node at (6.1,1.15) {\color{red}$p$};
+  \node at (6.1,0.7) {\color{red}$q$};
+  \node at (6.1,0.25) {\color{red}$r$};
+  \node at (6.1,-0.2) {\color{red}$s$};
+
+  \node at (1.1,1.1) {\footnotesize {{ direcciones de }}};
+  \node at (1.1,0.7) {\footnotesize {{ memoria}}};
+
+  \draw[decorate,decoration={brace,raise=3pt,amplitude=3pt},thick] (6.4,0.4) -- (6.4,-0.5) node [black,midway,xshift=1.6cm,yshift=0.3cm]{\tiny solo almacena direcciones};
+  \node at (8.05,0.0) {\tiny {{ que apuntan a otra dirección}}};
+  \node at (8.35,-0.23) {\tiny {{ y esa dirección apunta a un entero}}};
+  
+  \draw[red,->](4,0.1)to [out=180,in=180]node[right,midway]{} ++(-1.3,1.1) ; 
+  \draw[red,->](4,1.2)to [out=180,in=180]node[right,midway]{} ++(-0.1,0.91) ; 
+
+ 
+  \node at (0,2.6) {\color{white}};
+\end{tikzpicture}
+\end{minipage}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\begin{minipage}[t]{0.48\linewidth}
+{\normalsize Arquitectura X86-\textcolor{red}{32} bits }
+   \begin{center}
+\fontsize{6pt}{7pt}\selectfont
+   \begin{tabular}{| c | c | c | c | c | c | c | c | c | c | c | c | c |}
+    \hline
+     expresión 					& a & b & p & q & *p & *q & r & s & *r & *s & **r & **s \\ \hline 
+a=9 ; b=4 & 9  & 4  & ?  & ?  & ?   & ?   & ?  & ?  & ?   & ?   & ?    & ?    \\ \hline
+ 
+ p=\& a ; q=\& b  		& 9  & 4  & $\alpha$  & $\beta$  &  9  & 4   &  ? & ?  & ?   & ?   & ?    & ?    \\ \hline 
+
+r=\& p ; s=\& q			& 9  & 4 & {$\alpha$}  & {$\beta$}  & 9   & 4    & {$\chi$}  & {$\delta$}  & {$\alpha$}   & {$\beta$}   & 9    & 4    \\ \hline 
+
+\multicolumn{1}{|>{\columncolor{green}}c|}{**r = *q}	& \multicolumn{1}{|>{\columncolor{cyan}}c|}{4}  & 4  & $\alpha$  & $\beta$  &  \multicolumn{1}{|>{\columncolor{cyan}}c|}{4}  & 4 &$\chi$  & $\delta$  & $\alpha$  & $\beta$   & \multicolumn{1}{|>{\columncolor{cyan}}c|}{4}   &  4        \\ \hline 
+     *p = *q + **s		   		&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     r = s ; q = p				&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     *(\& a) = *(\& b)		&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     b = a - **r + *p			&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     *p = a	   					&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     q=\& b ; r =\& p		&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     *q=*q -**s+**(\& p)	&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+   \end{tabular}	
+  \end{center}
+\end{minipage}\hfill
+
+\begin{minipage}[t]{0.48\linewidth}
+\begin{tikzpicture}
+  \begin{scope}[	every node/.style={draw,anchor=text,rectangle split,rectangle split parts=8, 
+rectangle split part fill={green!30,green!0,green!0,green!0,green!0,green!0,green!0,green!0,green!0,green!0,green!0},minimum width=2.5cm}]
+    \node (R) at (4.5,2)
+    {
+    	\nodepart{one}{\footnotesize 4}
+    	\nodepart{two}{\footnotesize 4}
+    	\nodepart{three}{\footnotesize $\alpha$}	
+    	\nodepart{four}{\footnotesize $\beta$}
+    	\nodepart{five}{\footnotesize $\chi$}
+    	\nodepart{six}{\footnotesize $\delta$}
+    	\nodepart{seven}{$\vdots$}
+    	\nodepart{eight}
+    };
+  \end{scope}
+
+  \node at (3,2.1) {\color{blue}$\alpha$};
+  \node at (3,1.6) {\color{blue}$\beta$};
+  \node at (3,1.2) {\color{blue}$\chi$};
+  \node at (3,0.75) {\color{blue}$\delta$};
+  \node at (3,0.3) {\color{blue}$\epsilon$};
+  \node at (3,-0.1) {\color{blue}$\phi$};
+
+  \node at (6.1,2.1) {\color{red}$a$};
+  \node at (6.1,1.6) {\color{red}$b$};
+  \node at (6.1,1.15) {\color{red}$p$};
+  \node at (6.1,0.7) {\color{red}$q$};
+  \node at (6.1,0.25) {\color{red}$r$};
+  \node at (6.1,-0.2) {\color{red}$s$};
+
+  \node at (1.1,1.1) {\footnotesize {{ direcciones de }}};
+  \node at (1.1,0.7) {\footnotesize {{ memoria}}};
+  \node at (8,0.7) {\footnotesize {{ variables}}};
+ 
+  \node at (0,2.6) {\color{white}};
+\end{tikzpicture}
+\end{minipage}
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{minipage}[t]{0.48\linewidth}
+{\normalsize Arquitectura X86-\textcolor{red}{32} bits }
+   \begin{center}
+\fontsize{6pt}{7pt}\selectfont
+   \begin{tabular}{| c | c | c | c | c | c | c | c | c | c | c | c | c |}
+    \hline
+     expresión 					& a & b & p & q & *p & *q & r & s & *r & *s & **r & **s \\ \hline 
+a=9 ; b=4 & 9  & 4  &  ? & ?  & ?   & ?   & ?  & ?  & ?   &  ?  &  ?   & ?    \\ \hline
+ 
+ p=\& a ; q=\& b  		& 9  & 4  & $\alpha$  & $\beta$  &  9  & 4   & ?  & ?  & ?   & ?   &  ?   & ?    \\ \hline 
+
+r=\& p ; s=\& q			& 9  & 4 & {$\alpha$}  & {$\beta$}  & 9   & 4    & {$\chi$}  & {$\delta$}  & {$\alpha$}   & {$\beta$}   & 9    & 4    \\ \hline 
+
+**r = *q	& 4  & 4  & $\alpha$  & $\beta$  &  4  & 4 &$\chi$  & $\delta$  & $\alpha$  & $\beta$   & 4   &  4        \\ \hline 
+
+\multicolumn{1}{|>{\columncolor{green}}c|}{*p = *q + **s}	& \multicolumn{1}{|>{\columncolor{cyan}}c|}{8}  & 4  & $\alpha$  & $\beta$  & \multicolumn{1}{|>{\columncolor{cyan}}c|}{8}  & 4   & $\chi$  & $\delta$  & $\alpha$   & $\beta$   &  \multicolumn{1}{|>{\columncolor{cyan}}c|}{8}   & 4    \\ \hline 
+     r = s ; q = p				&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     *(\& a) = *(\& b)		&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     b = a - **r + *p			&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     *p = a	   					&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     q=\& b ; r =\& p		&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     *q=*q -**s+**(\& p)	&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+   \end{tabular}	
+  \end{center}
+\end{minipage}\hfill
+
+\begin{minipage}[t]{0.48\linewidth}
+\begin{tikzpicture}
+  \begin{scope}[	every node/.style={draw,anchor=text,rectangle split,rectangle split parts=8, 
+rectangle split part fill={green!30,green!0,green!0,green!0,green!0,green!0,green!0,green!0,green!0,green!0,green!0},minimum width=2.5cm}]
+    \node (R) at (4.5,2)
+    {
+    	\nodepart{one}{\footnotesize 8}
+    	\nodepart{two}{\footnotesize 4}
+    	\nodepart{three}{\footnotesize $\alpha$}	
+    	\nodepart{four}{\footnotesize $\beta$}
+    	\nodepart{five}{\footnotesize $\chi$}
+    	\nodepart{six}{\footnotesize $\delta$}
+    	\nodepart{seven}{$\vdots$}
+    	\nodepart{eight}
+    };
+  \end{scope}
+
+  \node at (3,2.1) {\color{blue}$\alpha$};
+  \node at (3,1.6) {\color{blue}$\beta$};
+  \node at (3,1.2) {\color{blue}$\chi$};
+  \node at (3,0.75) {\color{blue}$\delta$};
+  \node at (3,0.3) {\color{blue}$\epsilon$};
+  \node at (3,-0.1) {\color{blue}$\phi$};
+
+  \node at (6.1,2.1) {\color{red}$a$};
+  \node at (6.1,1.6) {\color{red}$b$};
+  \node at (6.1,1.15) {\color{red}$p$};
+  \node at (6.1,0.7) {\color{red}$q$};
+  \node at (6.1,0.25) {\color{red}$r$};
+  \node at (6.1,-0.2) {\color{red}$s$};
+
+  \node at (1.1,1.1) {\footnotesize {{ direcciones de }}};
+  \node at (1.1,0.7) {\footnotesize {{ memoria}}};
+  \node at (8,0.7) {\footnotesize {{ variables}}};
+ 
+  \node at (0,2.6) {\color{white}};
+\end{tikzpicture}
+\end{minipage}
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{minipage}[t]{0.48\linewidth}
+{\normalsize Arquitectura X86-\textcolor{red}{32} bits }
+   \begin{center}
+\fontsize{6pt}{7pt}\selectfont
+   \begin{tabular}{| c | c | c | c | c | c | c | c | c | c | c | c | c |}
+    \hline
+     expresión 					& a & b & p & q & *p & *q & r & s & *r & *s & **r & **s \\ \hline 
+a=9 ; b=4 & 9  & 4  & ?  & ?  & ?   & ?   & ?  & ?  & ?   & ?   & ?    & ?    \\ \hline
+ 
+ p=\& a ; q=\& b  		& 9  & 4  & $\alpha$  & $\beta$  &  9  & 4   & ?  & ?  & ?   & ?   & ?    & ?    \\ \hline 
+
+r=\& p ; s=\& q			& 9  & 4 & {$\alpha$}  & {$\beta$}  & 9   & 4    & {$\chi$}  & {$\delta$}  & {$\alpha$}   & {$\beta$}   & 9    & 4    \\ \hline 
+
+**r = *q	& 4  & 4  & $\alpha$  & $\beta$  &  4  & 4 &$\chi$  & $\delta$  & $\alpha$  & $\beta$   & 4   &  4        \\ \hline 
+
+*p = *q + **s	& 8  & 4  & $\alpha$  & $\beta$  & 8  & 4   & $\chi$  & $\delta$  & $\alpha$   & $\beta$   &  8   & 4    \\ \hline 
+
+\multicolumn{1}{|>{\columncolor{green}}c|}{r = s ; q = p}	& 8  & 4  & $\alpha$  & \multicolumn{1}{|>{\columncolor{cyan}}c|}{$\alpha$}  & 8  & \multicolumn{1}{|>{\columncolor{cyan}}c|}{8}   & \multicolumn{1}{|>{\columncolor{cyan}}c|}{$\delta$}  & $\delta$  & $\alpha$   & \multicolumn{1}{|>{\columncolor{cyan}}c|}{$\alpha$}   & 8   & \multicolumn{1}{|>{\columncolor{cyan}}c|}{8}    \\ \hline 
+
+     *(\& a) = *(\& b)		&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     b = a - **r + *p			&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     *p = a	   					&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     q=\& b ; r =\& p		&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     *q=*q -**s+**(\& p)	&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+   \end{tabular}	
+  \end{center}
+\end{minipage}\hfill
+
+\begin{minipage}[t]{0.48\linewidth}
+\begin{tikzpicture}
+  \begin{scope}[	every node/.style={draw,anchor=text,rectangle split,rectangle split parts=8, 
+rectangle split part fill={green!0,green!0,green!0,green!30,green!30,green!0,green!0,green!0,green!0,green!0,green!0},minimum width=2.5cm}]
+    \node (R) at (4.5,2)
+    {
+    	\nodepart{one}{\footnotesize 8}
+    	\nodepart{two}{\footnotesize 4}
+    	\nodepart{three}{\footnotesize $\alpha$}	
+    	\nodepart{four}{\footnotesize $\alpha$}
+    	\nodepart{five}{\footnotesize $\delta$}
+    	\nodepart{six}{\footnotesize $\delta$}
+    	\nodepart{seven}{$\vdots$}
+    	\nodepart{eight}
+    };
+  \end{scope}
+
+  \node at (3,2.1) {\color{blue}$\alpha$};
+  \node at (3,1.6) {\color{blue}$\beta$};
+  \node at (3,1.2) {\color{blue}$\chi$};
+  \node at (3,0.75) {\color{blue}$\delta$};
+  \node at (3,0.3) {\color{blue}$\epsilon$};
+  \node at (3,-0.1) {\color{blue}$\phi$};
+
+  \node at (6.1,2.1) {\color{red}$a$};
+  \node at (6.1,1.6) {\color{red}$b$};
+  \node at (6.1,1.15) {\color{red}$p$};
+  \node at (6.1,0.7) {\color{red}$q$};
+  \node at (6.1,0.25) {\color{red}$r$};
+  \node at (6.1,-0.2) {\color{red}$s$};
+
+  \node at (1.1,1.1) {\footnotesize {{ direcciones de }}};
+  \node at (1.1,0.7) {\footnotesize {{ memoria}}};
+  \node at (8,0.7) {\footnotesize {{ variables}}};
+ 
+  \node at (0,2.6) {\color{white}};
+\end{tikzpicture}
+\end{minipage}
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{minipage}[t]{0.48\linewidth}
+{\normalsize Arquitectura X86-\textcolor{red}{32} bits }
+   \begin{center}
+\fontsize{6pt}{7pt}\selectfont
+   \begin{tabular}{| c | c | c | c | c | c | c | c | c | c | c | c | c |}
+    \hline
+     expresión 					& a & b & p & q & *p & *q & r & s & *r & *s & **r & **s \\ \hline 
+a=9 ; b=4 & 9  & 4  &  ? & ?  & ?   & ?   & ?  & ?  & ?   & ?   & ?    & ?    \\ \hline
+ p=\& a ; q=\& b  		& 9  & 4  & $\alpha$  & $\beta$  &  9  & 4   & ?  & ?  &  ?  & ?   & ?    & ?    \\ \hline 
+r=\& p ; s=\& q			& 9  & 4 & {$\alpha$}  & {$\beta$}  & 9   & 4    & {$\chi$}  & {$\delta$}  & {$\alpha$}   & {$\beta$}   & 9    & 4    \\ \hline 
+**r = *q	& 4  & 4  & $\alpha$  & $\beta$  &  4  & 4 &$\chi$  & $\delta$  & $\alpha$  & $\beta$   & 4   &  4        \\ \hline 
+*p = *q + **s	& 8  & 4  & $\alpha$  & $\beta$  & 8  & 4   & $\chi$  & $\delta$  & $\alpha$   & $\beta$   &  8   & 4    \\ \hline 
+
+r = s ; q = p	& 8  & 4  & $\alpha$  & {$\alpha$}  & 8  & 8   & {$\delta$}  & $\delta$  & $\alpha$   & $\alpha$   & 8   & 8    \\ \hline 
+
+\multicolumn{1}{|>{\columncolor{green}}c|}{*(\& a) = *(\& b)}	& \multicolumn{1}{|>{\columncolor{cyan}}c|}{4}  & 4  & $\alpha$  & {$\alpha$}  & \multicolumn{1}{|>{\columncolor{cyan}}c|}{4}  & \multicolumn{1}{|>{\columncolor{cyan}}c|}{4}   & {$\delta$}  & $\delta$  & $\alpha$   & $\alpha$   & \multicolumn{1}{|>{\columncolor{cyan}}c|}{4}   & \multicolumn{1}{|>{\columncolor{cyan}}c|}{4}    \\ \hline 
+
+     b = a - **r + *p			&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     *p = a	   					&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     q=\& b ; r =\& p		&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     *q=*q -**s+**(\& p)	&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+   \end{tabular}	
+  \end{center}
+\end{minipage}\hfill
+
+\begin{minipage}[t]{0.48\linewidth}
+\begin{tikzpicture}
+  \begin{scope}[	every node/.style={draw,anchor=text,rectangle split,rectangle split parts=8, 
+rectangle split part fill={green!30,green!0,green!0,green!0,green!0,green!0,green!0,green!0,green!0,green!0,green!0},minimum width=2.5cm}]
+    \node (R) at (4.5,2)
+    {
+    	\nodepart{one}{\footnotesize 4}
+    	\nodepart{two}{\footnotesize 4}
+    	\nodepart{three}{\footnotesize $\alpha$}	
+    	\nodepart{four}{\footnotesize $\alpha$}
+    	\nodepart{five}{\footnotesize $\delta$}
+    	\nodepart{six}{\footnotesize $\delta$}
+    	\nodepart{seven}{$\vdots$}
+    	\nodepart{eight}
+    };
+  \end{scope}
+
+  \node at (3,2.1) {\color{blue}$\alpha$};
+  \node at (3,1.6) {\color{blue}$\beta$};
+  \node at (3,1.2) {\color{blue}$\chi$};
+  \node at (3,0.75) {\color{blue}$\delta$};
+  \node at (3,0.3) {\color{blue}$\epsilon$};
+  \node at (3,-0.1) {\color{blue}$\phi$};
+
+  \node at (6.1,2.1) {\color{red}$a$};
+  \node at (6.1,1.6) {\color{red}$b$};
+  \node at (6.1,1.15) {\color{red}$p$};
+  \node at (6.1,0.7) {\color{red}$q$};
+  \node at (6.1,0.25) {\color{red}$r$};
+  \node at (6.1,-0.2) {\color{red}$s$};
+
+  \node at (1.1,1.1) {\footnotesize {{ direcciones de }}};
+  \node at (1.1,0.7) {\footnotesize {{ memoria}}};
+  \node at (8,0.7) {\footnotesize {{ variables}}};
+ 
+  \node at (0,2.6) {\color{white}};
+\end{tikzpicture}
+\end{minipage}
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{minipage}[t]{0.48\linewidth}
+{\normalsize Arquitectura X86-\textcolor{red}{32} bits }
+   \begin{center}
+\fontsize{6pt}{7pt}\selectfont
+   \begin{tabular}{| c | c | c | c | c | c | c | c | c | c | c | c | c |}
+    \hline
+     expresión 					& a & b & p & q & *p & *q & r & s & *r & *s & **r & **s \\ \hline 
+a=9 ; b=4 & 9  & 4  &  ? & ?  & ?   & ?   & ?  & ?  & ?   & ?   & ?    & ?    \\ \hline
+ p=\& a ; q=\& b  		& 9  & 4  & $\alpha$  & $\beta$  &  9  & 4   & ?  & ?  & ?   & ?   & ?    & ?    \\ \hline 
+r=\& p ; s=\& q			& 9  & 4 & {$\alpha$}  & {$\beta$}  & 9   & 4    & {$\chi$}  & {$\delta$}  & {$\alpha$}   & {$\beta$}   & 9    & 4    \\ \hline 
+**r = *q	& 4  & 4  & $\alpha$  & $\beta$  &  4  & 4 &$\chi$  & $\delta$  & $\alpha$  & $\beta$   & 4   &  4        \\ \hline 
+*p = *q + **s	& 8  & 4  & $\alpha$  & $\beta$  & 8  & 4   & $\chi$  & $\delta$  & $\alpha$   & $\beta$   &  8   & 4    \\ \hline 
+
+r = s ; q = p	& 8  & 4  & $\alpha$  & {$\alpha$}  & 8  & 8   & {$\delta$}  & $\delta$  & $\alpha$   & $\alpha$   & 8   & 8    \\ \hline 
+
+*(\& a) = *(\& b)	& 4  & 4  & $\alpha$  & {$\alpha$}  & 4  & 4   & {$\delta$}  & $\delta$  & $\alpha$   & $\alpha$   & 4   & 4    \\ \hline 
+
+\multicolumn{1}{|>{\columncolor{green}}c|}{b = a - **r + *p}	& 4  & \multicolumn{1}{|>{\columncolor{cyan}}c|}{4}  & $\alpha$  & {$\alpha$}  & 4  & 4   & {$\delta$}  & $\delta$  & $\alpha$   & $\alpha$   & 4   & 4    \\ \hline 
+
+     *p = a	   					&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     q=\& b ; r =\& p		&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     *q=*q -**s+**(\& p)	&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+   \end{tabular}	
+  \end{center}
+\end{minipage}\hfill
+
+\begin{minipage}[t]{0.48\linewidth}
+\begin{tikzpicture}
+  \begin{scope}[	every node/.style={draw,anchor=text,rectangle split,rectangle split parts=8, 
+rectangle split part fill={green!0,green!0,green!0,green!0,green!0,green!0,green!0,green!0,green!0,green!0,green!0},minimum width=2.5cm}]
+    \node (R) at (4.5,2)
+    {
+    	\nodepart{one}{\footnotesize 4}
+    	\nodepart{two}{\footnotesize 4}
+    	\nodepart{three}{\footnotesize $\alpha$}	
+    	\nodepart{four}{\footnotesize $\alpha$}
+    	\nodepart{five}{\footnotesize $\delta$}
+    	\nodepart{six}{\footnotesize $\delta$}
+    	\nodepart{seven}{$\vdots$}
+    	\nodepart{eight}
+    };
+  \end{scope}
+
+  \node at (3,2.1) {\color{blue}$\alpha$};
+  \node at (3,1.6) {\color{blue}$\beta$};
+  \node at (3,1.2) {\color{blue}$\chi$};
+  \node at (3,0.75) {\color{blue}$\delta$};
+  \node at (3,0.3) {\color{blue}$\epsilon$};
+  \node at (3,-0.1) {\color{blue}$\phi$};
+
+  \node at (6.1,2.1) {\color{red}$a$};
+  \node at (6.1,1.6) {\color{red}$b$};
+  \node at (6.1,1.15) {\color{red}$p$};
+  \node at (6.1,0.7) {\color{red}$q$};
+  \node at (6.1,0.25) {\color{red}$r$};
+  \node at (6.1,-0.2) {\color{red}$s$};
+
+  \node at (1.1,1.1) {\footnotesize {{ direcciones de }}};
+  \node at (1.1,0.7) {\footnotesize {{ memoria}}};
+  \node at (8,0.7) {\footnotesize {{ variables}}};
+
+ 
+  \node at (0,2.6) {\color{white}};
+\end{tikzpicture}
+\end{minipage}
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{minipage}[t]{0.48\linewidth}
+{\normalsize Arquitectura X86-\textcolor{red}{32} bits }
+   \begin{center}
+\fontsize{6pt}{7pt}\selectfont
+   \begin{tabular}{| c | c | c | c | c | c | c | c | c | c | c | c | c |}
+    \hline
+     expresión 					& a & b & p & q & *p & *q & r & s & *r & *s & **r & **s \\ \hline 
+a=9 ; b=4 & 9  & 4  &   &  ? & ?   & ?   & ?  & ?  & ?   & ?   & ?    & ?    \\ \hline
+ p=\& a ; q=\& b  		& 9  & 4  & $\alpha$  & $\beta$  &  9  & 4   &  ? & ?  & ?   & ?   & ?    & ?    \\ \hline 
+r=\& p ; s=\& q			& 9  & 4 & {$\alpha$}  & {$\beta$}  & 9   & 4    & {$\chi$}  & {$\delta$}  & {$\alpha$}   & {$\beta$}   & 9    & 4    \\ \hline 
+**r = *q	& 4  & 4  & $\alpha$  & $\beta$  &  4  & 4 &$\chi$  & $\delta$  & $\alpha$  & $\beta$   & 4   &  4        \\ \hline 
+*p = *q + **s	& 8  & 4  & $\alpha$  & $\beta$  & 8  & 4   & $\chi$  & $\delta$  & $\alpha$   & $\beta$   &  8   & 4    \\ \hline 
+
+r = s ; q = p	& 8  & 4  & $\alpha$  & {$\alpha$}  & 8  & 8   & {$\delta$}  & $\delta$  & $\alpha$   & $\alpha$   & 8   & 8    \\ \hline 
+
+*(\& a) = *(\& b)	& 4  & 4  & $\alpha$  & {$\alpha$}  & 4  & 4   & {$\delta$}  & $\delta$  & $\alpha$   & $\alpha$   & 4   & 4    \\ \hline 
+
+b = a - **r + *p	& 4  & 4  & $\alpha$  & {$\alpha$}  & 4  & 4   & {$\delta$}  & $\delta$  & $\alpha$   & $\alpha$   & 4   & 4    \\ \hline 
+
+\multicolumn{1}{|>{\columncolor{green}}c|}{*p = a}	& 4  & 4  & $\alpha$  & {$\alpha$}  & 4  & 4   & $\delta$  & $\delta$  & $\alpha$   & $\alpha$   & 4   & 4   \\ \hline  
+
+     q=\& b ; r =\& p		&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+     *q=*q -**s+**(\& p)	&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+   \end{tabular}	
+  \end{center}
+
+
+
+\end{minipage}\hfill
+
+\begin{minipage}[t]{0.48\linewidth}
+\begin{tikzpicture}
+  \begin{scope}[	every node/.style={draw,anchor=text,rectangle split,rectangle split parts=8, 
+rectangle split part fill={green!30,green!0,green!0,green!0,green!0,green!0,green!0,green!0,green!0,green!0,green!0},minimum width=2.5cm}]
+    \node (R) at (4.5,2)
+    {
+    	\nodepart{one}{\footnotesize 4}
+    	\nodepart{two}{\footnotesize 4}
+    	\nodepart{three}{\footnotesize $\alpha$}	
+    	\nodepart{four}{\footnotesize $\alpha$}
+    	\nodepart{five}{\footnotesize $\delta$}
+    	\nodepart{six}{\footnotesize $\delta$}
+    	\nodepart{seven}{$\vdots$}
+    	\nodepart{eight}
+    };
+  \end{scope}
+
+  \node at (3,2.1) {\color{blue}$\alpha$};
+  \node at (3,1.6) {\color{blue}$\beta$};
+  \node at (3,1.2) {\color{blue}$\chi$};
+  \node at (3,0.75) {\color{blue}$\delta$};
+  \node at (3,0.3) {\color{blue}$\epsilon$};
+  \node at (3,-0.1) {\color{blue}$\phi$};
+
+  \node at (6.1,2.1) {\color{red}$a$};
+  \node at (6.1,1.6) {\color{red}$b$};
+  \node at (6.1,1.15) {\color{red}$p$};
+  \node at (6.1,0.7) {\color{red}$q$};
+  \node at (6.1,0.25) {\color{red}$r$};
+  \node at (6.1,-0.2) {\color{red}$s$};
+
+  \node at (1.1,1.1) {\footnotesize {{ direcciones de }}};
+  \node at (1.1,0.7) {\footnotesize {{ memoria}}};
+  \node at (8,0.7) {\footnotesize {{ variables}}};
+  \node at (10,2.7) {\footnotesize \color{blue}NADA CAMBIA !!};
+ 
+  \node at (0,2.6) {\color{white}};
+\end{tikzpicture}
+\end{minipage}
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{minipage}[t]{0.48\linewidth}
+{\normalsize Arquitectura X86-\textcolor{red}{32} bits }
+   \begin{center}
+\fontsize{6pt}{7pt}\selectfont
+   \begin{tabular}{| c | c | c | c | c | c | c | c | c | c | c | c | c |}
+    \hline
+     expresión 					& a & b & p & q & *p & *q & r & s & *r & *s & **r & **s \\ \hline 
+a=9 ; b=4 & 9  & 4  & ?  & ?  & ?   & ?   & ?  & ?  & ?   & ?   & ?    & ?    \\ \hline
+ p=\& a ; q=\& b  		& 9  & 4  & $\alpha$  & $\beta$  &  9  & 4   & ?  & ?  & ?   & ?   & ?    & ?    \\ \hline 
+r=\& p ; s=\& q			& 9  & 4 & {$\alpha$}  & {$\beta$}  & 9   & 4    & {$\chi$}  & {$\delta$}  & {$\alpha$}   & {$\beta$}   & 9    & 4    \\ \hline 
+**r = *q	& 4  & 4  & $\alpha$  & $\beta$  &  4  & 4 &$\chi$  & $\delta$  & $\alpha$  & $\beta$   & 4   &  4        \\ \hline 
+*p = *q + **s	& 8  & 4  & $\alpha$  & $\beta$  & 8  & 4   & $\chi$  & $\delta$  & $\alpha$   & $\beta$   &  8   & 4    \\ \hline 
+
+r = s ; q = p	& 8  & 4  & $\alpha$  & {$\alpha$}  & 8  & 8   & {$\delta$}  & $\delta$  & $\alpha$   & $\alpha$   & 8   & 8    \\ \hline 
+
+*(\& a) = *(\& b)	& 4  & 4  & $\alpha$  & {$\alpha$}  & 4  & 4   & {$\delta$}  & $\delta$  & $\alpha$   & $\alpha$   & 4   & 4    \\ \hline 
+
+b = a - **r + *p	& 4  & 4  & $\alpha$  & {$\alpha$}  & 4  & 4   & {$\delta$}  & $\delta$  & $\alpha$   & $\alpha$   & 4   & 4    \\ \hline 
+
+*p = a	& 4  & 4  & $\alpha$  & {$\alpha$}  & 4  & 4   & {$\delta$}  & $\delta$  & $\alpha$   & $\alpha$   & 4   & 4    \\ \hline 
+
+\multicolumn{1}{|>{\columncolor{green}}c|}{q=\& b ; r =\& p}	& 4  & 4  & $\alpha$  & \multicolumn{1}{|>{\columncolor{cyan}}c|}{$\beta$}  & 4  & \multicolumn{1}{|>{\columncolor{cyan}}c|}{4}   & \multicolumn{1}{|>{\columncolor{cyan}}c|}{$\chi$}  & $\delta$  & \multicolumn{1}{|>{\columncolor{cyan}}c|}{$\alpha$}   & \multicolumn{1}{|>{\columncolor{cyan}}c|}{$\beta$}   & \multicolumn{1}{|>{\columncolor{cyan}}c|}{4}   & \multicolumn{1}{|>{\columncolor{cyan}}c|}{4}    \\ \hline 
+
+     *q=*q -**s+**(\& p)	&   &   &   &   &    &    &   &   &    &    &     &     \\ \hline 
+   \end{tabular}	
+  \end{center}
+\end{minipage}\hfill
+
+\begin{minipage}[t]{0.48\linewidth}
+\begin{tikzpicture}
+  \begin{scope}[	every node/.style={draw,anchor=text,rectangle split,rectangle split parts=8, 
+rectangle split part fill={green!0,green!0,green!0,green!30,green!30,green!0,green!0,green!0,green!0,green!0,green!0},minimum width=2.5cm}]
+    \node (R) at (4.5,2)
+    {
+    	\nodepart{one}{\footnotesize 4}
+    	\nodepart{two}{\footnotesize 4}
+    	\nodepart{three}{\footnotesize $\alpha$}	
+    	\nodepart{four}{\footnotesize $\beta$}
+    	\nodepart{five}{\footnotesize $\chi$}
+    	\nodepart{six}{\footnotesize $\delta$}
+    	\nodepart{seven}{$\vdots$}
+    	\nodepart{eight}
+    };
+  \end{scope}
+
+  \node at (3,2.1) {\color{blue}$\alpha$};
+  \node at (3,1.6) {\color{blue}$\beta$};
+  \node at (3,1.2) {\color{blue}$\chi$};
+  \node at (3,0.75) {\color{blue}$\delta$};
+  \node at (3,0.3) {\color{blue}$\epsilon$};
+  \node at (3,-0.1) {\color{blue}$\phi$};
+
+  \node at (6.1,2.1) {\color{red}$a$};
+  \node at (6.1,1.6) {\color{red}$b$};
+  \node at (6.1,1.15) {\color{red}$p$};
+  \node at (6.1,0.7) {\color{red}$q$};
+  \node at (6.1,0.25) {\color{red}$r$};
+  \node at (6.1,-0.2) {\color{red}$s$};
+
+  \node at (1.1,1.1) {\footnotesize {{ direcciones de }}};
+  \node at (1.1,0.7) {\footnotesize {{ memoria}}};
+  \node at (8,0.7) {\footnotesize {{ variables}}};
+ 
+  \node at (0,2.6) {\color{white}};
+\end{tikzpicture}
+\end{minipage}
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{minipage}[t]{0.48\linewidth}
+{\normalsize Arquitectura X86-\textcolor{red}{32} bits }
+   \begin{center}
+\fontsize{6pt}{7pt}\selectfont
+   \begin{tabular}{| c | c | c | c | c | c | c | c | c | c | c | c | c |}
+    \hline
+     expresión 					& a & b & p & q & *p & *q & r & s & *r & *s & **r & **s \\ \hline 
+a=9 ; b=4 & 9  & 4  & ?  & ?  & ?   & ?   & ?  & ?  & ?   & ?   & ?    & ?    \\ \hline
+ p=\& a ; q=\& b  		& 9  & 4  & $\alpha$  & $\beta$  &  9  & 4   & ?  & ?  & ?   & ?   & ?    & ?    \\ \hline 
+r=\& p ; s=\& q			& 9  & 4 & {$\alpha$}  & {$\beta$}  & 9   & 4    & {$\chi$}  & {$\delta$}  & {$\alpha$}   & {$\beta$}   & 9    & 4    \\ \hline 
+**r = *q	& 4  & 4  & $\alpha$  & $\beta$  &  4  & 4 &$\chi$  & $\delta$  & $\alpha$  & $\beta$   & 4   &  4        \\ \hline 
+*p = *q + **s	& 8  & 4  & $\alpha$  & $\beta$  & 8  & 4   & $\chi$  & $\delta$  & $\alpha$   & $\beta$   &  8   & 4    \\ \hline 
+
+r = s ; q = p	& 8  & 4  & $\alpha$  & {$\alpha$}  & 8  & 8   & {$\delta$}  & $\delta$  & $\alpha$   & $\alpha$   & 8   & 8    \\ \hline 
+
+*(\& a) = *(\& b)	& 4  & 4  & $\alpha$  & {$\alpha$}  & 4  & 4   & {$\delta$}  & $\delta$  & $\alpha$   & $\alpha$   & 4   & 4    \\ \hline 
+
+b = a - **r + *p	& 4  & 4  & $\alpha$  & {$\alpha$}  & 4  & 4   & {$\delta$}  & $\delta$  & $\alpha$   & $\alpha$   & 4   & 4    \\ \hline 
+
+*p = a	& 4  & 4  & $\alpha$  & {$\alpha$}  & 4  & 4   & {$\delta$}  & $\delta$  & $\alpha$   & $\alpha$   & 4   & 4    \\ \hline 
+
+q=\& b ; r =\& p	& 4  & 4  & $\alpha$  & $\beta$  & 4  & 4   & $\chi$  & $\delta$  & $\alpha$   & $\beta$   & 4   & 4    \\ \hline 
+
+\multicolumn{1}{|>{\columncolor{green}}c|}{*q=*q -**s+**(\& p)}	& 4  & 4  & $\alpha$  & $\beta$  & 4  & \multicolumn{1}{|>{\columncolor{cyan}}c|}{4}   & $\chi$  & $\delta$  & $\alpha$   & $\beta$   & 4   & 4    \\ \hline 
+   \end{tabular}	
+  \end{center}
+\end{minipage}\hfill
+
+\begin{minipage}[t]{0.48\linewidth}
+\begin{tikzpicture}
+  \begin{scope}[	every node/.style={draw,anchor=text,rectangle split,rectangle split parts=8, 
+rectangle split part fill={green!0,green!30,green!0,green!0,green!0,green!0,green!0,green!0,green!0,green!0,green!0},minimum width=2.5cm}]
+    \node (R) at (4.5,2)
+    {
+    	\nodepart{one}{\footnotesize 4}
+    	\nodepart{two}{\footnotesize 4}
+    	\nodepart{three}{\footnotesize $\alpha$}	
+    	\nodepart{four}{\footnotesize $\beta$}
+    	\nodepart{five}{\footnotesize $\chi$}
+    	\nodepart{six}{\footnotesize $\delta$}
+    	\nodepart{seven}{$\vdots$}
+    	\nodepart{eight}
+    };
+  \end{scope}
+
+  \node at (3,2.1) {\color{blue}$\alpha$};
+  \node at (3,1.6) {\color{blue}$\beta$};
+  \node at (3,1.2) {\color{blue}$\chi$};
+  \node at (3,0.75) {\color{blue}$\delta$};
+  \node at (3,0.3) {\color{blue}$\epsilon$};
+  \node at (3,-0.1) {\color{blue}$\phi$};
+
+  \node at (6.1,2.1) {\color{red}$a$};
+  \node at (6.1,1.6) {\color{red}$b$};
+  \node at (6.1,1.15) {\color{red}$p$};
+  \node at (6.1,0.7) {\color{red}$q$};
+  \node at (6.1,0.25) {\color{red}$r$};
+  \node at (6.1,-0.2) {\color{red}$s$};
+
+  \node at (1.1,1.1) {\footnotesize {{ direcciones de }}};
+  \node at (1.1,0.7) {\footnotesize {{ memoria}}};
+  \node at (8,0.7) {\footnotesize {{ variables}}};
+ 
+  \node at (0,2.6) {\color{white}};
+\end{tikzpicture}
+\end{minipage}
+\end{frame}
+
+\end{document}
+

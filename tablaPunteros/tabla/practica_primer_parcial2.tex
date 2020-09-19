@@ -1,0 +1,144 @@
+\documentclass[12pt]{article} % Clase de documento: artículo y tamaño de letra
+\usepackage[utf8]{inputenc} % Escritura en castellano con acentos
+\usepackage[T1]{fontenc} % Escritura en castellano con acentos
+\usepackage{calligra} 
+\usepackage{pslatex}  % Fuente de letras
+\usepackage{graphicx}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{txfonts}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{multicol}
+\usepackage{color}
+\usepackage{times}
+\usepackage{tikz}
+\usepackage{verbatim}
+\usepackage{mdwlist}
+\usepackage{array}
+\usepackage{caption}
+
+\usetikzlibrary{chains,fit,shapes,arrows,calc,shapes,decorations.pathreplacing}
+
+
+\pagestyle{fancy}
+\headheight=50pt %para cambiar el tamaño del encabezado
+\fancyhead[L]    %la "L" indica a la izquierda
+{	
+ \begin{minipage}{3.3cm}
+  \includegraphics[width=1.0\textwidth]{Logo-UTN-BA.jpeg}
+%  \includegraphics[width=0.6\textwidth]{UTNlogo.eps}
+ \end{minipage}	
+ \begin{minipage}{7.7cm}
+   \normalsize
+   {
+     \textsf
+     {
+       \calligra{Universidad Tecnológica Nacional\\ Facultad Regional Buenos Aires \\ Departamento de {Ingeniería} {Electrónica}} 
+     }
+   }
+ \end{minipage}
+}
+
+\fancyhead[R] %la "R" indica a la derecha
+{
+  \begin{minipage}{4.0cm}
+   \small
+   {
+     \emph{\textbf{Informática I}} \\ \emph{\today} \\ \emph{Ejemplos de parcial}\\ \emph{Curso r1092}  
+   }
+  \end{minipage}}
+
+
+\begin{document} % Inicio del documento
+\newpage
+%Cambia de página, el texto después de este comando aparecerá en la siguiente página en adelante.
+
+
+\noindent
+  \begin{center}
+   \begin{tabular}{| c | c | c |}
+    \hline
+     Apellido y Nombres \hspace{8cm} &  Legajo & {Calificación} \\ \hline 
+      &	& \\ \hline
+   \end{tabular}	
+  \end{center}
+
+\noindent
+Todas las funciones pedidas deben ser colocadas en el archivo {\bf primerParcialFunciones.c} y debe estar acompañado por su correspondiente {\bf punto h}.\\
+Además se debe escribir un programa de testeo para cada función requerida. El nombre de esos archivos es {\bf primerParcialNumeroEjercicio.c}.\\
+\\
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Comienzo del tema del examen
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\lstset{
+	frame=Ltb,
+	framerule=0pt,
+	aboveskip=0.5cm,
+	framextopmargin=3pt,
+	framexbottommargin=3pt,
+	framexleftmargin=0.4cm,
+	framesep=0pt,
+	rulesep=.4pt,
+	backgroundcolor=\color{gray97},
+	rulesepcolor=\color{black},
+% 	language=C,
+	captionpos=b,
+	tabsize=3,
+	frame=lines,
+	keywordstyle=\color{blue},
+	commentstyle=\color{Gray},
+	stringstyle=\color{red},
+	numbers=left,
+	numberstyle=\tiny,
+	numbersep=5pt,
+	breaklines=true,
+	showstringspaces=false,
+	basicstyle=\ttfamily\scriptsize,
+	emph={label},
+	framerule=0pt,
+}
+
+Implemente una función que obtenga el dígito verificador de un número de CUIT pasado como 
+parámetro, el cálculo se realiza utilizando el algoritmo {\bf módulo11}.\\
+ El prototipo de la función es el siguiente:
+\begin{center}
+{\bf int cuit\_validar (char *cuit);}
+\end{center}
+El parámetro {\bf cuit} es un puntero al vector que contiene el número de CUIT terminado en ‘{\bf $\setminus$0}’\\
+\\
+Devuelve:
+\begin{itemize}
+\item Un {\bf número positivo} indicando el dígito verificador. 
+\item {\bf -1}: cuando la cantidad de dígitos es distinto de 10 
+\item {\bf -2}: Indica que el número de CUIT es inválido (contiene algo distinto a números) \end{itemize}
+Algoritmo módulo 11:  
+\begin{itemize}
+\item Multiplique los dígitos Desde el menos significativo por la serie 2,3,4,5,6,7.
+\item Sume el resultado de las multiplicaciones anteriores.
+\item Calcule el módulo 11 de la suma anterior.
+\item Al resultado anterior restele 11
+\begin{itemize}
+\item si el resultado es {\bf menor que 10} lo obtenido es el dígito verificador
+\item si el resultado es {\bf 10} el dígito verificador es {\bf 9}.
+\item Si el resultado es {\bf 11} el dígito verificador es {\bf 0}.
+\end{itemize} 
+\end{itemize}
+Ejemplo:\\
+\\
+%\vspace{0.3cm}
+\noindent
+\fontsize{10pt}{10pt}\selectfont
+   \begin{tabular}{| c | c | c | c | c | c | c | c | c | c | c | c | c | c |}
+    \hline
+     CUIT & 2 & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & suma & \%11 & dígito\\ \hline 
+     Valor a multiplicar por digito & $X_5$ & $X_4$ & $X_3$ & $X_2$ & $X_7$ & $X_6$ & $X_5$ & $X_4$ & $X_3$ & $X_2$ &  &148\%11 & 11-5 \\ \hline 
+     Resultado de la multiplicación & 10 & 0 & 3 & 4 & 21 & 24 & 25 & 24 & 21 & 16 & =148 & =5 & 6\\ \hline 
+   \end{tabular}	
+\fontsize{12pt}{12pt}\selectfont
+ 
+\end{document} % Fin del documento.
+ 
+
+  

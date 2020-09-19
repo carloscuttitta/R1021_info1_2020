@@ -1,0 +1,20 @@
+CC=gcc
+CFLAGS=-Wall
+LDFLAGS=­
+OBJS=save_structs.o 
+SOURCES=$(OBJS:.o=.c)
+HEADERS=*.h
+
+save_structs: $(OBJS)
+	$(CC) $(OBJS) -o $@
+
+%.o: %.c Makefile $(HEADERS)
+	$(CC) $(CFLAGS) -o $@ $<
+
+clean:
+	rm -f ./*.o
+	rm -f save_structs
+	rm -f *.data
+
+all: clean save_structs
+

@@ -1,0 +1,1461 @@
+\documentclass{beamer}
+\usepackage[latin1]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{multicol}
+\usepackage{fancybox}
+\usepackage{beamerthemeshadow}
+\usepackage{times} %font times
+\usepackage[T1]{fontenc} %para que cuando se seleccione un texto las letras acentuadad y las ñ se copien bien Usar la codificación T1
+\usepackage{enumerate}
+\usepackage{listings}
+\usepackage{calligra} 
+
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{caption}
+
+\usepackage{tikz}
+\usepackage{verbatim}
+\usepackage{mdwlist}
+\usetikzlibrary{chains,fit,shapes}
+
+\usetikzlibrary{chains,fit,shapes,arrows,calc,shapes,decorations.pathreplacing}
+%\usepackage[active,tightpage]{preview}
+%\PreviewEnvironment{tikzpicture}
+
+
+
+\usefonttheme{professionalfonts}
+
+\newtheorem{defi}{Definición} 
+\hypersetup{pdfpagemode=FullScreen}
+
+\mode<presentation>{
+\usetheme{Warsaw}
+\setbeamercovered{transparent}
+}
+
+
+\lstset{
+	frame=Ltb,
+	framerule=0pt,
+	aboveskip=0.5cm,
+	framextopmargin=3pt,
+	framexbottommargin=3pt,
+	framexleftmargin=0.4cm,
+	framesep=0pt,
+	rulesep=.4pt,
+%	backgroundcolor=\color{gray!20},
+	rulesepcolor=\color{black},
+	language=C,
+	captionpos=b,
+	tabsize=3,
+	frame=lines,
+	keywordstyle=\color{blue},
+	commentstyle=\color{gray},
+	stringstyle=\color{red},
+	numbers=left,
+	numberstyle=\tiny,
+	numbersep=5pt,
+	breaklines=true,
+	showstringspaces=false,
+	basicstyle=\small,
+	emph={label},
+	framerule=0pt,
+}
+
+
+\title{\em INFORMATICA I}
+\subtitle{Representación de los número reales IEEE (754)}
+\author{\em Ing.Juan Carlos Cuttitta}
+\institute{\calligra{Universidad Tecnológica Nacional\\ Facultad Regional Buenos Aires \\ Departamento de {Ingeniería} {Electrónica}}}
+\date{\today}
+
+%portada
+
+\begin{document}
+
+\begin{figure}[ht!]
+  \centering
+%  \includegraphics [width=0.2\textwidth]{informatica.jpg}
+  \includegraphics [width=0.3\textwidth]{informacion.jpg}
+\end{figure}
+\vspace{-1.0cm} % para subir el titulo 
+\titlepage
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Template de aqui en mas ;)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pgfdeclareimage[height=0.9cm]{left-logo}{arania.png}
+%\pgfdeclareimage[height=0.9cm]{right-logo}{arania.png}
+%\logo{\pgfuseimage{right-logo}}
+\setbeamertemplate{sidebar left}
+{
+\logo{\pgfuseimage{left-logo}}
+\vfill%
+\rlap{\hskip0.15cm\insertlogo}%
+\vskip10pt%
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\tikzstyle{every picture}+=[remember picture]
+\tikzstyle{na} = [baseline=-.5ex]
+
+\begin{frame}[fragile]
+\frametitle{Repaso de notación científica !!!!}
+
+\begin{center}
+\fontsize{18pt}{18pt}\selectfont
+$\mathbb{R}=c \cdot b^e$
+\end{center}
+
+\begin{itemize}
+\item $\mathbb{R}$ representa a todos los números comprendidos en el intervalo ({\color{red}{-}}$\infty$ a {\color{red}{+}}$\infty$).
+\item {\color{blue}{c}} es el coeficiente y está formado por un número real con un solo digito entero seguido de una coma y varios digitos fraccionarios.
+\item {\color{blue}{b}} es la base del sistema de numeración
+	\begin{itemize}
+	\item 16 en el hexadecimal
+	\item 10 en el decimal
+	\item 8 en el octal
+	\item 2 en el binario
+\end{itemize}
+\item {\color{blue}{e}} es el exponente entero el cual eleva la base a una potencia.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Repaso de notación científica !!!!}
+
+El coeficiente tiene una cantidad determinada de digitos significativos y ésta cantidad indica la precisión del número representado. Cuanto más dígito, mayor será la precisión. \\
+\vspace{0.5cm}
+
+\begin{tikzpicture}[my shape/.style={
+rectangle split, rectangle split parts=#1, draw}]
+
+\node at (0,7.5) {Ejemplo con el número de Euler:};
+\node at (0.5,6.2) {$2.71 \cdot 10^0$};
+\draw[->](1.4,6.2)to [out=0,in=180]node[right,midway]{ \hspace{0.6cm} menor precisión} ++(1.4,0); 
+\node at (0.5,5.2) {$2.718281 \cdot 10^0$};
+\draw[->](1.8,5.2)to [out=0,in=180]node[right,midway]{\hspace{0.4cm} mayor precisión} ++(1.0,0); 
+
+\draw[	decorate,decoration={brace,raise=6pt,amplitude=3pt},thick] (0.4,6.2) -- (-0.2,6.2) node [rotate=0,black,midway,xshift=0.1cm,yshift=-0.5cm]{\color{red}{\footnotesize $c$}};
+\draw[	decorate,decoration={brace,raise=6pt,amplitude=3pt},thick] (1.1,6.2) -- (0.7,6.2) node [rotate=0,black,midway,xshift=0.1cm,yshift=-0.5cm]{\color{red}{\footnotesize $b$}};
+\draw[	decorate,decoration={brace,raise=6pt,amplitude=1pt},thick] (1.1,6.3) -- (1.4,6.3) node [rotate=0,black,midway,xshift=0.1cm,yshift=0.5cm]{\color{red}{\footnotesize $e$}};
+\end{tikzpicture}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Repaso de notación científica !!!!}
+
+Al multiplicar el coeficiente (\textit {\color{red}c}) por la base (\textit {\color{red}b}) elevada a una potencia entera (\textit {\color{red}e}), lo que estamos haciendo es desplazando la coma del coeficiente (\textit {\color{red}c}) tantas posiciones como indique el exponente (e). La coma se desplaza hacia la \textit {\color{blue}derecha} si el exponente es \textit {\color{blue}positivo} y hacia la \textit {\color{blue}izquierda} si es \textit{\color{blue}negativo}.\\
+Ejemplos:
+\noindent
+  \begin{center}
+   \begin{tabular}{| c | c |}
+    \hline
+     {\bf Notación científica}  &  {\bf Representación del n° $\mathbb{R}$} \\ \hline 
+     $3.14159 \cdot 10^{-2}$ & 0.0314159 \\ \hline
+     $3.14159 \cdot 10^{-1}$ & 0.314159	 \\ \hline
+     $3.14159 \cdot 10^{0}$ & 3.14159	 \\ \hline
+     $3.14159 \cdot 10^{1}$ & 31.4159	 \\ \hline
+     $3.14159 \cdot 10^{2}$ & 314.159	 \\ \hline
+   \end{tabular}	
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{estándar del \textit{\color{red}IEEE} para coma flotante \textit{\color{yellow}(IEEE 754)}}
+\begin{itemize}
+
+\item El coma flotante permite representar una cantidad limitada de digitos de un \textit {\color{blue}$\mathbb{R}$}
+\item Un número \textit {\color{blue}$\mathbb{R}$} no se podrá representar con total precisión sino como una aproximación.
+\item La precisión dependerá de la cantidad de digitos significativos que tenga la representación en coma flotante.
+\end{itemize}
+\vspace{0.3cm}
+
+\begin{tikzpicture}
+\node at (0,5.0) {\footnotesize $valor$ \footnotesize $real$ \footnotesize $aproximado$};
+\node at (3.7,5.0) {\footnotesize $signo$};
+\node at (2.5,3.0) {\footnotesize $mantiza$ = \footnotesize $1$,\footnotesize $fraccion$ \footnotesize $en$ \footnotesize $binario$};
+\node at (6,3.6) {\footnotesize $base$};
+\node at (6.4,5.0) {\footnotesize $exponente$};
+\node at (4.0,4.3){$v=s \cdot m \cdot 2^e$};
+
+\draw[red!60,->](0.3,4.7)to [out=-90,in=180]node[right,midway]{} ++(2.2,-0.5); 
+\draw[red!60,->](3.7,4.8)to [out=-90,in=90]node[right,midway]{} ++(0.0,-0.3); 
+\draw[red!60,->](0.8,3.2)to [out=30,in=-120]node[right,midway]{} ++(3.5,0.8); 
+\draw[red!60,->](5.5,3.7)to [out=180,in=-90]node[right,midway]{} ++(-0.6,0.4); 
+\draw[red!60,->](6.4,4.8)to [out=-90,in=0]node[right,midway]{} ++(-1.2,-0.4); 
+\end{tikzpicture}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{estándar del \textit{\color{red}IEEE} para coma flotante \textit{\color{yellow}(IEEE 754)}}
+
+Como {\color{blue}$1\leq m < 2$} y a fin de normalizar la representación binaria, en la mantiza sólo se coloca la fracción binaria y se asume implicitamente al 1 que está ubicado a la izquierda de la coma.\\
+Como se puede observar en la figura, necesitamos obtener el signo, la fracción y el exponente; donde este último se representa en binario desplazado.\\
+\vspace{0.5cm}
+\begin{center}
+
+
+\begin{tikzpicture}[my shape/.style={
+rectangle split, rectangle split parts=#1, draw}]
+
+\node at (1.5,4.2) {\tiny 31};
+\node at (2.4,4.2) {\tiny 30};
+\node at (4.1,4.2) {\tiny 23};
+\node at (4.5,4.2) {\tiny 22};
+\node at (8,4.2) {\tiny 0};
+\node at (3.4,4.6) {\tiny \color{blue}${2^{(-127 + exp)}}$};
+
+\draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=3pt},thick] 	
+  (2.5,3.7) -- (4.3,3.7) node [rotate=0,black,midway,xshift=0.1cm,yshift=-0.7cm]{\footnotesize $8$ \footnotesize $bits$};
+\draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=3pt},thick] 	
+  (1.5,3.7) -- (2.5,3.7) node [rotate=0,black,midway,xshift=0.1cm,yshift=-0.7cm]{\footnotesize $1$ \footnotesize $bit$ };
+\draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=3pt},thick] 	
+  (4.3,3.7) -- (8.0,3.7) node [rotate=0,black,midway,xshift=0.1cm,yshift=-0.7cm]{\footnotesize $23$ \footnotesize $bits$ };
+
+
+\node [my shape=1,rectangle split horizontal,rectangle split part fill={red!20}] at (2,3.8){\footnotesize $Signo$};
+\node [my shape=1,rectangle split horizontal,rectangle split part fill={blue!20}] at (3.4,3.8){\footnotesize $Exponente$};
+\node [my shape=1,rectangle split horizontal,rectangle split part fill={green!20}] at (6.17,3.8){     \hspace{1cm} \footnotesize $fraccion$ \hspace{1cm}   };
+
+\end{tikzpicture}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{estándar del \textit{\color{red}IEEE} para coma flotante \textit{\color{yellow}(IEEE 754)}}
+
+
+Ejemplo práctico con el número {\color{red}-37.625}\\
+Convertimos la parte entera a binario como se ve en la siguiente tabla (en nuestro ejemplo es 37).\\
+
+
+\noindent
+  \begin{center}
+   \begin{tabular}{| c | c | c |}
+    \hline
+     {\bf división }  &  {\bf resultado} & {\bf resto} \\ \hline 
+     $37 \div 2$ & 18 & \color{red}1 \\ \hline
+     $18 \div 2$ & 9 & \color{red}0	 \\ \hline
+     $9 \div 2$ & 4 & \color{red}1	 \\ \hline
+     $4 \div 2$ & 2 & \color{red}0	 \\ \hline
+     $2 \div 2$ & 1 & \color{red}0	 \\ \hline
+	 $1 \div 2$ & 0 & \color{red}1  \\  \hline
+   \end{tabular}	
+  \end{center}
+
+\begin{center}
+$(37)_{10}=({\color{red}100101})_2$
+  \end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{estándar del \textit{\color{red}IEEE} para coma flotante \textit{\color{yellow}(IEEE 754)}}
+
+
+Luego convertimos la parte decimal a binario como se ve en la siguiente tabla (en nuestro ejemplo es 0.625).\\
+
+\noindent
+  \begin{center}
+   \begin{tabular}{| c | c | c |}
+    \hline
+     {\bf multiplicación}  &  {\bf resultado} & {\bf parte entera} \\ \hline 
+     $0.625 * 2$ & 1.25 & \color{red}1 \\ \hline
+     $0.25 * 2$ & 0.5 & \color{red}0	 \\ \hline
+     $0.5 * 2$ & 1 & \color{red}1	 \\ \hline
+   \end{tabular}	
+  \end{center}
+De esta forma queda determinada la representacion del número en formato binario.\\
+\begin{center}
+$(-37.625)_{10}=(-100101.101)_2$
+  \end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{estándar del \textit{\color{red}IEEE} para coma flotante \textit{\color{yellow}(IEEE 754)}}
+
+El resultado se representa en notación científica.\\
+
+\begin{center}
+{\color{red}$-1.00101101 * 2^5$}
+\end{center}
+
+Para obtener el valor del exponente se despeja {\color{blue}exp} de la siguiente igualdad.\\
+\begin{center}
+$2^{\color{blue}{(-127 + exp)}}$= $2^{\color{blue}{5}}$ \\
+$-127 + exp=5$\\
+$exp=5+127$\\
+$exp=132$\\
+{\color{red}$(132)_{10}=(10000100)_2$}
+
+\end{center}
+
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{estándar del \textit{\color{red}IEEE} para coma flotante \textit{\color{yellow}(IEEE 754)}}
+\begin{center}
+\begin{tikzpicture}[my shape/.style={
+rectangle split, rectangle split parts=#1, draw}]
+
+\edef\sizetape{0.1cm}
+\tikzstyle{tmtape}=[draw,minimum size=\sizetape]
+%% Draw TM tape
+\begin{scope}[start chain=1 going right,node distance=-0.27mm]
+    \node [on chain=1,tmtape] {\tiny{\color{red}1}};
+    \node [on chain=1,tmtape] {\tiny{\color{blue}1}};
+    \node [on chain=1,tmtape] {\tiny{\color{blue}0}};
+    \node [on chain=1,tmtape] {\tiny{\color{blue}0}};
+    \node [on chain=1,tmtape] {\tiny{\color{blue}0}};
+    \node [on chain=1,tmtape] {\tiny{\color{blue}0}};
+    \node [on chain=1,tmtape] {\tiny{\color{blue}1}};
+    \node [on chain=1,tmtape] {\tiny{\color{blue}0}};
+    \node [on chain=1,tmtape] {\tiny{\color{blue}0}};
+    \node [on chain=1,tmtape] {\tiny{\color{violet}0}};
+    \node [on chain=1,tmtape] {\tiny{\color{violet}0}};
+    \node [on chain=1,tmtape] {\tiny{\color{violet}1}};
+    \node [on chain=1,tmtape] {\tiny{\color{violet}0}};
+    \node [on chain=1,tmtape] {\tiny{\color{violet}1}};
+    \node [on chain=1,tmtape] {\tiny{\color{violet}1}};
+    \node [on chain=1,tmtape] {\tiny{\color{violet}0}};
+    \node [on chain=1,tmtape] {\tiny{\color{violet}1}};
+    \node [on chain=1,tmtape] {\tiny{0}};
+    \node [on chain=1,tmtape] {\tiny{0}};
+    \node [on chain=1,tmtape] {\tiny{0}};
+    \node [on chain=1,tmtape] {\tiny{0}};
+    \node [on chain=1,tmtape] {\tiny{0}};
+    \node [on chain=1,tmtape] {\tiny{0}};
+    \node [on chain=1,tmtape] {\tiny{0}};
+    \node [on chain=1,tmtape] {\tiny{0}};
+    \node [on chain=1,tmtape] {\tiny{0}};
+    \node [on chain=1,tmtape] {\tiny{0}};
+    \node [on chain=1,tmtape] {\tiny{0}};
+    \node [on chain=1,tmtape] {\tiny{0}};
+    \node [on chain=1,tmtape] {\tiny{0}};
+    \node [on chain=1,tmtape] {\tiny{0}};
+    \node [on chain=1,tmtape] {\tiny{0}};
+\end{scope}
+
+
+\node at (0.0,0.9) {\tiny signo};
+\draw[->](0.0,0.7)to [out=-90,in=90]node[right,midway]{} ++(0.0,-0.3); 
+\node at (1.6,-0.6) {\tiny exp};
+
+\draw[	decorate,decoration={brace,raise=6pt,amplitude=3pt},thick] (3.0,-0.1) -- (0.3,-0.1) node [rotate=0,black,midway,xshift=0.1cm,yshift=0.5cm]{};
+\draw[	decorate,decoration={brace,raise=6pt,amplitude=3pt},thick] (6.0,-0.1) -- (3.0,-0.1) node [rotate=0,black,midway,xshift=0.1cm,yshift=-0.5cm]{\footnotesize $fraccion$};
+\draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=3pt},thick] (11.3,0.1) -- (6.0,0.1) node [rotate=0,black,midway,xshift=0.1cm,yshift=0.5cm]{\footnotesize $se$ \footnotesize $completa$ \footnotesize $con$ \footnotesize $ceros$};
+\draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=3pt},thick] (7.3,-1.5) -- (5.9,-1.5) node [rotate=0,black,midway,xshift=0.1cm,yshift=0.5cm]{};
+\draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=3pt},thick] (0.7,1.2) -- (0.7,0.6) node [rotate=0,black,midway,xshift=0.1cm,yshift=0.3cm]{};
+
+\node at (0.7,1.1) {\tiny \color{blue}0};
+\draw[->](0.9,1.1)to [out=0,in=180]node[right,midway]{} ++(0.7,0); 
+\node at (0.7,0.7) {\tiny \color{red}1};
+\draw[->](0.9,0.7)to [out=0,in=180]node[right,midway]{} ++(0.7,0); 
+\node at (2.1,1.1) {\tiny \color{blue}positivo};
+\node at (2.1,0.7) {\tiny \color{red}negativo};
+
+\node at (5.5,-1.6) {\color{red}$(-37.625)_{10}=-1.00101101 * 2^5$};
+
+\draw[->](6.5,-1.1)to [out=90,in=-90]node[right,midway]{} ++(-1.7,0.3); 
+\end{tikzpicture}
+\end{center}
+
+\noindent
+El rango de precisión aproximado para 32 bits normalizados es\\
+  \begin{center}
+   \begin{tabular}{| c | c |}
+    \hline
+     {\bf binario}  &  {\bf decimal} \\ \hline 
+     {\color{red}$2^{-126}$  a  $2^{127}$} & {\color{blue}$1.18 \cdot 10^{-38}$ a $3.4 \cdot 10^{38}$} \\ \hline
+   \end{tabular}	
+  \end{center}
+
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Función scanf para tipo de dato \textbf{\textit{\color{yellow}float}}}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=10, 
+    rectangle split part fill={red!0,red!0,red!0,blue!30,blue!30,blue!30,blue!30,blue!0,blue!0,red!0,red!0},
+    minimum width=1.5cm}]
+    \node (R) at (2,4){ 
+    		\nodepart{one} 
+    		\nodepart{two} 
+    		\nodepart{three}
+    		\nodepart{four}0x13
+    		\nodepart{five}0x27 
+    		\nodepart{six}0x01 
+    		\nodepart{seven}0x20
+    		\nodepart{eight} 
+    		\nodepart{nine} 
+    		\nodepart{ten}};
+  \end{scope}
+
+  \node at (0.3,3.05) {0x7FFE6E41};
+  \node at (0.3,2.7) {0x7FFE6E42};
+  \node at (0.3,2.35) {0x7FFE6E43};
+  \node at (0.3,2.05) {0x7FFE6E44};
+  \node at (0.3,1.7) {0x7FFE6E45};
+  \node at (0.3,1.4) {0x7FFE6E46};
+  \node at (6.5,5.7) {\normalsize \textbf{\textit{\color{red}Arquitectura X86 32 bits}}};
+  \node at (0.3,0.5) {\footnotesize\itshape $direcciones$ $de$};
+  \node at (0.3,0.2) {\footnotesize\itshape $memoria$};
+  \node at (2.1,5.2) {\footnotesize\itshape $Disposicion$ $de$ $la$ $variable$};
+  \node at (2.1,4.9) {\footnotesize\itshape $\textcolor{red}{datoFloat}$ $en$ $memoria$};
+  \node at (6.5,4.5) {\normalsize Código en programa fuente};
+  \node at (4.0,0.0) {\footnotesize\itshape $La$ $memoria$ $inicialmente$ $puede$};
+  \node at (4.0,-0.3) {\footnotesize\itshape $contener$ $cualquier$ $valor$ $\textcolor{red}{!!!}$};
+  \node at (9.7,0.7) {\footnotesize\itshape $Reserva$ $un$ $espacio$ $de$};
+  \node at (9.7,0.4) {\footnotesize\itshape $memoria$ $tipo$ \textcolor{red}{float}};
+
+  \draw[red!60,dashed,->](4,0.2)to [out=90,in=-90]node[right,midway]{} ++(-1.8,1.7) ; 
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt},thick] 	
+  (2.7,1.9) -- (2.7,3.2) node [rotate=90,black,midway,xshift=0.1cm,yshift=-0.7cm]{\footnotesize $datoFloat$};
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+  \draw[->](2.1,4.7)to [out=-90,in=90]node[right,midway]{} ++(0,-0.4) ; 
+  \draw[red!60,dashed,->](9.5,0.9)to [out=90,in=0]node[right,midway]{} ++(-2.7,1.6) ; 
+
+% usado para hacer sombreado de un sector
+  \shade[left color=blue, right color=white, opacity=0.5]
+      (4.6,2.6) -- (2.9,3.25) -- (2.9,1.9) -- (4.6,2.5) -- cycle;
+\end{tikzpicture}
+  \column{3.9\textwidth}
+  \lstset{basicstyle=\tiny}
+   \begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+
+int main (void)
+{
+float datoFloat;
+......
+......
+return (0);
+}   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Función scanf para tipo de dato \textbf{\textit{\color{yellow}float}}}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=10, 
+    rectangle split part fill={red!0,red!0,red!0,blue!30,blue!30,blue!30,blue!30,blue!0,blue!0,red!0,red!0},
+    minimum width=1.5cm}]
+    \node (R) at (2,4){ 
+    		\nodepart{one} 
+    		\nodepart{two} 
+    		\nodepart{three}
+    		\nodepart{four}0x13
+    		\nodepart{five}0x27 
+    		\nodepart{six}0x01 
+    		\nodepart{seven}0x20
+    		\nodepart{eight} 
+    		\nodepart{nine} 
+    		\nodepart{ten}};
+  \end{scope}
+
+  \node at (0.3,3.05) {0x7FFE6E41};
+  \node at (0.3,2.7) {0x7FFE6E42};
+  \node at (0.3,2.35) {0x7FFE6E43};
+  \node at (0.3,2.05) {0x7FFE6E44};
+  \node at (0.3,1.7) {0x7FFE6E45};
+  \node at (0.3,1.4) {0x7FFE6E46};
+
+  \node at (0.3,0.5) {\footnotesize\itshape $direcciones$ $de$};
+  \node at (0.3,0.2) {\footnotesize\itshape $memoria$};
+  \node at (2.1,5.2) {\footnotesize\itshape $Disposicion$ $de$ $la$ $variable$};
+  \node at (2.1,4.9) {\footnotesize\itshape $\textcolor{red}{datoFloat}$ $en$ $memoria$};
+  \node at (6.5,4.5) {\normalsize Código en programa fuente};
+  \node at (9.7,0.7) {\footnotesize\itshape $Imprime$ $en$ $pantalla$ $una$ };
+  \node at (9.7,0.4) {\footnotesize\itshape $leyenda$ $para$ $el$ $usuario$};
+
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt},thick] 	
+  (2.7,1.9) -- (2.7,3.2) node [rotate=90,black,midway,xshift=0.1cm,yshift=-0.7cm]{\footnotesize $datoFloat$};
+
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+  \draw[->](2.1,4.7)to [out=-90,in=90]node[right,midway]{} ++(0,-0.4) ; 
+  \draw[red!60,dashed,->](9.7,0.9)to [out=90,in=0]node[right,midway]{} ++(-1.2,1.2) ; 
+\end{tikzpicture}
+  \column{6\textwidth}
+  \lstset{basicstyle=\tiny}
+   \begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+
+int main (void)
+{
+float datoFloat;
+
+//-- Ingreso de datos --
+  printf("Ingrese valor : ");
+  ......
+  ......
+return (0);
+}   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Función scanf para tipo de dato \textbf{\textit{\color{yellow}float}}}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=10, 
+    rectangle split part fill={red!0,red!0,red!0,blue!30,blue!30,blue!30,blue!30,blue!0,blue!0,red!0,red!0},
+    minimum width=1.5cm}]
+    \node (R) at (2,4){ 
+    		\nodepart{one} 
+    		\nodepart{two} 
+    		\nodepart{three}
+    		\nodepart{four}0x13
+    		\nodepart{five}0x27 
+    		\nodepart{six}0x01 
+    		\nodepart{seven}0x20
+    		\nodepart{eight} 
+    		\nodepart{nine} 
+    		\nodepart{ten}};
+  \end{scope}
+
+  \node at (0.3,3.05) {0x7FFE6E41};
+  \node at (0.3,2.7) {0x7FFE6E42};
+  \node at (0.3,2.35) {0x7FFE6E43};
+  \node at (0.3,2.05) {0x7FFE6E44};
+  \node at (0.3,1.7) {0x7FFE6E45};
+  \node at (0.3,1.4) {0x7FFE6E46};
+  \node at (0.3,0.5) {\footnotesize\itshape $direcciones$ $de$};
+  \node at (0.3,0.2) {\footnotesize\itshape $memoria$};
+  \node at (2.1,5.2) {\footnotesize\itshape $Disposicion$ $de$ $la$ $variable$};
+  \node at (2.1,4.9) {\footnotesize\itshape $\textcolor{red}{datoFloat}$ $en$ $memoria$  };
+  \node at (6.5,4.5) {\normalsize Código en programa fuente};
+  \node at (9.7,0.7) {\footnotesize\itshape $Indica$ $el$ ${\color{cyan}tipo}$ ${\color{cyan}de}$ ${\color{cyan}dato}$ $que$};
+  \node at (9.7,0.4) {\footnotesize\itshape $toma$ $del$ $teclado$};
+
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt},thick] 	
+  (2.7,1.9) -- (2.7,3.2) node [rotate=90,black,midway,xshift=0.1cm,yshift=-0.7cm]{\footnotesize $datoFloat$};
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+  \draw[->](2.1,4.7)to [out=-90,in=90]node[right,midway]{} ++(0,-0.4) ; 
+  \draw[blue!60,dashed,->](7.8,0.6)to [out=180,in=-70]node[right,midway]{} ++(-1.9,1.3) ; 
+\end{tikzpicture}
+  \column{6\textwidth}
+  \lstset{basicstyle=\tiny}
+   \begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+
+int main (void)
+{
+float datoFloat;
+
+//-- Ingreso de datos --
+  printf("Ingrese valor : ");
+  scanf("% f", &datoFloat);
+  ......
+  ......
+return (0);
+}   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Función scanf para tipo de dato \textbf{\textit{\color{yellow}float}}}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=10, 
+    rectangle split part fill={red!0,red!0,red!0,blue!30,blue!30,blue!30,blue!30,blue!0,blue!0,red!0,red!0},
+    minimum width=1.5cm}]
+    \node (R) at (2,4){ 
+    		\nodepart{one} 
+    		\nodepart{two} 
+    		\nodepart{three}
+    		\nodepart{four}0x13
+    		\nodepart{five}0x27 
+    		\nodepart{six}0x01 
+    		\nodepart{seven}0x20
+    		\nodepart{eight} 
+    		\nodepart{nine} 
+    		\nodepart{ten}};
+  \end{scope}
+
+  \node at (0.3,3.05) {\color{red}0x7FFE6E41};
+  \node at (0.3,2.7) {0x7FFE6E42};
+  \node at (0.3,2.35) {0x7FFE6E43};
+  \node at (0.3,2.05) {0x7FFE6E44};
+  \node at (0.3,1.7) {0x7FFE6E45};
+  \node at (0.3,1.4) {0x7FFE6E46};
+  \node at (0.3,0.5) {\footnotesize\itshape $direcciones$ $de$};
+  \node at (0.3,0.2) {\footnotesize\itshape $memoria$};
+  \node at (2.1,5.2) {\footnotesize\itshape $Disposicion$ $de$ $la$ $variable$};
+  \node at (2.1,4.9) {\footnotesize\itshape $\textcolor{red}{datoFloat}$ $en$ $memoria$  };
+  \node at (6.5,4.5) {\normalsize Código en programa fuente};
+  \node at (7.7,0.4) {\footnotesize\itshape $Indica$ $la$ ${\color{cyan}direccion}$ ${\color{cyan}de}$ ${\color{cyan}memoria}$};
+  \node at (7.7,0.0) { \footnotesize\itshape $donde$ $va$ $a$ $guardar$ $el$ $dato$};
+
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt},thick] 	
+  (2.7,1.9) -- (2.7,3.2) node [rotate=90,black,midway,xshift=0.1cm,yshift=-0.7cm]{\footnotesize $datoFloat$};
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+  \draw[->](2.1,4.7)to [out=-90,in=90]node[right,midway]{} ++(0,-0.4) ; 
+  \draw[dashed,red!60,->](7.5,0.6)to [out=90,in=-90]node[right,midway]{} ++(-1.1,1.2) ; 
+  \draw[dashed,red!60,->](5.4,0.1)to [out=180,in=240]node[right,midway]{} ++(-4.2,2.9) ; 
+\end{tikzpicture}
+  \column{6\textwidth}
+  \lstset{basicstyle=\tiny}
+   \begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+
+int main (void)
+{
+float datoFloat;
+
+//-- Ingreso de datos --
+  printf("Ingrese valor : ");
+  scanf("% f", &datoFloat);
+  ......
+  ......
+return (0);
+}   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Función scanf para tipo de dato \textbf{\textit{\color{yellow}float}}}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=10, 
+    rectangle split part fill={red!0,red!0,red!0,blue!30,blue!30,blue!30,blue!30,blue!0,blue!0,red!0,red!0},
+    minimum width=1.5cm}]
+    \node (R) at (2,4){ 
+    		\nodepart{one} 
+    		\nodepart{two} 
+    		\nodepart{three}
+    		\nodepart{four}\textcolor{red}{0x00}
+    		\nodepart{five}\textcolor{red}{0x80} 
+    		\nodepart{six}\textcolor{red}{0x16} 
+    		\nodepart{seven}\textcolor{red}{0xC2}
+    		\nodepart{eight} 
+    		\nodepart{nine} 
+    		\nodepart{ten}};
+  \end{scope}
+
+  \node at (0.3,3.05) {0x7FFE6E41};
+  \node at (0.3,2.7) {0x7FFE6E42};
+  \node at (0.3,2.35) {0x7FFE6E43};
+  \node at (0.3,2.05) {0x7FFE6E44};
+  \node at (0.3,1.7) {0x7FFE6E45};
+  \node at (0.3,1.4) {0x7FFE6E46};
+  \node at (0.3,0.5) {\footnotesize\itshape $direcciones$ $de$};
+  \node at (0.3,0.2) {\footnotesize\itshape $memoria$};
+  \node at (2.1,5.2) {\footnotesize\itshape $Disposicion$ $de$ $la$ $variable$};
+  \node at (2.1,4.9) {\footnotesize\itshape $\textcolor{red}{datoFloat}$ $en$ $memoria$  };
+  \node at (6.5,4.5) {\normalsize Código en programa fuente};
+  \node at (7.4,0.1) {\footnotesize\itshape $El$ $dato$ $ingresado$ $fue$};
+  \node at (7.4,-0.3) {\footnotesize\itshape $el$ $numero$ $\textcolor{cyan}{-37.625}$};
+
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt},thick] 	
+  (2.7,1.9) -- (2.7,3.2) node [rotate=90,black,midway,xshift=0.1cm,yshift=-0.7cm]{\footnotesize $datoFloat$};
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+  \draw[->](2.1,4.7)to [out=-90,in=90]node[right,midway]{} ++(0,-0.4) ; 
+  \draw[red!60,dashed,->](6.0,-0.1)to [out=180,in=-90]node[right,midway]{} ++(-2.8,2.3) ; 
+\end{tikzpicture}
+  \column{6\textwidth}
+  \lstset{basicstyle=\tiny}
+   \begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+
+int main (void)
+{
+float datoFloat;
+
+//-- Ingreso de datos --
+  printf("Ingrese valor : ");
+  scanf("% f", &datoFloat);
+  ......
+  ......
+return (0);
+}   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+%\subsection{uso de printf}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Función printf para tipo de dato \textbf{\textit{\color{yellow}float}}}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=10, 
+    rectangle split part fill={red!0,red!0,red!0,blue!30,blue!30,blue!30,blue!30,blue!0,blue!0,red!0,red!0},
+    minimum width=1.5cm}]
+    \node (R) at (2,4){ 
+    		\nodepart{one} 
+    		\nodepart{two} 
+    		\nodepart{three}
+    		\nodepart{four}\textcolor{red}{0x00}
+    		\nodepart{five}\textcolor{red}{0x80} 
+    		\nodepart{six}\textcolor{red}{0x16} 
+    		\nodepart{seven}\textcolor{red}{0xC2}
+    		\nodepart{eight} 
+    		\nodepart{nine} 
+    		\nodepart{ten}};
+  \end{scope}
+
+  \node at (0.3,3.05) {0x7FFE6E41};
+  \node at (0.3,2.7) {0x7FFE6E42};
+  \node at (0.3,2.35) {0x7FFE6E43};
+  \node at (0.3,2.05) {0x7FFE6E44};
+  \node at (0.3,1.7) {0x7FFE6E45};
+  \node at (0.3,1.4) {0x7FFE6E46};
+  \node at (0.3,0.7) {\footnotesize\itshape $direcciones$ $de$};
+  \node at (0.3,0.4) {\footnotesize\itshape $memoria$};
+  \node at (2.1,5.2) {\footnotesize\itshape $Disposicion$ $de$ $la$ $variable$};
+  \node at (2.1,4.9) {\footnotesize\itshape $\textcolor{red}{datoFloat}$ $en$ $memoria$  };
+  \node at (6.5,4.5) {\normalsize Código en programa fuente};
+  \node at (6,-0.3) {\fbox{
+						\begin{minipage}{9cm}
+							\fontsize{8pt}{8pt}\selectfont
+							Ingrese valor : -37.625 \\
+							size del float \hspace{0.9cm}      :\hspace{0.2cm}   4 
+						\end{minipage}}};						  
+
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt},thick] 	
+  (2.7,1.9) -- (2.7,3.2) node [rotate=90,black,midway,xshift=0.1cm,yshift=-0.7cm]{\footnotesize $datoFloat$};
+  \draw[->](0.3,1.0)to [out=90,in=-90]node[right,midway]{} ++(0,0.2) ; 
+  \draw[->](2.1,4.7)to [out=-90,in=90]node[right,midway]{} ++(0,-0.4) ; 
+\end{tikzpicture}
+  \column{6\textwidth}
+  \lstset{basicstyle=\tiny}
+   \begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+
+int main (void)
+{
+float datoFloat;
+
+//-- Ingreso de datos --
+  printf("Ingrese valor : ");
+  scanf("% f", &datoFloat);
+//-- Impresión de datos --
+  printf("size del float:\t% d\r\n",(int)sizeof(datoFloat));
+  ......
+return (0);
+}   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Función printf para tipo de dato \textbf{\textit{\color{yellow}float}}}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=10, 
+    rectangle split part fill={red!0,red!0,red!0,blue!30,blue!30,blue!30,blue!30,blue!0,blue!0,red!0,red!0},
+    minimum width=1.5cm}]
+    \node (R) at (2,4){ 
+    		\nodepart{one} 
+    		\nodepart{two} 
+    		\nodepart{three}
+    		\nodepart{four}\textcolor{red}{0x00}
+    		\nodepart{five}\textcolor{red}{0x80} 
+    		\nodepart{six}\textcolor{red}{0x16} 
+    		\nodepart{seven}\textcolor{red}{0xC2}
+    		\nodepart{eight} 
+    		\nodepart{nine} 
+    		\nodepart{ten}};
+  \end{scope}
+
+  \node at (0.3,3.05) {0x7FFE6E41};
+  \node at (0.3,2.7) {0x7FFE6E42};
+  \node at (0.3,2.35) {0x7FFE6E43};
+  \node at (0.3,2.05) {0x7FFE6E44};
+  \node at (0.3,1.7) {0x7FFE6E45};
+  \node at (0.3,1.4) {0x7FFE6E46};
+
+  \node at (0.3,0.5) {\footnotesize\itshape $direcciones$ $de$};
+  \node at (0.3,0.2) {\footnotesize\itshape $memoria$};
+  \node at (2.1,5.2) {\footnotesize\itshape $Disposicion$ $de$ $la$ $variable$};
+  \node at (2.1,4.9) {\footnotesize\itshape $\textcolor{red}{datoFloat}$ $en$ $memoria$  };
+
+  \node at (6.5,4.5) {\normalsize Código en programa fuente};
+  \node at (6,-0.3) {\fbox{
+						\begin{minipage}{9cm}
+							\fontsize{8pt}{8pt}\selectfont
+							Ingrese valor : -37.625 \\
+							size del float  \hspace{0.9cm}     : \hspace{0.2cm}  4 \\
+							el dato en real  \hspace{0.76cm}: \hspace{0.2cm}  -37.625000
+						\end{minipage}}};						  
+
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt},thick] 	
+  (2.7,1.9) -- (2.7,3.2) node [rotate=90,black,midway,xshift=0.1cm,yshift=-0.7cm]{\footnotesize $datoFloat$};
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+  \draw[->](2.1,4.7)to [out=-90,in=90]node[right,midway]{} ++(0,-0.4) ; 
+\end{tikzpicture}
+  \column{6\textwidth}
+  \lstset{basicstyle=\tiny}
+   \begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+
+int main (void)
+{
+float datoFloat;
+
+//-- Ingreso de datos --
+  printf("Ingrese valor : ");
+  scanf("% f", &datoFloat);
+//-- Impresión de datos --
+  printf("size del float:\t% d\r\n",(int)sizeof(datoFloat));
+  printf("el dato en real:\t% f\r\n",datoFloat);  
+  ......
+return (0);
+}   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Función printf para tipo de dato \textbf{\textit{\color{yellow}float}}}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=10, 
+    rectangle split part fill={red!0,red!0,red!0,blue!30,blue!30,blue!30,blue!30,blue!0,blue!0,red!0,red!0},
+    minimum width=1.5cm}]
+    \node (R) at (2,4){ 
+    		\nodepart{one} 
+    		\nodepart{two} 
+    		\nodepart{three}
+    		\nodepart{four}\textcolor{red}{0x00}
+    		\nodepart{five}\textcolor{red}{0x80} 
+    		\nodepart{six}\textcolor{red}{0x16} 
+    		\nodepart{seven}\textcolor{red}{0xC2}
+    		\nodepart{eight} 
+    		\nodepart{nine} 
+    		\nodepart{ten}};
+  \end{scope}
+
+  \node at (0.3,3.05) {0x7FFE6E41};
+  \node at (0.3,2.7) {0x7FFE6E42};
+  \node at (0.3,2.35) {0x7FFE6E43};
+  \node at (0.3,2.05) {0x7FFE6E44};
+  \node at (0.3,1.7) {0x7FFE6E45};
+  \node at (0.3,1.4) {0x7FFE6E46};
+
+  \node at (0.3,0.5) {\footnotesize\itshape $direcciones$ $de$};
+  \node at (0.3,0.2) {\footnotesize\itshape $memoria$};
+  \node at (2.1,5.2) {\footnotesize\itshape $Disposicion$ $de$ $la$ $variable$};
+  \node at (2.1,4.9) {\footnotesize\itshape $\textcolor{red}{datoFloat}$ $en$ $memoria$  };
+
+  \node at (6.5,4.5) {\normalsize Código en programa fuente};
+  \node at (6,-1.6) {\fbox{
+						\begin{minipage}{9cm}
+							\fontsize{8pt}{8pt}\selectfont
+							Ingrese valor : -37.625 \\
+							size del float     \hspace{0.97cm}  :  \hspace{0.2cm} 4 \\
+							el dato en real \hspace{0.76cm} : \hspace{0.2cm}  -37.625000 \\
+							el dato en real  \hspace{0.76cm}   :  \hspace{0.2cm} -37.62
+						\end{minipage}}};						  
+
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt},thick] 	
+  (2.7,1.9) -- (2.7,3.2) node [rotate=90,black,midway,xshift=0.1cm,yshift=-0.7cm]{\footnotesize $datoFloat$};
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+  \draw[->](2.1,4.7)to [out=-90,in=90]node[right,midway]{} ++(0,-0.4) ; 
+  \draw[dashed,blue,->](5.5,-2.0)to [out=0,in=-90]node[right,midway]{} ++(3.1,2.1) ; 
+\end{tikzpicture}
+  \column{6\textwidth}
+  \lstset{basicstyle=\tiny}
+   \begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+
+int main (void)
+{
+float datoFloat;
+
+//-- Ingreso de datos --
+  printf("Ingrese valor : ");
+  scanf("% f", &datoFloat);
+//-- Impresión de datos --
+  printf("size del float:\t% d\r\n",(int)sizeof(datoFloat));
+  printf("el dato en real:\t% f\r\n",datoFloat);  
+  printf("el dato en real:\t% 0.2f\r\n",datoFloat);  
+  ......
+return (0);
+}   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Función printf para tipo de dato \textbf{\textit{\color{yellow}float}}}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=10, 
+    rectangle split part fill={red!0,red!0,red!0,blue!30,blue!30,blue!30,blue!30,blue!0,blue!0,red!0,red!0},
+    minimum width=1.5cm}]
+    \node (R) at (2,4){ 
+    		\nodepart{one} 
+    		\nodepart{two} 
+    		\nodepart{three}
+    		\nodepart{four}\textcolor{red}{0x00}
+    		\nodepart{five}\textcolor{red}{0x80} 
+    		\nodepart{six}\textcolor{red}{0x16} 
+    		\nodepart{seven}\textcolor{red}{0xC2}
+    		\nodepart{eight} 
+    		\nodepart{nine} 
+    		\nodepart{ten}};
+  \end{scope}
+
+  \node at (0.3,3.05) {0x7FFE6E41};
+  \node at (0.3,2.7) {0x7FFE6E42};
+  \node at (0.3,2.35) {0x7FFE6E43};
+  \node at (0.3,2.05) {0x7FFE6E44};
+  \node at (0.3,1.7) {0x7FFE6E45};
+  \node at (0.3,1.4) {0x7FFE6E46};
+  
+  \node at (0.3,0.5) {\footnotesize\itshape $direcciones$ $de$};
+  \node at (0.3,0.2) {\footnotesize\itshape $memoria$};
+  \node at (2.1,5.2) {\footnotesize\itshape $Disposicion$ $de$ $la$ $variable$};
+  \node at (2.1,4.9) {\footnotesize\itshape $\textcolor{red}{datoFloat}$ $en$ $memoria$  };
+  
+  
+  \node at (6.5,4.0) {\normalsize Código en programa fuente};
+  \node at (6,-1.4) {\fbox{
+						\begin{minipage}{9cm}
+							\fontsize{6pt}{6pt}\selectfont
+							Ingrese valor : -37.625 \\
+							size del float     \hspace{0.92cm}  : \hspace{0.2cm}  4 \\
+							el dato en real \hspace{0.76cm} : \hspace{0.2cm}  -37.625000 \\
+							el dato en real  \hspace{0.76cm}   : \hspace{0.2cm}  -37.62 \\
+							dirección en memoria\hspace{0.2cm}: \hspace{0.2cm}  0x7FFE6E41 
+						\end{minipage}}};						  
+
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt},thick] 	
+  (2.7,1.9) -- (2.7,3.2) node [rotate=90,black,midway,xshift=0.1cm,yshift=-0.7cm]{\footnotesize $datoFloat$};
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+  \draw[->](2.1,4.7)to [out=-90,in=90]node[right,midway]{} ++(0,-0.4) ; 
+\end{tikzpicture}
+  \column{6\textwidth}
+  \lstset{basicstyle=\tiny}
+   \begin{lstlisting}
+#include <stdio.h>
+
+int main (void)
+{
+float datoFloat;
+//-- Ingreso de datos --
+  printf("Ingrese valor : ");
+  scanf("% f", &datoFloat);
+//-- Impresión de datos --
+  printf("size del float:\t% d\r\n",(int)sizeof(datoFloat));
+  printf("el dato en real:\t% f\r\n",datoFloat);  
+  printf("el dato en real:\t% 0.2f\r\n",datoFloat);  
+  printf("dirección en memoria:\t% p\r\n", &datoFloat);
+return (0);
+}   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Verificación de datos tipo \textbf{\textit{\color{yellow}float}} guardados en memoria}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=10, 
+    rectangle split part fill={red!0,red!0,red!0,blue!30,blue!30,blue!30,blue!30,blue!0,blue!0,red!0,red!0},
+    minimum width=1.5cm}]
+    \node (R) at (2,4){ 
+    		\nodepart{one} 
+    		\nodepart{two} 
+    		\nodepart{three}
+    		\nodepart{four}{0x00}
+    		\nodepart{five}{0x80} 
+    		\nodepart{six}{0x16} 
+    		\nodepart{seven}{0xC2}
+    		\nodepart{eight} 
+    		\nodepart{nine} 
+    		\nodepart{ten}};
+  \end{scope}
+
+  \node at (0.3,3.05) {\textcolor{red}{0x7FFE6E41}};
+  \node at (0.3,2.7) {0x7FFE6E42};
+  \node at (0.3,2.35) {0x7FFE6E43};
+  \node at (0.3,2.05) {0x7FFE6E44};
+  \node at (0.3,1.7) {0x7FFE6E45};
+  \node at (0.3,1.4) {0x7FFE6E46};
+
+
+  \node at (0.3,0.5) {\footnotesize\itshape $direcciones$ $de$};
+  \node at (0.3,0.2) {\footnotesize\itshape $memoria$};
+  \node at (2.1,5.2) {\footnotesize\itshape $Disposicion$ $de$ $la$ $variable$};
+  \node at (2.1,4.9) {\footnotesize\itshape $\textcolor{red}{datoFloat}$ $en$ $memoria$  };
+
+  \node at (8,-1.4) {\fbox{
+						\begin{minipage}{7cm}
+							\fontsize{5pt}{5pt}\selectfont
+							Ingrese valor : -37.625 \\
+							el dato en float \hspace{0.49cm} : \hspace{0.10cm}  -37.625000 \\
+							dirección en memoria\hspace{0.06cm}: \hspace{0.10cm}  0x7FFE6E41 \\ 
+							contenido de p es\hspace{0.35cm}:\hspace{0.15cm}	 \textcolor{red}{0x7FFE6E41} \\
+							el dato en *p es\hspace{0.52cm}:\hspace{0.15cm} 0x00 \\
+							el dato en *(p+1) es\hspace{0.2cm}:\hspace{0.2cm}0x80 \\
+							el dato en *(p+2) es\hspace{0.2cm}:\hspace{0.2cm}0x16 \\
+							el dato en *(p+3) es\hspace{0.2cm}:\hspace{0.2cm}0xC2
+
+						\end{minipage}}};						  
+
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+  \draw[->](2.1,4.7)to [out=-90,in=90]node[right,midway]{} ++(0,-0.4) ; 
+
+  \draw[red!60,dashed,->](4.4,-1.3)to [out=180,in=0]node[right,midway]{} ++(-1.5,4.3) ; 
+  \draw[red!60,dashed,->](4.6,2.8)to [out=180,in=0]node[right,midway]{} ++(-1.7,0.3) ; 
+
+
+\end{tikzpicture}
+  \column{6\textwidth}
+  \lstset{basicstyle=\tiny}
+  \vspace{-1cm}
+   \begin{lstlisting}
+#include <stdio.h>
+
+int main (void)
+{
+unsigned char *p;
+float datoFloat;
+  p=(unsigned char*)&datoFloat;
+//-- Ingreso de datos --
+  printf("Ingrese valor : ");
+  scanf("% f", &datoFloat);
+//-- Impresión de datos --
+  printf("el dato en float      :\t% f\r\n",datoFloat);  
+  printf("dirección en memoria  :\t% p\r\n",&datoFloat);
+  printf("contenido de p es     :\t% p\r\n",&datoFloat);
+  printf("el dato en *p es      :\t% #x\r\n",*p);
+  printf("el dato en *(p+1)     :\t% #x\r\n",*(p+1));
+  printf("el dato en *(p+2)     :\t% #x\r\n",*(p+2));
+  printf("el dato en *(p+3)     :\t% #x\r\n",*(p+3));
+return (0);
+}
+
+
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Verificación de datos tipo \textbf{\textit{\color{yellow}float}} guardados en memoria}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=10, 
+    rectangle split part fill={red!0,red!0,red!0,blue!30,blue!30,blue!30,blue!30,blue!0,blue!0,red!0,red!0},
+    minimum width=1.5cm}]
+    \node (R) at (2,4){ 
+    		\nodepart{one} 
+    		\nodepart{two} 
+    		\nodepart{three}
+    		\nodepart{four}{\textcolor{red}{0x00}}
+    		\nodepart{five}{0x80} 
+    		\nodepart{six}{0x16} 
+    		\nodepart{seven}{0xC2}
+    		\nodepart{eight} 
+    		\nodepart{nine} 
+    		\nodepart{ten}};
+  \end{scope}
+
+  \node at (0.3,3.05) {0x7FFE6E41};
+  \node at (0.3,2.7) {0x7FFE6E42};
+  \node at (0.3,2.35) {0x7FFE6E43};
+  \node at (0.3,2.05) {0x7FFE6E44};
+  \node at (0.3,1.7) {0x7FFE6E45};
+  \node at (0.3,1.4) {0x7FFE6E46};
+
+  \node at (0.3,0.5) {\footnotesize\itshape $direcciones$ $de$};
+  \node at (0.3,0.2) {\footnotesize\itshape $memoria$};
+  \node at (2.1,5.2) {\footnotesize\itshape $Disposicion$ $de$ $la$ $variable$};
+  \node at (2.1,4.9) {\footnotesize\itshape $\textcolor{red}{datoFloat}$ $en$ $memoria$  };
+
+
+  \node at (8,-1.4) {\fbox{
+						\begin{minipage}{7cm}
+							\fontsize{5pt}{5pt}\selectfont
+							Ingrese valor : -37.625 \\
+							el dato en float \hspace{0.49cm} : \hspace{0.10cm}  -37.625000 \\
+							dirección en memoria\hspace{0.06cm}: \hspace{0.10cm}  0x7FFE6E41 \\ 
+							contenido de p es\hspace{0.35cm}:\hspace{0.15cm}	   0x7FFE6E41 \\
+							el dato en *p es\hspace{0.52cm}:\hspace{0.15cm} \textcolor{red}{0x00} \\
+							el dato en *(p+1) es\hspace{0.2cm}:\hspace{0.2cm}0x80 \\
+							el dato en *(p+2) es\hspace{0.2cm}:\hspace{0.2cm}0x16 \\
+							el dato en *(p+3) es\hspace{0.2cm}:\hspace{0.2cm}0xC2
+
+						\end{minipage}}};						  
+
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+  \draw[->](2.1,4.7)to [out=-90,in=90]node[right,midway]{} ++(0,-0.4) ; 
+
+  \draw[red!60,dashed,->](4.4,-1.5)to [out=180,in=0]node[right,midway]{} ++(-1.5,4.6) ; 
+
+
+\end{tikzpicture}
+  \column{6\textwidth}
+  \lstset{basicstyle=\tiny}
+  \vspace{-1cm}
+   \begin{lstlisting}
+#include <stdio.h>
+
+int main (void)
+{
+unsigned char *p;
+float datoFloat;
+  p=(unsigned char*)&datoFloat;
+//-- Ingreso de datos --
+  printf("Ingrese valor : ");
+  scanf("% f", &datoFloat);
+//-- Impresión de datos --
+  printf("el dato en float      :\t% f\r\n",datoFloat);  
+  printf("dirección en memoria  :\t% p\r\n",&datoFloat);
+  printf("contenido de p es     :\t% p\r\n",&datoFloat);
+  printf("el dato en *p es      :\t% #x\r\n",*p);
+  printf("el dato en *(p+1)     :\t% #x\r\n",*(p+1));
+  printf("el dato en *(p+2)     :\t% #x\r\n",*(p+2));
+  printf("el dato en *(p+3)     :\t% #x\r\n",*(p+3));
+return (0);
+}
+
+
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Verificación de datos tipo \textbf{\textit{\color{yellow}float}} guardados en memoria}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=10, 
+    rectangle split part fill={red!0,red!0,red!0,blue!30,blue!30,blue!30,blue!30,blue!0,blue!0,red!0,red!0},
+    minimum width=1.5cm}]
+    \node (R) at (2,4){ 
+    		\nodepart{one} 
+    		\nodepart{two} 
+    		\nodepart{three}
+    		\nodepart{four}{0x00}
+    		\nodepart{five}{\textcolor{red}{0x80}} 
+    		\nodepart{six}{0x16} 
+    		\nodepart{seven}{0xC2}
+    		\nodepart{eight} 
+    		\nodepart{nine} 
+    		\nodepart{ten}};
+  \end{scope}
+
+  \node at (0.3,3.05) {0x7FFE6E41};
+  \node at (0.3,2.7) {0x7FFE6E42};
+  \node at (0.3,2.35) {0x7FFE6E43};
+  \node at (0.3,2.05) {0x7FFE6E44};
+  \node at (0.3,1.7) {0x7FFE6E45};
+  \node at (0.3,1.4) {0x7FFE6E46};
+
+  \node at (0.3,0.5) {\footnotesize\itshape $direcciones$ $de$};
+  \node at (0.3,0.2) {\footnotesize\itshape $memoria$};
+  \node at (2.1,5.2) {\footnotesize\itshape $Disposicion$ $de$ $la$ $variable$};
+  \node at (2.1,4.9) {\footnotesize\itshape $\textcolor{red}{datoFloat}$ $en$ $memoria$  };
+
+  \node at (8,-1.4) {\fbox{
+						\begin{minipage}{7cm}
+							\fontsize{5pt}{5pt}\selectfont
+							Ingrese valor : -37.625 \\
+							el dato en float \hspace{0.49cm} : \hspace{0.10cm}  -37.625000 \\
+							dirección en memoria\hspace{0.06cm}: \hspace{0.10cm}  0x7FFE6E41 \\ 
+							contenido de p es\hspace{0.35cm}:\hspace{0.15cm}	   0x7FFE6E41 \\
+							el dato en *p es\hspace{0.52cm}:\hspace{0.15cm} 0x00 \\
+							el dato en *(p+1) es\hspace{0.2cm}:\hspace{0.2cm}\textcolor{red}{0x80} \\
+							el dato en *(p+2) es\hspace{0.2cm}:\hspace{0.2cm}0x16 \\
+							el dato en *(p+3) es\hspace{0.2cm}:\hspace{0.2cm}0xC2
+
+						\end{minipage}}};						  
+
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+  \draw[->](2.1,4.7)to [out=-90,in=90]node[right,midway]{} ++(0,-0.4) ; 
+
+  \draw[red!60,dashed,->](4.4,-1.65)to [out=180,in=0]node[right,midway]{} ++(-1.5,4.4) ; 
+
+
+\end{tikzpicture}
+  \column{6\textwidth}
+  \lstset{basicstyle=\tiny}
+  \vspace{-1cm}
+   \begin{lstlisting}
+#include <stdio.h>
+
+int main (void)
+{
+unsigned char *p;
+float datoFloat;
+  p=(unsigned char*)&datoFloat;
+//-- Ingreso de datos --
+  printf("Ingrese valor : ");
+  scanf("% f", &datoFloat);
+//-- Impresión de datos --
+  printf("el dato en float      :\t% f\r\n",datoFloat);  
+  printf("dirección en memoria  :\t% p\r\n",&datoFloat);
+  printf("contenido de p es     :\t% p\r\n",&datoFloat);
+  printf("el dato en *p es      :\t% #x\r\n",*p);
+  printf("el dato en *(p+1)     :\t% #x\r\n",*(p+1));
+  printf("el dato en *(p+2)     :\t% #x\r\n",*(p+2));
+  printf("el dato en *(p+3)     :\t% #x\r\n",*(p+3));
+return (0);
+}
+
+
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Verificación de datos tipo \textbf{\textit{\color{yellow}float}} guardados en memoria}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=10, 
+    rectangle split part fill={red!0,red!0,red!0,blue!30,blue!30,blue!30,blue!30,blue!0,blue!0,red!0,red!0},
+    minimum width=1.5cm}]
+    \node (R) at (2,4){ 
+    		\nodepart{one} 
+    		\nodepart{two} 
+    		\nodepart{three}
+    		\nodepart{four}{0x00}
+    		\nodepart{five}{0x80} 
+    		\nodepart{six}{\textcolor{red}{0x16}} 
+    		\nodepart{seven}{0xC2}
+    		\nodepart{eight} 
+    		\nodepart{nine} 
+    		\nodepart{ten}};
+  \end{scope}
+
+  \node at (0.3,3.05) {0x7FFE6E41};
+  \node at (0.3,2.7) {0x7FFE6E42};
+  \node at (0.3,2.35) {0x7FFE6E43};
+  \node at (0.3,2.05) {0x7FFE6E44};
+  \node at (0.3,1.7) {0x7FFE6E45};
+  \node at (0.3,1.4) {0x7FFE6E46};
+
+  \node at (0.3,0.5) {\footnotesize\itshape $direcciones$ $de$};
+  \node at (0.3,0.2) {\footnotesize\itshape $memoria$};
+  \node at (2.1,5.2) {\footnotesize\itshape $Disposicion$ $de$ $la$ $variable$};
+  \node at (2.1,4.9) {\footnotesize\itshape $\textcolor{red}{datoFloat}$ $en$ $memoria$  };
+
+  \node at (8,-1.4) {\fbox{
+						\begin{minipage}{7cm}
+							\fontsize{5pt}{5pt}\selectfont
+							Ingrese valor : -37.625 \\
+							el dato en float \hspace{0.49cm} : \hspace{0.10cm}  -37.625000 \\
+							dirección en memoria\hspace{0.06cm}: \hspace{0.10cm}  0x7FFE6E41 \\ 
+							contenido de p es\hspace{0.35cm}:\hspace{0.15cm}	   0x7FFE6E41 \\
+							el dato en *p es\hspace{0.52cm}:\hspace{0.15cm} 0x00 \\
+							el dato en *(p+1) es\hspace{0.2cm}:\hspace{0.2cm}0x80 \\
+							el dato en *(p+2) es\hspace{0.2cm}:\hspace{0.2cm}\textcolor{red}{0x16} \\
+							el dato en *(p+3) es\hspace{0.2cm}:\hspace{0.2cm}0xC2
+
+						\end{minipage}}};						  
+
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+  \draw[->](2.1,4.7)to [out=-90,in=90]node[right,midway]{} ++(0,-0.4) ; 
+
+  \draw[red!60,dashed,->](4.4,-1.80)to [out=180,in=0]node[right,midway]{} ++(-1.5,4.2) ; 
+
+
+\end{tikzpicture}
+  \column{6\textwidth}
+  \lstset{basicstyle=\tiny}
+  \vspace{-1cm}
+   \begin{lstlisting}
+#include <stdio.h>
+
+int main (void)
+{
+unsigned char *p;
+float datoFloat;
+  p=(unsigned char*)&datoFloat;
+//-- Ingreso de datos --
+  printf("Ingrese valor : ");
+  scanf("% f", &datoFloat);
+//-- Impresión de datos --
+  printf("el dato en float      :\t% f\r\n",datoFloat);  
+  printf("dirección en memoria  :\t% p\r\n",&datoFloat);
+  printf("contenido de p es     :\t% p\r\n",&datoFloat);
+  printf("el dato en *p es      :\t% #x\r\n",*p);
+  printf("el dato en *(p+1)     :\t% #x\r\n",*(p+1));
+  printf("el dato en *(p+2)     :\t% #x\r\n",*(p+2));
+  printf("el dato en *(p+3)     :\t% #x\r\n",*(p+3));
+return (0);
+}
+
+
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+ \frametitle{Verificación de datos tipo \textbf{\textit{\color{yellow}float}} guardados en memoria}
+ \begin{columns}[c]
+  \column{0.48\textwidth}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=10, 
+    rectangle split part fill={red!0,red!0,red!0,blue!30,blue!30,blue!30,blue!30,blue!0,blue!0,red!0,red!0},
+    minimum width=1.5cm}]
+    \node (R) at (2,4){ 
+    		\nodepart{one} 
+    		\nodepart{two} 
+    		\nodepart{three}
+    		\nodepart{four}{0x00}
+    		\nodepart{five}{0x80} 
+    		\nodepart{six}{0x16} 
+    		\nodepart{seven}{\textcolor{red}{0xC2}
+    		\nodepart{eight} 
+    		\nodepart{nine} 
+    		\nodepart{ten}};
+  \end{scope}
+
+  \node at (0.3,3.05) {0x7FFE6E41};
+  \node at (0.3,2.7) {0x7FFE6E42};
+  \node at (0.3,2.35) {0x7FFE6E43};
+  \node at (0.3,2.05) {0x7FFE6E44};
+  \node at (0.3,1.7) {0x7FFE6E45};
+  \node at (0.3,1.4) {0x7FFE6E46};
+  \node at (0.3,0.5) {\footnotesize\itshape $direcciones$ $de$};
+  \node at (0.3,0.2) {\footnotesize\itshape $memoria$};
+  \node at (2.1,5.2) {\footnotesize\itshape $Disposicion$ $de$ $la$ $variable$};
+  \node at (2.1,4.9) {\footnotesize\itshape $\textcolor{red}{datoFloat}$ $en$ $memoria$  };
+
+  \node at (8,-1.4) {\fbox{
+						\begin{minipage}{7cm}
+							\fontsize{5pt}{5pt}\selectfont
+							Ingrese valor : -37.625 \\
+							el dato en float \hspace{0.49cm} : \hspace{0.10cm}  -37.625000 \\
+							dirección en memoria\hspace{0.06cm}: \hspace{0.10cm}  0x7FFE6E41 \\ 
+							contenido de p es\hspace{0.35cm}:\hspace{0.15cm}	   0x7FFE6E41 \\
+							el dato en *p es\hspace{0.52cm}:\hspace{0.15cm} 0x00 \\
+							el dato en *(p+1) es\hspace{0.2cm}:\hspace{0.2cm}0x80 \\
+							el dato en *(p+2) es\hspace{0.2cm}:\hspace{0.2cm}0x16 \\
+							el dato en *(p+3) es\hspace{0.2cm}:\hspace{0.2cm}\textcolor{red}{0xC2}
+
+						\end{minipage}}};						  
+
+  \draw[->](0.3,0.6)to [out=90,in=-90]node[right,midway]{} ++(0,0.5) ; 
+  \draw[->](2.1,4.7)to [out=-90,in=90]node[right,midway]{} ++(0,-0.4) ; 
+
+  \draw[red!60,dashed,->](4.4,-2.0)to [out=180,in=0]node[right,midway]{} ++(-1.5,4.0) ; 
+
+
+\end{tikzpicture}
+  \column{6\textwidth}
+  \lstset{basicstyle=\tiny}
+  \vspace{-1cm}
+   \begin{lstlisting}
+#include <stdio.h>
+
+int main (void)
+{
+unsigned char *p;
+float datoFloat;
+  p=(unsigned char*)&datoFloat;
+//-- Ingreso de datos --
+  printf("Ingrese valor : ");
+  scanf("% f", &datoFloat);
+//-- Impresión de datos --
+  printf("el dato en float      :\t% f\r\n",datoFloat);  
+  printf("dirección en memoria  :\t% p\r\n",&datoFloat);
+  printf("contenido de p es     :\t% p\r\n",&datoFloat);
+  printf("el dato en *p es      :\t% #x\r\n",*p);
+  printf("el dato en *(p+1)     :\t% #x\r\n",*(p+1));
+  printf("el dato en *(p+2)     :\t% #x\r\n",*(p+2));
+  printf("el dato en *(p+3)     :\t% #x\r\n",*(p+3));
+return (0);
+}
+
+
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\end{document}
+
+

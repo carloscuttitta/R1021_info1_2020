@@ -1,0 +1,44 @@
+nombre0 :carlos
+ nombre1 :pedro
+ nombre2 :jose
+ nombre3 :nacho
+ nombre4 :ardrian
+ nombre5 :hector
+ nombre6 :juno
+ nombre7 :pichito
+ nombre8 :juan manuel
+ nombre9 :ricardo
+ nombre10 :alberto fernandez
+ nombre11 :juan roman riquelme
+ nombre12 :martin palermo
+ nombre13 :oscar cordoba
+ nombre14 :walter samuel
+ nombre15 :guillermo el mellizo
+ nombre16 :carlos bianchi the best 
+ nombre17 :la bombonera
+ nombre18 :el templo
+ nombre19 :carlos salvador bilardo 
+ nombre20 :diego armando maradona
+ 
+nombre0 :alberto fernandez
+ nombre1 :ardrian
+ nombre2 :carlos
+ nombre3 :carlos bianchi the best 
+ nombre4 :carlos salvador bilardo 
+ nombre5 :diego armando maradona
+ nombre6 :el templo
+ nombre7 :guillermo el mellizo
+ nombre8 :hector
+ nombre9 :jose
+ nombre10 :juan manuel
+ nombre11 :juan roman riquelme
+ nombre12 :juno
+ nombre13 :la bombonera
+ nombre14 :martin palermo
+ nombre15 :nacho
+ nombre16 :oscar cordoba
+ nombre17 :pedro
+ nombre18 :pichito
+ nombre19 :ricardo
+ nombre20 :walter samuel
+ 

@@ -1,0 +1,5295 @@
+\documentclass{beamer}
+\usepackage[latin1]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{multicol}
+\usepackage{fancybox}
+\usepackage{beamerthemeshadow}
+\usepackage{times} %font times
+\usepackage[T1]{fontenc} %para cuando seleccione texto con letras acentuadad y las ñ Usar la codificación T1
+\usepackage{enumerate}
+\usepackage{listings}
+\usepackage{calligra} 
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{caption}
+\usepackage{tikz}
+\usepackage{verbatim}
+\usepackage{mdwlist}
+\usepackage{yhmath}  % para numeros periodicos
+\usetikzlibrary{chains,fit,shapes,arrows,calc,shapes,decorations.pathreplacing}
+\usefonttheme{professionalfonts}
+
+\newtheorem{defi}{Definición} 
+\hypersetup{pdfpagemode=FullScreen}
+
+\mode<presentation>{
+\usetheme{Warsaw}
+\setbeamercovered{transparent}
+}
+
+\lstset{
+	frame=Ltb,
+	framerule=0pt,
+	aboveskip=0.5cm,
+	framextopmargin=3pt,
+	framexbottommargin=3pt,
+	framexleftmargin=0.4cm,
+	framesep=0pt,
+	rulesep=.4pt,
+%	backgroundcolor=\color{gray!20},
+	rulesepcolor=\color{black},
+	language=C,
+	captionpos=b,
+	tabsize=3,
+	frame=lines,
+	keywordstyle=\color{blue},
+	commentstyle=\color{gray},
+	stringstyle=\color{red},
+	numbers=left,
+	numberstyle=\tiny,
+	numbersep=5pt,
+	breaklines=true,
+	showstringspaces=false,
+	basicstyle=\small,
+	emph={label},
+	framerule=0pt,
+}
+
+\title{\em INFORMATICA I}
+\subtitle{Serie del número de {\color{yellow}Euler} en {\color{yellow}"C"}}
+\author{\em Ing.Juan Carlos Cuttitta}
+\institute{\calligra{\fontsize{16pt}{7pt}\selectfont{Universidad Tecnológica Nacional\\ Facultad Regional Buenos Aires \\ Departamento de {Ingeniería} {Electrónica}}}}
+\date{\today}
+
+%portada
+
+\begin{document}
+
+\begin{figure}[ht!]
+  \centering
+  \includegraphics [width=0.25\textwidth]{informacion.jpg}
+\end{figure}
+\vspace{-1.2cm} % para subir el titulo 
+\titlepage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Template de aqui en mas ;)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pgfdeclareimage[height=0.9cm]{left-logo}{arania.png}
+\setbeamertemplate{sidebar left}
+{
+\logo{\pgfuseimage{left-logo}}
+\vfill%
+\rlap{\hskip0.15cm\insertlogo}%
+\vskip10pt%
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\tikzstyle{every picture}+=[remember picture]
+\tikzstyle{na} = [baseline=-.5ex]
+
+\begin{frame}[fragile]
+\fontsize{13pt}{12pt}\selectfont
+\frametitle{Enunciado del problema}
+El valor aproximado del número de Euler ({\color{red}e}) se puede obtener con la siguente serie.\\
+\begin{center}
+{\color{blue}$e=\sum_{n=0}^{\infty}\frac{1}{!n}$}
+\end{center}
+\begin{center}
+{\color{blue}$e=\frac{1}{!0}+\frac{1}{!1}+\frac{1}{!2}+\frac{1}{!3}+\frac{1}{!4}+\frac{1}{!5}+ \cdot\cdot\cdot$}
+\end{center}
+Escribir un programa que calcule el valor aproximado de {\color{red}e} mediante un ciclo repetitivo que termine cuando la diferencia entre dos aproximaciones sucesivas difiera en menos de {\color{red}$10^{-9}$} \\
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Declaración y disposición en memoria}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+		\node (R) at (2,6)
+  		{
+  			\nodepart{one}{}
+  	 		\nodepart{two}{\color{red}1}
+  	 		\nodepart{three}{\color{red}1}	
+  	 		\nodepart{four}{\color{red}0x??}
+  	 		\nodepart{five}{\color{red}0}
+  	 		\nodepart{six}{}
+  	 		\nodepart{seven}{\color{red}-1.00}
+  	 		\nodepart{eight}{}
+  	 		\nodepart{nine}{$\vdots$}
+  	 		\nodepart{ten}{}
+  	 	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.2,7.8) -- (10,7.8) -- (10,7.3) -- (5.2,7.3) -- cycle;
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (2.1,7.9) {\small $Disposici\acute{o}n$ $de$ $las$ $variables$};
+  	\node at (2.1,7.5) {\small        $en$ $la$ $memoria$  };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Declaración y disposición en memoria}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{1}	
+    		\nodepart{four}{\color{red}0}
+    		\nodepart{five}{0}
+    		\nodepart{six}{}
+    		\nodepart{seven}{-1.00}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.7,7.2) -- (6.2,7.2) -- (6.2,6.8) -- (5.7,6.8) -- cycle;
+	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+	\node at (2.1,7.9) {\small $Declara$ $la$ $variable$ $\color{red}i$};
+	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+	\node at (4,5.75) {\textcolor{blue}{factorial}};
+	\node at (4,5.4){\textcolor{blue}{contador}};
+	\node at (3.6,5.05) {\textcolor{blue}{i}};
+	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+ \column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[	every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{1}	
+    		\nodepart{four}{0}
+    		\nodepart{five}{0}
+    		\nodepart{six}{}
+    		\nodepart{seven}{-1.00}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (6.4,7.2) -- (9.7,7.2) -- (9.7,6.8) -- (6.4,6.8) -- cycle;
+	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (2.1,7.9) {\small $Pregunta$ $condici\acute{o}n$ $del$ $\color{red}for$};
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+  	\draw[decorate,decoration={brace,raise=4pt,amplitude=4pt}, thick]
+    (7.35,8.4) -- (8.7,8.4)node[black,midway,xshift=1.0cm,yshift=0.4cm]{\footnotesize{\color{red!60}$10^{-9}$}};
+  	\draw[red,->](9.3,7.1)to [out=10,in=0]node[right,midway]{} ++(-0.2,1.3) ; 
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{1}	
+    		\nodepart{four}{0}
+    		\nodepart{five}{0}
+    		\nodepart{six}{}
+    		\nodepart{seven}{\color{red}0}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,6.65) -- (8,6.65) -- (8,6.35) -- (5.8,6.35) -- cycle;
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (2.1,7.9) {\small $Para$ $conservar$ $el$ $\color{red}e$ $anterior$};
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{1}	
+    		\nodepart{four}{0}
+    		\nodepart{five}{0}
+    		\nodepart{six}{}
+    		\nodepart{seven}{0}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,6.4) -- (8.4,6.4) -- (8.4,6) -- (5.8,6) -- cycle;
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (2.1,7.9) {\small $Como$ $\color{red}contador$ $no$ $es$ $\color{red}<=$ $a$ $\color{red}i$};
+  	\node at (2.1,7.5) {\small $no$ $entra$ $dentro$ $del$ $\color{red}while$};
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{1}	
+    		\nodepart{four}{0}
+    		\nodepart{five}{0}
+    		\nodepart{six}{}
+    		\nodepart{seven}{0}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (8.6,5.2) -- (9.5,5.2) -- (9.5,4.8) -- (8.6,4.8) -- cycle;
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (2.1,7.9) {\small $Se$ $debe$ $\color{red}castear$ $la$ $variable$};
+  	\node at (2.1,7.5) {\small $para$ $que$ $ambas$ $sean$ $\color{red}double$};
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}	
+    		\nodepart{two}{1}
+    		\nodepart{three}{1}	
+    		\nodepart{four}{0}
+    		\nodepart{five}{\color{red}1.00}
+    		\nodepart{six}{}
+    		\nodepart{seven}{0}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.6,5.2) -- (11,5.2) -- (11,4.8) -- (5.6,4.8) -- cycle;
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (2.1,7.9) {\small $almacena$ $el$ $resultado$ $en$ $la$};
+  	\node at (2.1,7.5) {\small $variable$ $\color{red}nEuler$};
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+  	\draw[decorate,decoration={brace,raise=3pt,amplitude=3pt}, thick]
+    (7,5.1)--(10.7,5.1)node [black,midway,xshift=1.5cm,yshift=0.4cm]{\scriptsize{\color{red}$0+\frac{1}{1.00}=1.00$ }};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{\color{red}1}
+    		\nodepart{three}{\color{red}1}	
+    		\nodepart{four}{0}
+    		\nodepart{five}{1.00}
+    		\nodepart{six}{}
+    		\nodepart{seven}{0}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.6,4.6) -- (8,4.6) -- (8,4.1) -- (5.6,4.1) -- cycle;
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (2.1,7.9) {\small $inicializo$ $nuevamente$ $las$};
+  	\node at (2.1,7.5) {\small $variables$ $\color{red}factorial$ y $\color{red}contador$};
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{1}	
+    		\nodepart{four}{\color{red}1}
+    		\nodepart{five}{1.00}
+    		\nodepart{six}{}
+    		\nodepart{seven}{0}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (9.7,7.2) -- (10.3,7.2) -- (10.3,6.8) -- (9.7,6.8) -- cycle;
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (2.1,7.9) {\small $incremento$ $la$ $variable$ $\color{red}i$};
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{1}	
+    		\nodepart{four}{0}
+    		\nodepart{five}{1.00}
+    		\nodepart{six}{}
+    		\nodepart{seven}{0}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (6.4,7.2) -- (9.7,7.2) -- (9.7,6.8) -- (6.4,6.8) -- cycle;
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (2.1,7.9) {\small $Pregunta$ $condici\acute{o}n$ $del$ $\color{red}for$};
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+  	\draw[decorate,decoration={brace,raise=4pt,amplitude=4pt}, thick]
+    (7.35,8.4)--(8.7,8.4)node [black,midway,xshift=1.0cm,yshift=0.4cm]{\footnotesize {\color{red!60}$10^{-9}$}};
+  	\draw[red,->](9.3,7.1)to [out=10,in=0]node[right,midway]{} ++(-0.2,1.3) ; 
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{1}	
+    		\nodepart{four}{1}
+    		\nodepart{five}{1.00}
+    		\nodepart{six}{}
+    		\nodepart{seven}{\color{red}1.00}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,6.65) -- (8,6.65) -- (8,6.35) -- (5.8,6.35) -- cycle;
+	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (2.1,7.9) {\small $Para$ $conservar$ $el$ $\color{red}e$ $anterior$};
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{1}	
+    		\nodepart{four}{1}
+    		\nodepart{five}{1.00}
+    		\nodepart{six}{}
+    		\nodepart{seven}{1.00}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,6.4) -- (8.4,6.4) -- (8.4,6) -- (5.8,6) -- cycle;
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (2.1,7.9) {\small $Como$ $\color{red}contador$ $es$ $\color{red}<=$ $a$ $\color{red}i$};
+  	\node at (2.1,7.5) {\small $entra$ $dentro$ $del$ $\color{red}while$};
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{\color{red}1}
+    		\nodepart{three}{1}	
+    		\nodepart{four}{1}
+    		\nodepart{five}{1.00}
+    		\nodepart{six}{}
+    		\nodepart{seven}{1.00}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,5.9) -- (10.5,5.9) -- (10.5,5.6) -- (5.8,5.6) -- cycle;
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (2.1,7.9) {\small $almacena$ $el$ $resultado$ $en$ $la$};
+  	\node at (2.1,7.5) {\small $variable$ $\color{red}factorial$};
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+  	\draw[decorate,decoration={brace,raise=3pt,amplitude=3pt}, thick]
+    (7.5,5.8)--(10.2,5.8)node [black,midway,xshift=1.5cm,yshift=0.4cm]{\footnotesize{\color{red}$1\cdot 1=1$ }};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{\color{red}2}	
+    		\nodepart{four}{1}
+    		\nodepart{five}{1.00}
+    		\nodepart{six}{}
+    		\nodepart{seven}{1.00}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,5.6) -- (8,5.6) -- (8,5.3) -- (5.8,5.3) -- cycle;
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (2.1,7.9) {\small $incremento$ $la$ $variable$ $\color{red}contador$};
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{2}	
+    		\nodepart{four}{1}
+    		\nodepart{five}{1.00}
+    		\nodepart{six}{}
+    		\nodepart{seven}{1.00}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,6.4) -- (8.4,6.4) -- (8.4,6) -- (5.8,6) -- cycle;
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (2.1,7.9) {\small $Como$ $\color{red}contador$ $no$ $es$ $\color{red}<=$ $a$ $\color{red}i$};
+  	\node at (2.1,7.5) {\small $sale$ $del$ $loop$ $\color{red}while$};
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{2}	
+    		\nodepart{four}{1}
+    		\nodepart{five}{\color{red}2.00}
+    		\nodepart{six}{}
+    		\nodepart{seven}{1.00}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.6,5.2) -- (11,5.2) -- (11,4.8) -- (5.6,4.8) -- cycle;
+  	\node at (2.1,7.9) {\small $almacena$ $el$ $resultado$ $en$ $la$};
+  	\node at (2.1,7.5) {\small $variable$ $\color{red}nEuler$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+  	\draw[decorate,decoration={brace,raise=3pt,amplitude=3pt}, thick]
+    (7,5.1) -- (10.7,5.1)node [black,midway,xshift=1.5cm,yshift=0.4cm]{\scriptsize {\color{red}$1.00+\frac{1}{1.00}=2.00$ }};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{\color{red}1}
+    		\nodepart{three}{\color{red}1}	
+    		\nodepart{four}{1}
+    		\nodepart{five}{2.00}
+    		\nodepart{six}{}
+    		\nodepart{seven}{1.00}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.6,4.6) -- (8,4.6) -- (8,4.1) -- (5.6,4.1) -- cycle;
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (2.1,7.9) {\small $inicializo$ $nuevamente$ $las$};
+  	\node at (2.1,7.5) {\small $variables$ $\color{red}factorial$ y $\color{red}contador$};
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{1}	
+    		\nodepart{four}{\color{red}2}
+    		\nodepart{five}{2.00}
+    		\nodepart{six}{}
+    		\nodepart{seven}{1.00}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (9.7,7.2) -- (10.3,7.2) -- (10.3,6.8) -- (9.7,6.8) -- cycle;
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (2.1,7.9) {\small $incremento$ $la$ $variable$ $\color{red}i$};
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{1}	
+    		\nodepart{four}{2}
+    		\nodepart{five}{2.00}
+    		\nodepart{six}{}
+    		\nodepart{seven}{1.00}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (6.4,7.2) -- (9.7,7.2) -- (9.7,6.8) -- (6.4,6.8) -- cycle;
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (2.1,7.9) {\small $Pregunta$ $condici\acute{o}n$ $del$ $\color{red}for$};
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+  	\draw[decorate,decoration={brace,raise=4pt,amplitude=4pt}, thick]
+    (7.35,8.4)--(8.7,8.4)node [black,midway,xshift=1.0cm,yshift=0.4cm]{\footnotesize {\color{red!60}$10^{-9}$}};
+  	\draw[red,->](9.3,7.1)to [out=10,in=0]node[right,midway]{} ++(-0.2,1.3) ; 
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{1}	
+    		\nodepart{four}{2}
+    		\nodepart{five}{2.00}
+    		\nodepart{six}{}
+    		\nodepart{seven}{\color{red}2.00}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,6.65) -- (8,6.65) -- (8,6.35) -- (5.8,6.35) -- cycle;
+	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (2.1,7.9) {\small $Para$ $conservar$ $el$ $\color{red}e$ $anterior$};
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{1}	
+    		\nodepart{four}{2}
+    		\nodepart{five}{2.00}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.00}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,6.4) -- (8.4,6.4) -- (8.4,6) -- (5.8,6) -- cycle;
+	\node at (2.1,7.9) {\small $Como$ $\color{red}contador$ $es$ $\color{red}<=$ $a$ $\color{red}i$};
+	\node at (2.1,7.5) {\small $entra$ $dentro$ $del$ $\color{red}while$};
+	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+    \node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{\color{red}1}
+    		\nodepart{three}{1}	
+    		\nodepart{four}{2}
+    		\nodepart{five}{2.00}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.00}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,5.9) -- (10.5,5.9) -- (10.5,5.6) -- (5.8,5.6) -- cycle;
+  	\node at (2.1,7.9) {\small $almacena$ $el$ $resultado$ $en$ $la$};
+  	\node at (2.1,7.5) {\small $variable$ $\color{red}factorial$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+  	\draw[decorate,decoration={brace,raise=3pt,amplitude=3pt}, thick]
+    (7.5,5.8)--(10.2,5.8)node [black,midway,xshift=1.5cm,yshift=0.4cm]{\footnotesize{\color{red}$1\cdot 1=1$ }};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{\color{red}2}	
+    		\nodepart{four}{2}
+    		\nodepart{five}{2.00}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.00}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,5.6) -- (8,5.6) -- (8,5.3) -- (5.8,5.3) -- cycle;
+  	\node at (2.1,7.9) {\small $incremento$ $la$ $variable$ $\color{red}contador$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{2}	
+    		\nodepart{four}{2}
+    		\nodepart{five}{2.00}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.00}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,6.4) -- (8.4,6.4) -- (8.4,6) -- (5.8,6) -- cycle;
+  	\node at (2.1,7.9) {\small $Como$ $\color{red}contador$ $es$ $\color{red}<=$ $a$ $\color{red}i$};
+  	\node at (2.1,7.5) {\small $entra$ $dentro$ $del$ $\color{red}while$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{\color{red}2}
+    		\nodepart{three}{2}	
+    		\nodepart{four}{2}
+    		\nodepart{five}{2.00}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.00}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,5.9) -- (10.5,5.9) -- (10.5,5.6) -- (5.8,5.6) -- cycle;
+  	\node at (2.1,7.9) {\small $almacena$ $el$ $resultado$ $en$ $la$};
+  	\node at (2.1,7.5) {\small $variable$ $\color{red}factorial$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+  	\draw[decorate,decoration={brace,raise=3pt,amplitude=3pt}, thick]
+    (7.5,5.8)--(10.2,5.8)node [black,midway,xshift=1.5cm,yshift=0.4cm]{\footnotesize{\color{red}$1\cdot 2=2$ }};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{2}
+    		\nodepart{three}{\color{red}3}	
+    		\nodepart{four}{2}
+    		\nodepart{five}{2.00}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.00}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,5.6) -- (8,5.6) -- (8,5.3) -- (5.8,5.3) -- cycle;
+  	\node at (2.1,7.9) {\small $incremento$ $la$ $variable$ $\color{red}contador$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{2}
+    		\nodepart{three}{3}	
+    		\nodepart{four}{2}
+    		\nodepart{five}{2.00}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.00}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,6.4) -- (8.4,6.4) -- (8.4,6) -- (5.8,6) -- cycle;
+  	\node at (2.1,7.9) {\small $Como$ $\color{red}contador$ $no$ $es$ $\color{red}<=$ $a$ $\color{red}i$};
+  	\node at (2.1,7.5) {\small $sale$ $del$ $loop$ $\color{red}while$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{2}
+    		\nodepart{three}{3}	
+    		\nodepart{four}{2}
+    		\nodepart{five}{
+    		\color{red}2.50}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.00}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.6,5.2) -- (11,5.2) -- (11,4.8) -- (5.6,4.8) -- cycle;
+  	\node at (2.1,7.9) {\small $almacena$ $el$ $resultado$ $en$ $la$};
+  	\node at (2.1,7.5) {\small $variable$ $\color{red}nEuler$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+  	\draw[decorate,decoration={brace,raise=3pt,amplitude=3pt}, thick]
+    (7,5.1)--(10.7,5.1)node [black,midway,xshift=1.5cm,yshift=0.4cm]{\tiny{\color{red}$2.00+\frac{1}{2.00}=2.50$ }};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{\color{red}1}
+    		\nodepart{three}{\color{red}1}	
+    		\nodepart{four}{2}
+    		\nodepart{five}{2.50}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.00}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.6,4.6) -- (8,4.6) -- (8,4.1) -- (5.6,4.1) -- cycle;
+  	\node at (2.1,7.9) {\small $inicializo$ $nuevamente$ $las$};
+  	\node at (2.1,7.5) {\small $variables$ $\color{red}factorial$ y $\color{red}contador$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{1}	
+    		\nodepart{four}{\color{red}3}
+    		\nodepart{five}{2.50}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.00}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (9.7,7.2) -- (10.3,7.2) -- (10.3,6.8) -- (9.7,6.8) -- cycle;
+  	\node at (2.1,7.9) {\small $incremento$ $la$ $variable$ $\color{red}i$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{1}	
+    		\nodepart{four}{3}
+    		\nodepart{five}{2.50}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.00}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (6.4,7.2) -- (9.7,7.2) -- (9.7,6.8) -- (6.4,6.8) -- cycle;
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (2.1,7.9) {\small $Pregunta$ $condici\acute{o}n$ $del$ $\color{red}for$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+  	\draw[decorate,decoration={brace,raise=4pt,amplitude=4pt}, thick]
+    (7.35,8.4)--(8.7,8.4)node [black,midway,xshift=1.0cm,yshift=0.4cm]{\footnotesize {\color{red!60}$10^{-9}$}};
+  	\draw[red,->](9.3,7.1)to [out=10,in=0]node[right,midway]{} ++(-0.2,1.3) ; 
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{1}	
+    		\nodepart{four}{3}
+    		\nodepart{five}{2.50}
+    		\nodepart{six}{}
+    		\nodepart{seven}{\color{red}2.50}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,6.65) -- (8,6.65) -- (8,6.35) -- (5.8,6.35) -- cycle;
+  	\node at (2.1,7.9) {\small $Para$ $conservar$ $el$ $\color{red}e$ $anterior$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{1}	
+    		\nodepart{four}{3}
+    		\nodepart{five}{2.50}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.50}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,6.4) -- (8.4,6.4) -- (8.4,6) -- (5.8,6) -- cycle;
+  	\node at (2.1,7.9) {\small $Como$ $\color{red}contador$ $es$ $\color{red}<=$ $a$ $\color{red}i$};
+  	\node at (2.1,7.5) {\small $entra$ $dentro$ $del$ $\color{red}while$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{\color{red}1}
+    		\nodepart{three}{1}	
+    		\nodepart{four}{3}
+    		\nodepart{five}{2.50}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.50}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,5.9) -- (10.5,5.9) -- (10.5,5.6) -- (5.8,5.6) -- cycle;
+  	\node at (2.1,7.9) {\small $almacena$ $el$ $resultado$ $en$ $la$};
+  	\node at (2.1,7.5) {\small $variable$ $\color{red}factorial$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+  	\draw[decorate,decoration={brace,raise=3pt,amplitude=3pt}, thick]
+    (7.5,5.8)--(10.2,5.8)node [black,midway,xshift=1.5cm,yshift=0.4cm]{\footnotesize{\color{red}$1\cdot 1=1$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{\color{red}2}	
+    		\nodepart{four}{3}
+    		\nodepart{five}{2.50}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.50}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,5.6) -- (8,5.6) -- (8,5.3) -- (5.8,5.3) -- cycle;
+  	\node at (2.1,7.9) {\small $incremento$ $la$ $variable$ $\color{red}contador$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{2}	
+    		\nodepart{four}{3}
+    		\nodepart{five}{2.50}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.50}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,6.4) -- (8.4,6.4) -- (8.4,6) -- (5.8,6) -- cycle;
+  	\node at (2.1,7.9) {\small $Como$ $\color{red}contador$ $es$ $\color{red}<=$ $a$ $\color{red}i$};
+  	\node at (2.1,7.5) {\small $entra$ $dentro$ $del$ $\color{red}while$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{\color{red}2}
+    		\nodepart{three}{2}	
+    		\nodepart{four}{3}
+    		\nodepart{five}{2.50}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.50}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,5.9) -- (10.5,5.9) -- (10.5,5.6) -- (5.8,5.6) -- cycle;
+  	\node at (2.1,7.9) {\small $almacena$ $el$ $resultado$ $en$ $la$};
+  	\node at (2.1,7.5) {\small $variable$ $\color{red}factorial$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+  	\draw[decorate,decoration={brace,raise=3pt,amplitude=3pt}, thick]
+    (7.5,5.8)--(10.2,5.8)node [black,midway,xshift=1.5cm,yshift=0.4cm]{\footnotesize{\color{red}$1\cdot 2=2$ }};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{2}
+    		\nodepart{three}{\color{red}3}	
+    		\nodepart{four}{3}
+    		\nodepart{five}{2.50}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.50}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,5.6) -- (8,5.6) -- (8,5.3) -- (5.8,5.3) -- cycle;
+  	\node at (2.1,7.9) {\small $incremento$ $la$ $variable$ $\color{red}contador$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{2}
+    		\nodepart{three}{3}	
+    		\nodepart{four}{3}
+    		\nodepart{five}{2.50}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.50}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,6.4) -- (8.4,6.4) -- (8.4,6) -- (5.8,6) -- cycle;
+  	\node at (2.1,7.9) {\small $Como$ $\color{red}contador$ $es$ $\color{red}<=$ $a$ $\color{red}i$};
+  	\node at (2.1,7.5) {\small $entra$ $dentro$ $del$ $\color{red}while$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{\color{red}6}
+    		\nodepart{three}{3}	
+    		\nodepart{four}{3}
+    		\nodepart{five}{2.50}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.50}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,5.9) -- (10.5,5.9) -- (10.5,5.6) -- (5.8,5.6) -- cycle;
+  	\node at (2.1,7.9) {\small $almacena$ $el$ $resultado$ $en$ $la$};
+  	\node at (2.1,7.5) {\small $variable$ $\color{red}factorial$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+  	\draw[decorate,decoration={brace,raise=3pt,amplitude=3pt}, thick]
+    (7.5,5.8)--(10.2,5.8)node [black,midway,xshift=1.5cm,yshift=0.4cm]{\footnotesize{\color{red}$2\cdot 3=6$ }};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{6}
+    		\nodepart{three}{\color{red}4}	
+    		\nodepart{four}{3}
+    		\nodepart{five}{2.50}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.50}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,5.6) -- (8,5.6) -- (8,5.3) -- (5.8,5.3) -- cycle;
+  	\node at (2.1,7.9) {\small $incremento$ $la$ $variable$ $\color{red}contador$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{6}
+    		\nodepart{three}{4}	
+    		\nodepart{four}{3}
+    		\nodepart{five}{2.50}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.50}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,6.4) -- (8.4,6.4) -- (8.4,6) -- (5.8,6) -- cycle;
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (2.1,7.9) {\small $Como$ $\color{red}contador$ $no$ $es$ $\color{red}<=$ $a$ $\color{red}i$};
+  	\node at (2.1,7.5) {\small $sale$ $del$ $loop$ $\color{red}while$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{6}
+    		\nodepart{three}{4}	
+    		\nodepart{four}{3}
+    		\nodepart{five}{\color{red}2.666....}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.50}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.6,5.2) -- (11,5.2) -- (11,4.8) -- (5.6,4.8) -- cycle;
+  	\node at (2.1,7.9) {\small $almacena$ $el$ $resultado$ $en$ $la$};
+  	\node at (2.1,7.5) {\small $variable$ $\color{red}nEuler$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+  	\draw[decorate,decoration={brace,raise=3pt,amplitude=3pt}, thick]
+    (7,5.1) -- (10.7,5.1)node [black,midway,xshift=1.5cm,yshift=0.4cm]{\scriptsize {\color{red}$2.50+\frac{1}{6.00}=2.6\wideparen{6}$ }};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{\color{red}1}
+    		\nodepart{three}{\color{red}1}	
+    		\nodepart{four}{3}
+    		\nodepart{five}{2.666....}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.50}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.6,4.6) -- (8,4.6) -- (8,4.1) -- (5.6,4.1) -- cycle;
+  	\node at (2.1,7.9) {\small $inicializo$ $nuevamente$ $las$};
+  	\node at (2.1,7.5) {\small $variables$ $\color{red}factorial$ y $\color{red}contador$};
+   	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{1}	
+    		\nodepart{four}{\color{red}4}
+    		\nodepart{five}{2.666....}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.50}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (9.7,7.2) -- (10.3,7.2) -- (10.3,6.8) -- (9.7,6.8) -- cycle;
+  	\node at (2.1,7.9) {\small $incremento$ $la$ $variable$ $\color{red}i$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{1}	
+    		\nodepart{four}{4}
+    		\nodepart{five}{2.666....}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.50}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (6.4,7.2) -- (9.7,7.2) -- (9.7,6.8) -- (6.4,6.8) -- cycle;
+  	\node at (2.1,7.9) {\small $Pregunta$ $condici\acute{o}n$ $del$ $\color{red}for$};
+   	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+  	\draw[decorate,decoration={brace,raise=4pt,amplitude=4pt}, thick]
+    (7.35,8.4)--(8.7,8.4)node [black,midway,xshift=1.0cm,yshift=0.4cm]{\footnotesize {\color{red!60}$10^{-9}$}};
+  	\draw[red,->](9.3,7.1)to [out=10,in=0]node[right,midway]{} ++(-0.2,1.3) ; 
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{1}	
+    		\nodepart{four}{4}
+    		\nodepart{five}{2.666....}
+    		\nodepart{six}{}
+    		\nodepart{seven}{\color{red}2.666....}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,6.65) -- (8,6.65) -- (8,6.35) -- (5.8,6.35) -- cycle;
+  	\node at (2.1,7.9) {\small $Para$ $conservar$ $el$ $\color{red}e$ $anterior$};
+   	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{1}	
+    		\nodepart{four}{4}
+    		\nodepart{five}{2.666....}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.666....}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,6.4) -- (8.4,6.4) -- (8.4,6) -- (5.8,6) -- cycle;
+  	\node at (2.1,7.9) {\small $Como$ $\color{red}contador$ $es$ $\color{red}<=$ $a$ $\color{red}i$};
+  	\node at (2.1,7.5) {\small $entra$ $dentro$ $del$ $\color{red}while$}; 
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{\color{red}1}
+    		\nodepart{three}{1}	
+    		\nodepart{four}{4}
+    		\nodepart{five}{2.666....}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.666....}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,5.9) -- (10.5,5.9) -- (10.5,5.6) -- (5.8,5.6) -- cycle;
+  	\node at (2.1,7.9) {\small $almacena$ $el$ $resultado$ $en$ $la$};
+  	\node at (2.1,7.5) {\small $variable$ $\color{red}factorial$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+  	\draw[decorate,decoration={brace,raise=3pt,amplitude=3pt}, thick]
+    (7.5,5.8)--(10.2,5.8)node [black,midway,xshift=1.5cm,yshift=0.4cm]{\footnotesize{\color{red}$1\cdot 1=1$ }};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{\color{red}2}	
+    		\nodepart{four}{4}
+    		\nodepart{five}{2.666....}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.666....}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,5.6) -- (8,5.6) -- (8,5.3) -- (5.8,5.3) -- cycle;
+  	\node at (2.1,7.9) {\small $incremento$ $la$ $variable$ $\color{red}contador$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{2}	
+    		\nodepart{four}{4}
+    		\nodepart{five}{2.666....}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.666....}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,6.4) -- (8.4,6.4) -- (8.4,6) -- (5.8,6) -- cycle;
+  	\node at (2.1,7.9) {\small $Como$ $\color{red}contador$ $es$ $\color{red}<=$ $a$ $\color{red}i$};
+  	\node at (2.1,7.5) {\small $entra$ $dentro$ $del$ $\color{red}while$}; 
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{\color{red}2}
+    		\nodepart{three}{2}	
+    		\nodepart{four}{4}
+    		\nodepart{five}{2.666....}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.666....}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,5.9) -- (10.5,5.9) -- (10.5,5.6) -- (5.8,5.6) -- cycle;
+	\node at (2.1,7.9) {\small $almacena$ $el$ $resultado$ $en$ $la$};
+  	\node at (2.1,7.5) {\small $variable$ $\color{red}factorial$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+  	\draw[decorate,decoration={brace,raise=3pt,amplitude=3pt}, thick]
+    (7.5,5.8)--(10.2,5.8)node [black,midway,xshift=1.5cm,yshift=0.4cm]{\footnotesize{\color{red}$1\cdot 2=2$ }};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{2}
+    		\nodepart{three}{\color{red}3}	
+    		\nodepart{four}{4}
+    		\nodepart{five}{2.666....}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.666....}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,5.6) -- (8,5.6) -- (8,5.3) -- (5.8,5.3) -- cycle;
+	\node at (2.1,7.9) {\small $incremento$ $la$ $variable$ $\color{red}contador$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{2}
+    		\nodepart{three}{3}	
+    		\nodepart{four}{4}
+    		\nodepart{five}{2.666....}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.666....}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,6.4) -- (8.4,6.4) -- (8.4,6) -- (5.8,6) -- cycle;
+  	\node at (2.1,7.9) {\small $Como$ $\color{red}contador$ $es$ $\color{red}<=$ $a$ $\color{red}i$};
+  	\node at (2.1,7.5) {\small $entra$ $dentro$ $del$ $\color{red}while$}; 
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{\color{red}6}
+    		\nodepart{three}{3}	
+    		\nodepart{four}{4}
+    		\nodepart{five}{2.666....}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.666....}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,5.9) -- (10.5,5.9) -- (10.5,5.6) -- (5.8,5.6) -- cycle;
+  	\node at (2.1,7.9) {\small $almacena$ $el$ $resultado$ $en$ $la$};
+  	\node at (2.1,7.5) {\small $variable$ $\color{red}factorial$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+  	\draw[decorate,decoration={brace,raise=3pt,amplitude=3pt}, thick]
+    (7.5,5.8)--(10.2,5.8)node [black,midway,xshift=1.5cm,yshift=0.4cm]{\footnotesize{\color{red}$2\cdot 3=6$ }};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{6}
+    		\nodepart{three}{\color{red}4}	
+    		\nodepart{four}{4}
+    		\nodepart{five}{2.666....}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.666....}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,5.6) -- (8,5.6) -- (8,5.3) -- (5.8,5.3) -- cycle;
+  	\node at (2.1,7.9) {\small $incremento$ $la$ $variable$ $\color{red}contador$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{6}
+    		\nodepart{three}{4}	
+    		\nodepart{four}{4}
+    		\nodepart{five}{2.666....}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.666....}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,6.4) -- (8.4,6.4) -- (8.4,6) -- (5.8,6) -- cycle;
+  	\node at (2.1,7.9) {\small $Como$ $\color{red}contador$ $es$ $\color{red}<=$ $a$ $\color{red}i$};
+  	\node at (2.1,7.5) {\small $entra$ $dentro$ $del$ $\color{red}while$}; 
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{\color{red}24}
+    		\nodepart{three}{4}	
+    		\nodepart{four}{4}
+    		\nodepart{five}{2.666....}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.666....}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,5.9) -- (10.5,5.9) -- (10.5,5.6) -- (5.8,5.6) -- cycle;
+  	\node at (2.1,7.9) {\small $almacena$ $el$ $resultado$ $en$ $la$};
+  	\node at (2.1,7.5) {\small $variable$ $\color{red}factorial$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+  	\draw[decorate,decoration={brace,raise=3pt,amplitude=3pt}, thick]
+    (7.5,5.8)--(10.2,5.8)node [black,midway,xshift=1.5cm,yshift=0.4cm]{\footnotesize{\color{red}$6\cdot4=24$ }};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{24}
+    		\nodepart{three}{\color{red}5}	
+    		\nodepart{four}{4}
+    		\nodepart{five}{2.666....}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.666....}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,5.6) -- (8,5.6) -- (8,5.3) -- (5.8,5.3) -- cycle;
+  	\node at (2.1,7.9) {\small $incremento$ $la$ $variable$ $\color{red}contador$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{24}
+    		\nodepart{three}{5}	
+    		\nodepart{four}{4}
+    		\nodepart{five}{2.666....}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.666....}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.8,6.4) -- (8.4,6.4) -- (8.4,6) -- (5.8,6) -- cycle;
+  	\node at (2.1,7.9) {\small $Como$ $\color{red}contador$ $no$ $es$ $\color{red}<=$ $a$ $\color{red}i$};
+  	\node at (2.1,7.5) {\small $sale$ $del$ $loop$ $\color{red}while$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{24}
+    		\nodepart{three}{5}	
+    		\nodepart{four}{4}
+    		\nodepart{five}{\color{red}2.7083....}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.666....}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.6,5.2) -- (11,5.2) -- (11,4.8) -- (5.6,4.8) -- cycle;
+  	\node at (2.1,7.9) {\small $almacena$ $el$ $resultado$ $en$ $la$};
+  	\node at (2.1,7.5) {\small $variable$ $\color{red}nEuler$};
+   	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+  	\draw[decorate,decoration={brace,raise=3pt,amplitude=3pt}, thick]
+    (7,5.1) -- (10.7,5.1)node [black,midway,xshift=1.2cm,yshift=0.4cm]{\tiny {\color{red}$2.66+\frac{1}{24.00}=2.708\wideparen{3}$ }};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{\color{red}1}
+    		\nodepart{three}{\color{red}1}	
+    		\nodepart{four}{4}
+    		\nodepart{five}{2.7083....}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.666....}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.6,4.6) -- (8,4.6) -- (8,4.1) -- (5.6,4.1) -- cycle;
+	\node at (2.1,7.9) {\small $inicializo$ $nuevamente$ $las$};
+  	\node at (2.1,7.5) {\small $variables$ $\color{red}factorial$ y $\color{red}contador$};
+   	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+  	\draw[decorate,decoration={brace,raise=3pt,amplitude=3pt}, thick]
+    (7,5.1) -- (10.7,5.1)node [black,midway,xshift=1.2cm,yshift=0.4cm]{\tiny {\color{red}$2.66+\frac{1}{24.00}=2.708\wideparen{3}$ }};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{1}	
+    		\nodepart{four}{\color{red}5}
+    		\nodepart{five}{2.7083....}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.666....}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (9.7,7.2) -- (10.3,7.2) -- (10.3,6.8) -- (9.7,6.8) -- cycle;
+  	\node at (2.1,7.9) {\small $incremento$ $la$ $variable$ $\color{red}i$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{1}	
+    		\nodepart{four}{5}
+    		\nodepart{five}{2.7083....}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.666....}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (6.4,7.2) -- (9.7,7.2) -- (9.7,6.8) -- (6.4,6.8) -- cycle;
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (2.1,7.9) {\small $Pregunta$ $condici\acute{o}n$ $del$ $\color{red}for$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+  	\draw[decorate,decoration={brace,raise=4pt,amplitude=4pt}, thick]
+    (7.35,8.4)--(8.7,8.4)node [black,midway,xshift=1.0cm,yshift=0.4cm]{\footnotesize {\color{red!60}$10^{-9}$}};
+  	\draw[red,->](9.3,7.1)to [out=10,in=0]node[right,midway]{} ++(-0.2,1.3) ; 
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{13pt}{20pt}\selectfont
+\frametitle{Terminando el ciclo \color{yellow}for}
+Si seguimos observando paso a paso como se va ejecutando el programa y como van cambiando los valores de las variables de memoria, llegaremos al punto donde en el ciclo del {\color{red}for} no se va a cumplir la condición
+\begin{center}
+({\color{red}$nEuler$ $-$ $nEulerOld$}) >=  {\color{red}$LIMITE$}
+\end{center}
+
+y por lo tanto los valores de memoria tendrán los siguientes valores
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Recorriendo el programa {\color{yellow}paso} a {\color{yellow}paso}}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{1}	
+    		\nodepart{four}{13}
+    		\nodepart{five}{2.718281828\color{red}8}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.718281828\color{red}3}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (6.4,7.2) -- (9.7,7.2) -- (9.7,6.8) -- (6.4,6.8) -- cycle;
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (2.1,7.9) {\small $\color{red}No$ $cumple$ $condici\acute{o}n$ $del$ $\color{red}for$};
+  	\node at (2.1,7.5) {\scriptsize ($nEuler-nEulerOld$) $es$ $\color{red}0.0000000005$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+  	\draw[decorate,decoration={brace,raise=4pt,amplitude=4pt}, thick]
+    (7.35,8.4)--(8.7,8.4)node [black,midway,xshift=1.0cm,yshift=0.4cm]{\footnotesize {\color{red!60}$10^{-9}$}};
+  	\draw[red,->](9.3,7.1)to [out=10,in=0]node[right,midway]{} ++(-0.2,1.3) ; 
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{10pt}\selectfont
+\frametitle{Fin}
+\begin{columns}[c]
+\column{0.5\textwidth}
+\begin{tikzpicture}
+	\begin{scope}[every node/.style={draw,anchor=text,rectangle split,rectangle split parts=10, 
+rectangle split part fill={green!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,blue!0,red!0,red!0},minimum width=2.6cm}]
+    	\node (R) at (2,6)
+    	{
+    		\nodepart{one}{}
+    		\nodepart{two}{1}
+    		\nodepart{three}{1}	
+    		\nodepart{four}{13}
+    		\nodepart{five}{2.718281828\color{red}8}
+    		\nodepart{six}{}
+    		\nodepart{seven}{2.718281828\color{red}3}
+    		\nodepart{eight}{}
+    		\nodepart{nine}{$\vdots$}
+    		\nodepart{ten}{}
+    	};
+	\end{scope}
+	\draw [ultra thick,color=white](0.8, 4.6) -- (3.37, 4.6);
+	\draw [ultra thick,color=white](0.8, 3.92) -- (3.37, 3.92);
+	\fill[color=green] (5.5,3.9) -- (10.5,3.9) -- (10.5,3.3) -- (5.5,3.3) -- cycle;
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (2.1,7.9) {\small $\color{blue}e$ $es$ $\color{red}2.7182818288$};
+  	\node at (2.1,7.5) {\small $\color{blue}e$ $(lib$ $math.h)$ $es$ $\color{red}2.7182818285$};
+  	\node at (2.1,9) {\normalsize Arquitectura X86-\textcolor{red}{32} bits };
+  	\node at (8,9.7) {\normalsize {\color{red!50}$C\acute{o}digo$ $del$ $programa$ $fuente$}};
+  	\node at (4,5.75) {\textcolor{blue}{factorial}};
+  	\node at (4,5.4){\textcolor{blue}{contador}};
+  	\node at (3.6,5.05) {\textcolor{blue}{i}};
+  	\node at (3.9,4.6) {\textcolor{blue}{nEuler}};
+  	\node at (4.05,4) {\textcolor{blue}{nEulerOld}};
+  	\node at (0.1,6.1) {0x3F00480\textcolor{red}{0}};
+  	\node at (0.1,5.75) {0x3F00480\textcolor{red}{4}};
+  	\node at (0.1,5.4) {0x3F00480\textcolor{red}{8}};
+  	\node at (0.1,5.05) {0x3F00480\textcolor{red}{C}};
+  	\node at (0.1,4.7) {0x3F0048\textcolor{red}{10}};
+  	\node at (0.1,4.37) {0x3F0048\textcolor{red}{14}};
+  	\node at (0.1,4.03) {0x3F0048\textcolor{red}{18}};
+  	\node at (0.1,3.67) {0x3F0048\textcolor{red}{1C}};
+  	\draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=8pt}, thick]
+    (3.3,6.1) -- (0.9,6.1)node [black,midway,xshift=0.0cm,yshift=0.7cm]{\footnotesize {\color{red}$4$ $bytes$}};
+\end{tikzpicture}
+\column{0.55\textwidth}
+\lstset{basicstyle=\tiny}
+\begin{lstlisting}[escapechar=\|,label=noint]
+#include <stdio.h>
+#include <math.h>
+
+#define LIMITE   pow(10,-9)
+int  main(void)
+{
+int		factorial = 1,contador =1,i;    
+double	nEuler=0,nEulerOld=-1;
+
+for(i=0;(nEuler-nEulerOld)>= LIMITE;i++)
+  }
+     nEulerOld=nEuler;
+     while(contador <= i)
+     { 
+     	factorial = factorial * contador;
+     	contador++;
+     }
+     nEuler = nEuler + (1/(double)factorial); 
+        
+     factorial = 1;
+     contador =1;
+  }
+  printf("e es %0.10f \n",nEuler);
+  printf("e(lib math.h)es %0.10f\n",M_E);
+  return 0;
+}
+\end{lstlisting}
+\end{columns}
+\end{frame}
+
+\end{document}
+

@@ -1,0 +1,25 @@
+nombre0 :carlos
+ nombre1 :pedro
+ nombre2 :jose
+ nombre3 :nacho
+ nombre4 :ardrian
+ nombre5 :hector
+ nombre6 :juno
+ nombre7 :pichito
+ nombre8 :juan manuel
+ nombre9 :ricardo
+ nombre10 :alberto fernandez
+ nombre11 :juan roman riquelme
+ nombre12 :martin palermo
+ nombre13 :oscar cordoba
+ nombre14 :walter samuel
+ nombre15 :guillermo el mellizo
+ nombre16 :carlos bianchi the best 
+ nombre17 :la bombonera
+ nombre18 :el templo
+ nombre19 :carlos salvador bilardo 
+ nombre20 :diego armando maradona
+ 
+
+EL PRIMERO ALFABETICAMENTE DE LA LISTA ES :  alberto fernandez
+ 

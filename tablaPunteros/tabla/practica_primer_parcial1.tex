@@ -1,0 +1,152 @@
+\documentclass[12pt]{article} % Clase de documento: artículo y tamaño de letra
+\usepackage[utf8]{inputenc} % Escritura en castellano con acentos
+\usepackage[T1]{fontenc} % Escritura en castellano con acentos
+\usepackage{calligra} 
+\usepackage{pslatex}  % Fuente de letras
+\usepackage{graphicx}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{txfonts}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{multicol}
+\usepackage{color}
+\usepackage{times}
+\usepackage{tikz}
+\usepackage{verbatim}
+\usepackage{mdwlist}
+\usepackage{array}
+\usepackage{caption}
+
+\usetikzlibrary{chains,fit,shapes,arrows,calc,shapes,decorations.pathreplacing}
+
+
+\pagestyle{fancy}
+\headheight=50pt %para cambiar el tamaño del encabezado
+\fancyhead[L]    %la "L" indica a la izquierda
+{	
+ \begin{minipage}{3.3cm}
+  \includegraphics[width=1.0\textwidth]{Logo-UTN-BA.jpeg}
+%  \includegraphics[width=0.6\textwidth]{UTNlogo.eps}
+ \end{minipage}	
+ \begin{minipage}{7.7cm}
+   \normalsize
+   {
+     \textsf
+     {
+       \calligra{Universidad Tecnológica Nacional\\ Facultad Regional Buenos Aires \\ Departamento de {Ingeniería} {Electrónica}} 
+     }
+   }
+ \end{minipage}
+}
+
+\fancyhead[R] %la "R" indica a la derecha
+{
+  \begin{minipage}{4.0cm}
+   \small
+   {
+     \emph{\textbf{Informática I}} \\ \emph{\today} \\ \emph{Ejemplos de parcial}\\ \emph{Curso r1092}  
+   }
+  \end{minipage}}
+
+
+\begin{document} % Inicio del documento
+\newpage
+%Cambia de página, el texto después de este comando aparecerá en la siguiente página en adelante.
+
+
+\noindent
+  \begin{center}
+   \begin{tabular}{| c | c | c |}
+    \hline
+     Apellido y Nombres \hspace{8cm} &  Legajo & {Calificación} \\ \hline 
+      &	& \\ \hline
+   \end{tabular}	
+  \end{center}
+
+\noindent
+Todas las funciones pedidas deben ser colocadas en el archivo {\bf primerParcialFunciones.c} y debe estar acompañado por su correspondiente {\bf punto h}.\\
+Además se debe escribir un programa de testeo para cada función requerida. El nombre de esos archivos es {\bf primerParcialNumeroEjercicio.c}.\\
+\\
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Comienzo del tema del examen
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\lstset{
+	frame=Ltb,
+	framerule=0pt,
+	aboveskip=0.5cm,
+	framextopmargin=3pt,
+	framexbottommargin=3pt,
+	framexleftmargin=0.4cm,
+	framesep=0pt,
+	rulesep=.4pt,
+	backgroundcolor=\color{gray97},
+	rulesepcolor=\color{black},
+% 	language=C,
+	captionpos=b,
+	tabsize=3,
+	frame=lines,
+	keywordstyle=\color{blue},
+	commentstyle=\color{Gray},
+	stringstyle=\color{red},
+	numbers=left,
+	numberstyle=\tiny,
+	numbersep=5pt,
+	breaklines=true,
+	showstringspaces=false,
+	basicstyle=\ttfamily\scriptsize,
+	emph={label},
+	framerule=0pt,
+}
+
+Implemente una función que realice la validación de una CBU (Clave Bancaria Uniforme).\\
+La CBU está formado de la siguiente manera.\\
+\fontsize{9pt}{9pt}\selectfont
+\vspace{-0.6cm}
+\begin{center} 
+   \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
+    \hline 
+     0&1&4&0&1&2&5&6&5&5&6&5&4&1&8&5&4&7&6&5&4&3 \\ \hline 
+     $E_0$&$E_1$&$E_2$&$S_0$&$S_1$&$S_2$&$S_3$&$D_0$&$C_0$&$C_1$&$C_2$&$C_3$&$C_4$&$C_5$&$C_6$&
+     $C_7$&$C_8$&$C_9$&$C_{10}$&$C_{11}$&$C_{12}$&$D_1$\\ \hline 
+   \end{tabular}
+\end{center}   	
+%\vspace{2.5cm}
+\fontsize{12pt}{12pt}\selectfont
+Donde:
+\begin{itemize}
+\item {\bf E0 a E2}: Es el número de la entidad bancaria.
+\item {\bf S0 a S3}: Es el número de sucursal.
+\item {\bf D0}: Es el dígito verificador de E y S
+\item {\bf C0 a C12}: Es el número de cuenta.
+\item {\bf D0}: Es el dígito verificador de C
+\end{itemize}
+Los dígitos verificadores de la clave bancaria única se calculan de la siguiente forma:\\
+\fontsize{10.4pt}{10.4pt}\selectfont
+
+$R_0$ = $E_0$*9 + $E_1$*7 + $E_2$*1 + $S_0$*9 + $S_1$*7 + $S_1$*1 + $S_2$*3 \\
+$D_0$ = 10 - ($R_0$ \% 10)\\
+
+$R_1$ = $C_0$*9 + $C_1$*7 + $C_2$*1 + $C_3$*3 + $C_4$*9 + $C_5$*7 + $C_6$*1 + $C_7$*3 + $C_8$*9 + $C_9$*7 + $C_{10}$*1 + $C_{11}$*3  + $C_{12}$* 9\\
+$D_1$ = 10 - ($R_1$ \% 10)\\
+\fontsize{12pt}{12pt}\selectfont
+\\
+La función tiene el siguiente prototipo:
+\begin{center}
+{\bf int cbu\_validar (char *dataPtr)}
+\end{center}
+Donde {\bf dataPtr} es el puntero la clave bancaria uniforme a validar terminada en ‘{\bf $\setminus$0}’\\
+\\
+Devuelve:
+\begin{itemize}
+\item {\bf -1} Si la CBU pasada no tiene 22 caracteres.
+\item {\bf -2} Si alguno de los caracteres de la CBU no es un número.
+\item {\bf -3} Si el dígito verificador D0 no corresponde.
+\item {\bf -4} Si el dígito verificador D1 no corresponde.
+\end{itemize}
+ 
+\end{document} % Fin del documento.
+ 
+
+  

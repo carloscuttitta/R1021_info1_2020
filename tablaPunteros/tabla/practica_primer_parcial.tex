@@ -1,0 +1,142 @@
+\documentclass[12pt]{article} % Clase de documento: artículo y tamaño de letra
+\usepackage[utf8]{inputenc} % Escritura en castellano con acentos
+\usepackage[T1]{fontenc} % Escritura en castellano con acentos
+\usepackage{calligra} 
+\usepackage{pslatex}  % Fuente de letras
+\usepackage{graphicx}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{txfonts}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{multicol}
+\usepackage{color}
+\usepackage{times}
+\usepackage{tikz}
+\usepackage{verbatim}
+\usepackage{mdwlist}
+\usepackage{array}
+\usepackage{caption}
+
+\usetikzlibrary{chains,fit,shapes,arrows,calc,shapes,decorations.pathreplacing}
+
+
+\pagestyle{fancy}
+\headheight=50pt %para cambiar el tamaño del encabezado
+\fancyhead[L]    %la "L" indica a la izquierda
+{	
+ \begin{minipage}{3.3cm}
+  \includegraphics[width=1.0\textwidth]{Logo-UTN-BA.jpeg}
+%  \includegraphics[width=0.6\textwidth]{UTNlogo.eps}
+ \end{minipage}	
+ \begin{minipage}{7.7cm}
+   \normalsize
+   {
+     \textsf
+     {
+       \calligra{Universidad Tecnológica Nacional\\ Facultad Regional Buenos Aires \\ Departamento de {Ingeniería} {Electrónica}} 
+     }
+   }
+ \end{minipage}
+}
+
+\fancyhead[R] %la "R" indica a la derecha
+{
+  \begin{minipage}{4.0cm}
+   \small
+   {
+     \emph{\textbf{Informática I}} \\ \emph{\today} \\ \emph{Ejemplos de parcial}\\ \emph{Curso r1092}  
+   }
+  \end{minipage}}
+
+
+\begin{document} % Inicio del documento
+\newpage
+%Cambia de página, el texto después de este comando aparecerá en la siguiente página en adelante.
+
+
+\noindent
+  \begin{center}
+   \begin{tabular}{| c | c | c |}
+    \hline
+     Apellido y Nombres \hspace{8cm} &  Legajo & {Calificación} \\ \hline 
+      &	& \\ \hline
+   \end{tabular}	
+  \end{center}
+
+\noindent
+Todas las funciones pedidas deben ser colocadas en el archivo {\bf primerParcialFunciones.c} y debe estar acompañado por su correspondiente {\bf punto h}.\\
+Además se debe escribir un programa de testeo para cada función requerida. El nombre de esos archivos es {\bf primerParcialNumeroEjercicio.c}.\\
+\\
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Comienzo del tema del examen
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\lstset{
+	frame=Ltb,
+	framerule=0pt,
+	aboveskip=0.5cm,
+	framextopmargin=3pt,
+	framexbottommargin=3pt,
+	framexleftmargin=0.4cm,
+	framesep=0pt,
+	rulesep=.4pt,
+	backgroundcolor=\color{gray97},
+	rulesepcolor=\color{black},
+% 	language=C,
+	captionpos=b,
+	tabsize=3,
+	frame=lines,
+	keywordstyle=\color{blue},
+	commentstyle=\color{Gray},
+	stringstyle=\color{red},
+	numbers=left,
+	numberstyle=\tiny,
+	numbersep=5pt,
+	breaklines=true,
+	showstringspaces=false,
+	basicstyle=\ttfamily\scriptsize,
+	emph={label},
+	framerule=0pt,
+}
+
+Implemente una función que contenga el algoritmo de cifrado {\bf ROT13}. \\
+El algoritmo consiste en sustituir cada letra por una que se encuentra trece posiciones por delante. Por ejemplo la A se reemplaza por la N, la B por la O y así sucesivamente. Para las últimas trece letras la secuencia se invierte. A continuación se muestra la tabla de las equivalencias entre las letras.
+%\vspace{0.6cm}
+\noindent
+  \begin{center}
+   \begin{tabular}{| c | c | c | c | c | c | c | c | c | c | c | c | c |}
+    \hline
+     A & B & C & D & E & F & G & H & I & J & K & L & M \\ \hline 
+     N & O & P & Q & R & S & T & U & V & W & X & Y & Z \\ \hline 
+   \end{tabular}	
+  \end{center}
+Ejemplo:
+\noindent
+\vspace{-0.6cm}
+  \begin{center}
+   \begin{tabular}{| c | c | c | c | c | c | c | c | c | c | c |}
+    \hline
+     Texto sin cifrar & H & O & L & A &   & M & U & N & D & O  \\ \hline 
+     Texto cifrado    & U & B & Y & N &   & Z & H & A & Q & B  \\ \hline 
+   \end{tabular}	
+  \end{center}
+Prototipo de la función:
+\begin{center}
+{\bf int rot\_13 (char *dataPtr)}
+\end{center}
+Donde {\bf dataPtr} es el puntero al mensaje a cifrar (string) y donde se colocará el mensaje cifrado y devuelve:
+\begin{itemize}
+\item {\bf -1} Si el mensaje contiene un caracter {\bf distinto} de una {\bf letra mayúscula} o un {\bf espacio}.
+\item Un {\bf número positivo} indicando la cantidad de caracteres convertidos sin tener en 
+cuenta los espacios ni el {\bf $\setminus$0}
+\end{itemize}
+
+
+
+
+ 
+\end{document} % Fin del documento.
+ 
+
+  

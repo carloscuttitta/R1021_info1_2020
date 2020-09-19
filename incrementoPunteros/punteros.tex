@@ -1,0 +1,935 @@
+\documentclass{beamer}
+\usepackage[latin1]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{multicol}
+\usepackage{fancybox}
+\usepackage{beamerthemeshadow}
+\usepackage{times} %font times
+\usepackage[T1]{fontenc} %para que cuando se seleccione un texto las letras acentuadad y las ñ se copien bien Usar la codificación T1
+\usepackage{enumerate}
+\usepackage{listings}
+\usepackage{calligra} 
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{caption}
+\usepackage{tikz}
+\usepackage{verbatim}
+\usepackage{mdwlist}
+
+\usetikzlibrary{chains,fit,shapes,arrows,calc,decorations.pathreplacing}
+\usetikzlibrary{shapes.geometric,matrix,fit,backgrounds}
+
+\usetikzlibrary{shapes.arrows}
+
+
+
+\usefonttheme{professionalfonts}
+
+\newtheorem{defi}{Definición} 
+\hypersetup{pdfpagemode=FullScreen}
+
+\mode<presentation>{
+\usetheme{Warsaw}
+\setbeamercovered{transparent}
+
+}
+\lstset{
+	frame=Ltb,
+	framerule=0pt,
+	aboveskip=0.5cm,
+	framextopmargin=3pt,
+	framexbottommargin=3pt,
+	framexleftmargin=0.4cm,
+	framesep=0pt,
+	rulesep=.4pt,
+%	backgroundcolor=\color{gray!20},
+	rulesepcolor=\color{black},
+	language=C,
+	captionpos=b,
+	tabsize=3,
+	frame=lines,
+	keywordstyle=\color{blue},
+	commentstyle=\color{gray},
+	stringstyle=\color{red},
+	numbers=left,
+	numberstyle=\tiny,
+	numbersep=5pt,
+breaklines=true,
+	showstringspaces=false,
+	basicstyle=\normalsize,
+	emph={label},
+	framerule=0pt,
+}
+
+\title{\em INFORMATICA I}
+\subtitle{Incremento de punteros}
+\author{\em Ing.Juan Carlos Cuttitta}
+\institute{\Large \calligra{Universidad Tecnológica Nacional\\ Facultad Regional Buenos Aires \\ Departamento de {Ingeniería} {Electrónica}}}
+\date{\today}
+
+%portada
+
+\setbeamertemplate{footline}[frame number]
+%para sacar la barra que tiene beamer por defoult
+\setbeamertemplate{navigation symbols}{} 
+
+\begin{document}
+
+\begin{figure}[ht!]
+  \centering
+%  \includegraphics [width=0.2\textwidth]{informatica.jpg}
+  \includegraphics [width=0.2\textwidth]{informacion.jpg}
+\end{figure}
+\vspace{-1cm} % para subir el titulo 
+\titlepage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\tikzstyle{every picture}+=[remember picture]
+\tikzstyle{na} = [baseline=-.5ex]
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+\begin{minipage}[b]{0.5\textwidth}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=20, 
+    rectangle split part fill={blue!0,blue!0,blue!0,blue!0,red!30,red!30,red!30,red!30,red!0,red!0,red!0,red!0,blue!0,red!0,red!0,red!30,red!30,red!30,red!30,red!0},
+    minimum width=2cm}]
+    \node (R) at (0,4){ 
+    		\nodepart{one} 
+    		\nodepart{two} 
+    		\nodepart{three}
+    		\nodepart{four} 
+    		\nodepart{five}0xXX 
+    		\nodepart{six}0xXX 
+    		\nodepart{seven}0xXX
+    		\nodepart{eight}0xXX 
+    		\nodepart{nine} 
+    		\nodepart{ten}
+    		\nodepart{eleven}
+    		\nodepart{twelve} 
+    		\nodepart{thirteen} 																			    \nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}0xXX
+    		\nodepart{seventeen}0xXX
+		\nodepart{eighteen}0xXX
+		\nodepart{nineteen}0xXX
+		\nodepart{twenty}};
+  \end{scope}
+
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt}, thick]
+    (1,-2.1) -- (1,-0.8) node [black,midway,xshift=0.7cm]{\large $i$};
+  \draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt}, thick]
+    (1,1.6) -- (1,2.9)node [black,midway,xshift=1.2cm]{\large $intPtr$};
+
+\draw[ultra thick,dashed,red,<->](6.5,3.3)to [out=130,in=60]node[right,midway]{} ++(-4.5,-0.8); 
+\draw[ultra thick,dashed,red,<->](7.7,2.8)to [out=-100,in=50]node[right,midway]{} ++(-5.8,-4.1); 
+  \fill[color=orange] (8.0,3.3) -- (4.3,3.3) -- (4.3,2.8) -- (8.0,2.8) -- cycle;
+
+  \node at (-1.58,-1.0) {\color{red}0xB0290182};
+  \node at (5.9,5) {\footnotesize\itshape $PROGRAMA$ $FUENTE$};
+  \node at (0.2,5.3) {\footnotesize\itshape $MEMORIA$ en};
+  \node at (0.2,4.9) {\footnotesize\itshape $ARQUITECTURA$ x86 \textcolor{red}{32-bits}};
+\end{tikzpicture}
+\end{minipage} \hfill 
+\begin{minipage}[b]{0.47\textwidth}
+  \lstset{basicstyle=\large}
+   \begin{lstlisting}
+  void main ()
+  {
+    int *intPtr,i;
+    char *charPtr,c;
+    i = 0x12345678;
+    c = 'N';
+    intPtr  = &i;
+    charPtr = &c;
+    *charPtr= 'A';
+    *intPtr = 20;
+    charPtr++;
+    intPtr++;
+  }
+   \end{lstlisting}
+\end{minipage}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+% \frametitle{Incremento de la variable puntero}
+\begin{minipage}[b]{0.5\textwidth}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=20, 
+    rectangle split part fill={blue!30,blue!30,blue!30,blue!30,red!30,red!30,red!30,red!30,red!0,red!0,red!0,red!0,blue!30,red!0,red!0,red!30,red!30,red!30,red!30,red!0},
+    minimum width=2cm}]
+    \node (R) at (0,4){ 
+    		\nodepart{one}0xXX 
+    		\nodepart{two}0xXX 
+    		\nodepart{three}0xXX
+    		\nodepart{four}0xXX 
+    		\nodepart{five}0xXX 
+    		\nodepart{six}0xXX 
+    		\nodepart{seven}0xXX
+    		\nodepart{eight}0xXX 
+    		\nodepart{nine} 
+    		\nodepart{ten}
+    		\nodepart{eleven}
+    		\nodepart{twelve} 
+    		\nodepart{thirteen}0xXX 																			    \nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}0xXX
+    		\nodepart{seventeen}0xXX
+		\nodepart{eighteen}0xXX
+		\nodepart{nineteen}0xXX
+		\nodepart{twenty}};
+  \end{scope}
+
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt}, thick]
+    (1.1,-2.1) -- (1.1,-0.8) node [black,midway,xshift=0.7cm]{\large $i$};
+  \draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt}, thick]
+    (1.1,1.6) -- (1.1,2.9)node [black,midway,xshift=1.2cm]{\large $intPtr$};
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt},thick] 	
+  (1.1,2.9) -- (1.1,4.2) node [black,midway,xshift=1.2cm]{\large $charPtr$};
+
+\draw[ultra thick,dashed,red,<->](6.9,2.8)to [out=110,in=-50]node[right,midway]{} ++(-4.5,0.6); 
+\draw[ultra thick,dashed,red,<->](8.2,2.3)to [out=-120,in=0]node[right,midway]{} ++(-6.4,-2.3); 
+  \fill[color=orange] (8.6,2.8) -- (4.3,2.8) -- (4.3,2.3) -- (8.6,2.3) -- cycle;
+
+  \node at (-1.48,-1.0) {\color{red}0xB0290182};
+  \node at (-1.48,0.10) {\color{red}0xB029017A};
+  \node at (1.5,0) {\small c};
+  \node at (5.9,5) {\footnotesize\itshape $PROGRAMA$ $FUENTE$};
+  \node at (0.2,5.3) {\footnotesize\itshape $MEMORIA$ en};
+  \node at (0.2,4.9) {\footnotesize\itshape $ARQUITECTURA$ x86 \textcolor{red}{32-bits}};
+\end{tikzpicture}
+\end{minipage} \hfill 
+\begin{minipage}[b]{0.47\textwidth}
+  \lstset{basicstyle=\large}
+   \begin{lstlisting}
+  void main ()
+  {
+    int *intPtr,i;
+    char *charPtr,c;
+    i = 0x12345678;
+    c = 'N';
+    intPtr  = &i;
+    charPtr = &c;
+    *charPtr= 'A';
+    *intPtr = 20;
+    charPtr++;
+    intPtr++;
+  }
+   \end{lstlisting}
+\end{minipage}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+% \frametitle{Incremento de la variable puntero}
+\begin{minipage}[b]{0.5\textwidth}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=20, 
+    rectangle split part fill={blue!30,blue!30,blue!30,blue!30,red!30,red!30,red!30,red!30,red!0,red!0,red!0,red!0,blue!30,red!0,red!0,red!30,red!30,red!30,red!30,red!0},
+    minimum width=2cm}]
+    \node (R) at (0,4){ 
+    		\nodepart{one}0xXX 
+    		\nodepart{two}0xXX 
+    		\nodepart{three}0xXX
+    		\nodepart{four}0xXX 
+    		\nodepart{five}0xXX 
+    		\nodepart{six}0xXX 
+    		\nodepart{seven}0xXX
+    		\nodepart{eight}0xXX 
+    		\nodepart{nine} 
+    		\nodepart{ten}
+    		\nodepart{eleven}
+    		\nodepart{twelve} 
+    		\nodepart{thirteen}0xXX 																		    \nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}\color{red}0x78
+    		\nodepart{seventeen}\color{red}0x56
+		\nodepart{eighteen}\color{red}0x34
+		\nodepart{nineteen}\color{red}0x12
+		\nodepart{twenty}};
+  \end{scope}
+
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt}, thick]
+    (1.1,-2.1) -- (1.1,-0.8) node [black,midway,xshift=0.7cm]{\large $i$};
+  \draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt}, thick]
+    (1.1,1.6) -- (1.1,2.9)node [black,midway,xshift=1.2cm]{\large $intPtr$};
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt},thick] 	
+  (1.1,2.9) -- (1.1,4.2) node [black,midway,xshift=1.2cm]{\large $charPtr$};
+
+  \fill[color=orange] (8.6,2.3) -- (4.3,2.3) -- (4.3,1.8) -- (8.6,1.8) -- cycle;
+\draw[ultra thick,dashed,red,<->](4.5,2.1)to [out=180,in=0]node[right,midway]{} ++(-2.3,-3.6); 
+
+  \node at (-1.48,-1.0) {\color{red}0xB0290182};
+  \node at (-1.48,0.10) {\color{red}0xB029017A};
+  \node at (1.5,0) {\small c};
+  \node at (5.9,5) {\footnotesize\itshape $PROGRAMA$ $FUENTE$};
+  \node at (0.2,5.3) {\footnotesize\itshape $MEMORIA$ en};
+  \node at (0.2,4.9) {\footnotesize\itshape $ARQUITECTURA$ x86 \textcolor{red}{32-bits}};
+\end{tikzpicture}
+\end{minipage} \hfill 
+\begin{minipage}[b]{0.47\textwidth}
+  \lstset{basicstyle=\large}
+   \begin{lstlisting}
+  void main ()
+  {
+    int *intPtr,i;
+    char *charPtr,c;
+    i = 0x12345678;
+    c = 'N';
+    intPtr  = &i;
+    charPtr = &c;
+    *charPtr= 'A';
+    *intPtr = 20;
+    charPtr++;
+    intPtr++;
+  }
+   \end{lstlisting}
+\end{minipage}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+\begin{minipage}[b]{0.5\textwidth}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=20, 
+    rectangle split part fill={blue!30,blue!30,blue!30,blue!30,red!30,red!30,red!30,red!30,red!0,red!0,red!0,red!0,blue!30,red!0,red!0,red!30,red!30,red!30,red!30,red!0},
+    minimum width=2cm}]
+    \node (R) at (0,4){ 
+    		\nodepart{one}0xXX 
+    		\nodepart{two}0xXX 
+    		\nodepart{three}0xXX
+    		\nodepart{four}0xXX 
+    		\nodepart{five}0xXX 
+    		\nodepart{six}0xXX 
+    		\nodepart{seven}0xXX
+    		\nodepart{eight}0xXX 
+    		\nodepart{nine} 
+    		\nodepart{ten}
+    		\nodepart{eleven}
+    		\nodepart{twelve} 
+    		\nodepart{thirteen}\color{red}0x4E 															    \nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}0x78
+    		\nodepart{seventeen}0x56
+		\nodepart{eighteen}0x34
+		\nodepart{nineteen}0x12
+		\nodepart{twenty}};
+  \end{scope}
+
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt}, thick]
+    (1.1,-2.1) -- (1.1,-0.8) node [black,midway,xshift=0.7cm]{\large $i$};
+  \draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt}, thick]
+    (1.1,1.6) -- (1.1,2.9)node [black,midway,xshift=1.2cm]{\large $intPtr$};
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt},thick] 	
+  (1.1,2.9) -- (1.1,4.2) node [black,midway,xshift=1.2cm]{\large $charPtr$};
+
+  \fill[color=orange] (6.6,1.8) -- (4.3,1.8) -- (4.3,1.3) -- (6.6,1.3) -- cycle;
+\draw[ultra thick,dashed,red,<->](4.5,1.6)to [out=180,in=0]node[right,midway]{} ++(-1.9,-1.6); 
+
+  \node at (-1.48,-1.0) {\color{red}0xB0290182};
+  \node at (-1.48,0.10) {\color{red}0xB029017A};
+  \node at (1.9,0) {\small c = \color{red}'N'};
+  \node at (5.9,5) {\footnotesize\itshape $PROGRAMA$ $FUENTE$};
+  \node at (0.2,5.3) {\footnotesize\itshape $MEMORIA$ en};
+  \node at (0.2,4.9) {\footnotesize\itshape $ARQUITECTURA$ x86 \textcolor{red}{32-bits}};
+\end{tikzpicture}
+\end{minipage} \hfill 
+\begin{minipage}[b]{0.47\textwidth}
+  \lstset{basicstyle=\large}
+   \begin{lstlisting}
+  void main ()
+  {
+    int *intPtr,i;
+    char *charPtr,c;
+    i = 0x12345678;
+    c = 'N';
+    intPtr  = &i;
+    charPtr = &c;
+    *charPtr= 'A';
+    *intPtr = 20;
+    charPtr++;
+    intPtr++;
+  }
+   \end{lstlisting}
+\end{minipage}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+\begin{minipage}[b]{0.5\textwidth}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=20, 
+    rectangle split part fill={blue!30,blue!30,blue!30,blue!30,red!30,red!30,red!30,red!30,red!0,red!0,red!0,red!0,blue!30,red!0,red!0,red!30,red!30,red!30,red!30,red!0},
+    minimum width=2cm}]
+    \node (R) at (0,4){ 
+    		\nodepart{one}0xXX 
+    		\nodepart{two}0xXX 
+    		\nodepart{three}0xXX
+    		\nodepart{four}0xXX 
+    		\nodepart{five}\color{red}0x82 
+    		\nodepart{six}\color{red}0x01 
+    		\nodepart{seven}\color{red}0x29
+    		\nodepart{eight}\color{red}0xB0 
+    		\nodepart{nine} 
+    		\nodepart{ten}
+    		\nodepart{eleven}
+    		\nodepart{twelve} 
+    		\nodepart{thirteen}0x4E 																			\nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}0x78
+    		\nodepart{seventeen}0x56
+		\nodepart{eighteen}0x34
+		\nodepart{nineteen}0x12
+		\nodepart{twenty}};
+  \end{scope}
+
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt}, thick]
+    (1.1,-2.1) -- (1.1,-0.8) node [black,midway,xshift=0.7cm]{\large $i$};
+  \draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt}, thick]
+    (1.1,1.6) -- (1.1,2.9)node [black,midway,xshift=1.2cm]{\large $intPtr$};
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt},thick] 	
+  (1.1,2.9) -- (1.1,4.2) node [black,midway,xshift=1.2cm]{\large $charPtr$};
+
+  \fill[color=orange] (8,1.3) -- (4.3,1.3) -- (4.3,0.8) -- (8,0.8) -- cycle;
+\draw[ultra thick,dashed,red,<->](4.5,1.1)to [out=180,in=-90]node[right,midway]{} ++(-2.1,0.9); 
+
+  \node at (-1.48,-1.0) {\color{red}0xB0290182};
+  \node at (-1.48,0.10) {\color{red}0xB029017A};
+  \node at (1.9,0) {\small c = 'N'};
+  \node at (5.9,5) {\footnotesize\itshape $PROGRAMA$ $FUENTE$};
+  \node at (0.2,5.3) {\footnotesize\itshape $MEMORIA$ en};
+  \node at (0.2,4.9) {\footnotesize\itshape $ARQUITECTURA$ x86 \textcolor{red}{32-bits}};
+\end{tikzpicture}
+\end{minipage} \hfill 
+\begin{minipage}[b]{0.47\textwidth}
+  \lstset{basicstyle=\large}
+   \begin{lstlisting}
+  void main ()
+  {
+    int *intPtr,i;
+    char *charPtr,c;
+    i = 0x12345678;
+    c = 'N';
+    intPtr  = &i;
+    charPtr = &c;
+    *charPtr= 'A';
+    *intPtr = 20;
+    charPtr++;
+    intPtr++;
+  }
+   \end{lstlisting}
+\end{minipage}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+\begin{minipage}[b]{0.5\textwidth}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=20, 
+    rectangle split part fill={blue!30,blue!30,blue!30,blue!30,red!30,red!30,red!30,red!30,red!0,red!0,red!0,red!0,blue!30,red!0,red!0,red!30,red!30,red!30,red!30,red!0},
+    minimum width=2cm}]
+    \node (R) at (0,4){ 
+    		\nodepart{one}\color{red}0x7A 
+    		\nodepart{two}\color{red}0x01 
+    		\nodepart{three}\color{red}0x29
+    		\nodepart{four}\color{red}0xB0 
+    		\nodepart{five}0x82 
+    		\nodepart{six}0x01 
+    		\nodepart{seven}0x29
+    		\nodepart{eight}0xB0 
+    		\nodepart{nine} 
+    		\nodepart{ten}
+    		\nodepart{eleven}
+    		\nodepart{twelve} 
+    		\nodepart{thirteen}0x4E 																			\nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}0x78
+    		\nodepart{seventeen}0x56
+		\nodepart{eighteen}0x34
+		\nodepart{nineteen}0x12
+		\nodepart{twenty}};
+  \end{scope}
+
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt}, thick]
+    (1.1,-2.1) -- (1.1,-0.8) node [black,midway,xshift=0.7cm]{\large $i$};
+  \draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt}, thick]
+    (1.1,1.6) -- (1.1,2.9)node [black,midway,xshift=1.2cm]{\large $intPtr$};
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt},thick] 	
+  (1.1,2.9) -- (1.1,4.2) node [black,midway,xshift=1.2cm]{\large $charPtr$};
+
+  \fill[color=orange] (8,0.85) -- (4.3,0.85) -- (4.3,0.35) -- (8,0.35) -- cycle;
+\draw[ultra thick,dashed,red,<->](4.5,0.6)to [out=180,in=-30]node[right,midway]{} ++(-1.8,2.7); 
+
+  \node at (-1.48,-1.0) {\color{red}0xB0290182};
+  \node at (-1.48,0.10) {\color{red}0xB029017A};
+  \node at (1.9,0) {\small c = 'N'};
+  \node at (5.9,5) {\footnotesize\itshape $PROGRAMA$ $FUENTE$};
+  \node at (0.2,5.3) {\footnotesize\itshape $MEMORIA$ en};
+  \node at (0.2,4.9) {\footnotesize\itshape $ARQUITECTURA$ x86 \textcolor{red}{32-bits}};
+\end{tikzpicture}
+\end{minipage} \hfill 
+\begin{minipage}[b]{0.47\textwidth}
+  \lstset{basicstyle=\large}
+   \begin{lstlisting}
+  void main ()
+  {
+    int *intPtr,i;
+    char *charPtr,c;
+    i = 0x12345678;
+    c = 'N';
+    intPtr  = &i;
+    charPtr = &c;
+    *charPtr= 'A';
+    *intPtr = 20;
+    charPtr++;
+    intPtr++;
+  }
+   \end{lstlisting}
+\end{minipage}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+\begin{minipage}[b]{0.5\textwidth}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=20, 
+    rectangle split part fill={blue!30,blue!30,blue!30,blue!30,red!30,red!30,red!30,red!30,red!0,red!0,red!0,red!0,blue!30,red!0,red!0,red!30,red!30,red!30,red!30,red!0},
+    minimum width=2cm}]
+    \node (R) at (0,4){ 
+    		\nodepart{one}0x7A 
+    		\nodepart{two}0x01 
+    		\nodepart{three}0x29
+    		\nodepart{four}0xB0 
+    		\nodepart{five}0x82 
+    		\nodepart{six}0x01 
+    		\nodepart{seven}0x29
+    		\nodepart{eight}0xB0 
+    		\nodepart{nine} 
+    		\nodepart{ten}
+    		\nodepart{eleven}
+    		\nodepart{twelve} 
+    		\nodepart{thirteen}\color{red}0x41 																\nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}0x78
+    		\nodepart{seventeen}0x56
+		\nodepart{eighteen}0x34
+		\nodepart{nineteen}0x12
+		\nodepart{twenty}};
+  \end{scope}
+
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt}, thick]
+    (1.1,-2.1) -- (1.1,-0.8) node [black,midway,xshift=0.7cm]{\large $i$};
+  \draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt}, thick]
+    (1.1,1.6) -- (1.1,2.9)node [black,midway,xshift=1.2cm]{\large $intPtr$};
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt},thick] 	
+  (1.1,2.9) -- (1.1,4.2) node [black,midway,xshift=1.2cm]{\large $charPtr$};
+
+  \fill[color=orange] (8,0.35) -- (4.3,0.35) -- (4.3,-0.1) -- (8,-0.1) -- cycle;
+\draw[ultra thick,dashed,red,<->](4.5,0.1)to [out=180,in=0]node[right,midway]{} ++(-1.9,-0.1); 
+
+  \node at (-1.48,-1.0) {\color{red}0xB0290182};
+  \node at (-1.48,0.10) {\color{red}0xB029017A};
+  \node at (1.9,0) {\small c = \color{red}'A'};
+  \node at (5.9,5) {\footnotesize\itshape $PROGRAMA$ $FUENTE$};
+  \node at (0.2,5.3) {\footnotesize\itshape $MEMORIA$ en};
+  \node at (0.2,4.9) {\footnotesize\itshape $ARQUITECTURA$ x86 \textcolor{red}{32-bits}};
+\end{tikzpicture}
+\end{minipage} \hfill 
+\begin{minipage}[b]{0.47\textwidth}
+  \lstset{basicstyle=\large}
+   \begin{lstlisting}
+  void main ()
+  {
+    int *intPtr,i;
+    char *charPtr,c;
+    i = 0x12345678;
+    c = 'N';
+    intPtr  = &i;
+    charPtr = &c;
+    *charPtr= 'A';
+    *intPtr = 20;
+    charPtr++;
+    intPtr++;
+  }
+   \end{lstlisting}
+\end{minipage}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+\begin{minipage}[b]{0.5\textwidth}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=20, 
+    rectangle split part fill={blue!30,blue!30,blue!30,blue!30,red!30,red!30,red!30,red!30,red!0,red!0,red!0,red!0,blue!30,red!0,red!0,red!30,red!30,red!30,red!30,red!0},
+    minimum width=2cm}]
+    \node (R) at (0,4){ 
+    		\nodepart{one}0x7A 
+    		\nodepart{two}0x01 
+    		\nodepart{three}0x29
+    		\nodepart{four}0xB0 
+    		\nodepart{five}0x82 
+    		\nodepart{six}0x01 
+    		\nodepart{seven}0x29
+    		\nodepart{eight}0xB0 
+    		\nodepart{nine} 
+    		\nodepart{ten}
+    		\nodepart{eleven}
+    		\nodepart{twelve} 
+    		\nodepart{thirteen}0x41 																			\nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}\color{red}0x14
+    		\nodepart{seventeen}\color{red}0x00
+		\nodepart{eighteen}\color{red}0x00
+		\nodepart{nineteen}\color{red}0x00
+		\nodepart{twenty}};
+  \end{scope}
+
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt}, thick]
+    (1.1,-2.1) -- (1.1,-0.8) node [black,midway,xshift=0.7cm]{\large $i$};
+  \draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt}, thick]
+    (1.1,1.6) -- (1.1,2.9)node [black,midway,xshift=1.2cm]{\large $intPtr$};
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt},thick] 	
+  (1.1,2.9) -- (1.1,4.2) node [black,midway,xshift=1.2cm]{\large $charPtr$};
+
+  \fill[color=orange] (8,-0.1) -- (4.3,-0.1) -- (4.3,-0.6) -- (8,-0.6) -- cycle;
+\draw[ultra thick,dashed,red,<->](4.5,-0.4)to [out=180,in=0]node[right,midway]{} ++(-2.6,-0.8); 
+
+  \node at (-1.48,-1.0) {\color{red}0xB0290182};
+  \node at (-1.48,0.10) {\color{red}0xB029017A};
+  \node at (1.9,0) {\small c = 'A'};
+  \node at (5.9,5) {\footnotesize\itshape $PROGRAMA$ $FUENTE$};
+  \node at (0.2,5.3) {\footnotesize\itshape $MEMORIA$ en};
+  \node at (0.2,4.9) {\footnotesize\itshape $ARQUITECTURA$ x86 \textcolor{red}{32-bits}};
+\end{tikzpicture}
+\end{minipage} \hfill 
+\begin{minipage}[b]{0.47\textwidth}
+  \lstset{basicstyle=\large}
+   \begin{lstlisting}
+  void main ()
+  {
+    int *intPtr,i;
+    char *charPtr,c;
+    i = 0x12345678;
+    c = 'N';
+    intPtr  = &i;
+    charPtr = &c;
+    *charPtr= 'A';
+    *intPtr = 20;
+    charPtr++;
+    intPtr++;
+  }
+   \end{lstlisting}
+\end{minipage}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+\begin{minipage}[b]{0.5\textwidth}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=20, 
+    rectangle split part fill={blue!30,blue!30,blue!30,blue!30,red!30,red!30,red!30,red!30,red!0,red!0,red!0,red!0,blue!30,red!0,red!0,red!30,red!30,red!30,red!30,red!0},
+    minimum width=2cm}]
+    \node (R) at (0,4){ 
+    		\nodepart{one}\color{red}0x7B 
+    		\nodepart{two}0x01 
+    		\nodepart{three}0x29
+    		\nodepart{four}0xB0 
+    		\nodepart{five}0x82 
+    		\nodepart{six}0x01 
+    		\nodepart{seven}0x29
+    		\nodepart{eight}0xB0 
+    		\nodepart{nine} 
+    		\nodepart{ten}
+    		\nodepart{eleven}
+    		\nodepart{twelve} 
+    		\nodepart{thirteen}0x41 																			\nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}0x14
+    		\nodepart{seventeen}0x00
+		\nodepart{eighteen}0x00
+		\nodepart{nineteen}0x00
+		\nodepart{twenty}};
+  \end{scope}
+
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt}, thick]
+    (1.1,-2.1) -- (1.1,-0.8) node [black,midway,xshift=0.7cm]{\large $i$};
+  \draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt}, thick]
+    (1.1,1.6) -- (1.1,2.9)node [black,midway,xshift=1.2cm]{\large $intPtr$};
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt},thick] 	
+  (1.1,2.9) -- (1.1,4.2) node [black,midway,xshift=1.2cm]{\large $charPtr$};
+
+  \fill[color=orange] (7.1,-0.6) -- (4.3,-0.6) -- (4.3,-1.1) -- (7.1,-1.1) -- cycle;
+\draw[ultra thick,dashed,red,<->](4.5,-0.8)to [out=140,in=-40]node[right,midway]{} ++(-2.2,4.1); 
+\draw[ultra thick,dashed,red,<->](2,3.3)to [out=-110,in=0]node[right,midway]{} ++(-2.6,-3.55); 
+
+  \node at (-1.48,-1.0) {\color{red}0xB0290182};
+  \node at (-1.48,0.10) {\color{red}0xB029017A};
+  \node at (-1.48,-0.3) {\color{red}{0xB029017B}};
+  \node at (1.9,0) {\small c = 'A'};
+  \node at (5.9,5) {\footnotesize\itshape $PROGRAMA$ $FUENTE$};
+  \node at (0.2,5.3) {\footnotesize\itshape $MEMORIA$ en};
+  \node at (0.2,4.9) {\footnotesize\itshape $ARQUITECTURA$ x86 \textcolor{red}{32-bits}};
+\end{tikzpicture}
+\end{minipage} \hfill 
+\begin{minipage}[b]{0.47\textwidth}
+  \lstset{basicstyle=\large}
+   \begin{lstlisting}
+  void main ()
+  {
+    int *intPtr,i;
+    char *charPtr,c;
+    i = 0x12345678;
+    c = 'N';
+    intPtr  = &i;
+    charPtr = &c;
+    *charPtr= 'A';
+    *intPtr = 20;
+    charPtr++;
+    intPtr++;
+  }
+   \end{lstlisting}
+\end{minipage}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+\begin{minipage}[b]{0.5\textwidth}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=20, 
+    rectangle split part fill={blue!30,blue!30,blue!30,blue!30,red!30,red!30,red!30,red!30,red!0,red!0,red!0,red!0,blue!30,red!0,red!0,red!30,red!30,red!30,red!30,red!0},
+    minimum width=2cm}]
+    \node (R) at (0,4){ 
+    		\nodepart{one}0x7B 
+    		\nodepart{two}0x01 
+    		\nodepart{three}0x29
+    		\nodepart{four}0xB0 
+    		\nodepart{five}\color{red}0x86 
+    		\nodepart{six}\color{red}0x01 
+    		\nodepart{seven}\color{red}0x29
+    		\nodepart{eight}\color{red}0xB0 
+    		\nodepart{nine} 
+    		\nodepart{ten}
+    		\nodepart{eleven}
+    		\nodepart{twelve} 
+    		\nodepart{thirteen}0x41 																			\nodepart{fourteen}
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}0x14
+    		\nodepart{seventeen}0x00
+		\nodepart{eighteen}0x00
+		\nodepart{nineteen}0x00
+		\nodepart{twenty}};
+  \end{scope}
+
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt}, thick]
+    (1.1,-2.1) -- (1.1,-0.8) node [black,midway,xshift=0.7cm]{\large $i$};
+  \draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt}, thick]
+    (1.1,1.6) -- (1.1,2.9)node [black,midway,xshift=1.2cm]{\large $intPtr$};
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt},thick] 	
+  (1.1,2.9) -- (1.1,4.2) node [black,midway,xshift=1.2cm]{\large $charPtr$};
+
+  \fill[color=orange] (7.1,-1.1) -- (4.3,-1.1) -- (4.3,-1.6) -- (7.1,-1.6) -- cycle;
+\draw[ultra thick,dashed,red,<->](4.4,-1.35)to [out=160,in=-40]node[right,midway]{} ++(-2.2,3.3); 
+\draw[ultra thick,dashed,red,<->](2,2)to [out=-110,in=0]node[right,midway]{} ++(-2.6,-4.3); 
+
+  \node at (-1.48,-1.0) {\color{red}0xB0290182};
+  \node at (-1.48,0.10) {\color{red}0xB029017A};
+  \node at (-1.48,-0.3) {\color{red}{0xB029017B}};
+  \node at (-1.48,-2.3) {\color{red}{0xB0290186}};
+  \node at (1.9,0) {\small c = 'A'};
+  \node at (5.9,5) {\footnotesize\itshape $PROGRAMA$ $FUENTE$};
+  \node at (0.2,5.3) {\footnotesize\itshape $MEMORIA$ en};
+  \node at (0.2,4.9) {\footnotesize\itshape $ARQUITECTURA$ x86 \textcolor{red}{32-bits}};
+\end{tikzpicture}
+\end{minipage} \hfill 
+\begin{minipage}[b]{0.47\textwidth}
+  \lstset{basicstyle=\large}
+   \begin{lstlisting}
+  void main ()
+  {
+    int *intPtr,i;
+    char *charPtr,c;
+    i = 0x12345678;
+    c = 'N';
+    intPtr  = &i;
+    charPtr = &c;
+    *charPtr= 'A';
+    *intPtr = 20;
+    charPtr++;
+    intPtr++;
+  }
+   \end{lstlisting}
+\end{minipage}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{6.5pt}{12pt}\selectfont
+\begin{minipage}[b]{0.5\textwidth}
+\begin{tikzpicture}
+  \begin{scope}[
+  	every node/.style={draw, 
+  	anchor=text, 
+  	rectangle split,
+    rectangle split parts=20, 
+    rectangle split part fill={blue!30,blue!30,blue!30,blue!30,red!30,red!30,red!30,red!30,red!0,red!0,red!0,red!0,blue!30,red!0,red!0,red!30,red!30,red!30,red!30,red!0},
+    minimum width=2cm}]
+    \node (R) at (0,4){ 
+    		\nodepart{one}0x7B 
+    		\nodepart{two}0x01 
+    		\nodepart{three}0x29
+    		\nodepart{four}0xB0 
+    		\nodepart{five}0x86 
+    		\nodepart{six}0x01 
+    		\nodepart{seven}0x29
+    		\nodepart{eight}0xB0 
+    		\nodepart{nine} 
+    		\nodepart{ten}
+    		\nodepart{eleven}
+    		\nodepart{twelve} 
+    		\nodepart{thirteen}0x41 																			\nodepart{fourteen}\color{red}0x41
+    		\nodepart{fifteen}
+    		\nodepart{sixteen}0x14
+    		\nodepart{seventeen}0x00
+		\nodepart{eighteen}0x00
+		\nodepart{nineteen}0x00
+		\nodepart{twenty}};
+  \end{scope}
+
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt}, thick]
+    (1.1,-2.1) -- (1.1,-0.8) node [black,midway,xshift=0.7cm]{\large $i$};
+  \draw[decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt}, thick]
+    (1.1,1.6) -- (1.1,2.9)node [black,midway,xshift=1.2cm]{\large $intPtr$};
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=5pt},thick] 	
+  (1.1,2.9) -- (1.1,4.2) node [black,midway,xshift=1.2cm]{\large $charPtr$};
+
+  \fill[color=orange] (8.1,-1.1) -- (4.3,-1.1) -- (4.3,-1.6) -- (8.1,-1.6) -- cycle;
+\draw[ultra thick,dashed,red,<->](4.4,-1.35)to [out=160,in=0]node[right,midway]{} ++(-2.9,1.1); 
+\draw[ultra thick,dashed,red,<->](2,3.3)to [out=-110,in=40]node[right,midway]{} ++(-2.6,-3.6); 
+
+  \node at (-1.48,-1.0) {\color{red}0xB0290182};
+  \node at (-1.48,0.10) {\color{red}0xB029017A};
+  \node at (-1.48,-0.3) {\color{red}{0xB029017B}};
+  \node at (-1.48,-2.3) {\color{red}{0xB0290186}};
+  \node at (1.9,0) {\small c = 'A'};
+  \node at (5.9,5) {\footnotesize\itshape $PROGRAMA$ $FUENTE$};
+  \node at (0.2,5.3) {\footnotesize\itshape $MEMORIA$ en};
+  \node at (0.2,4.9) {\footnotesize\itshape $ARQUITECTURA$ x86 \textcolor{red}{32-bits}};
+\end{tikzpicture}
+\end{minipage} \hfill 
+\begin{minipage}[b]{0.47\textwidth}
+  \lstset{basicstyle=\large}
+   \begin{lstlisting}
+  void main ()
+  {
+    int *intPtr,i;
+    char *charPtr,c;
+    i = 0x12345678;
+    c = 'N';
+    intPtr  = &i;
+    charPtr = &c;
+    *charPtr= 'A';
+    *intPtr = 20;
+    charPtr++;
+    intPtr++;
+    *charPtr= 'A';
+  }
+   \end{lstlisting}
+\end{minipage}
+\end{frame}
+
+\begin{frame}[fragile]
+\fontsize{18pt}{12pt}\selectfont
+ \frametitle{Algunas reglas para recordar !!!}
+\begin{tikzpicture}
+  \node[left] at (-2.1,-1.0) {int \hspace{0.45cm}$A$;};
+  \node[left] at (-2.1,-1.7) {int \hspace{0.3cm}$*p$;};
+  \node[left] at (-1.0,-3.5) {$p = \&A$;};
+  \node[left] at (-1.5,-5.2) {$A = 7$;};
+  \node[left] at (-1.5,-7.1) {$*p = 7$;};
+  \draw[	red,decorate,decoration={brace,raise=6pt,amplitude=3pt},thick] 	
+  (-2.8,-3.6) -- (-3.6,-3.6) node [black,midway,xshift=0cm,yshift=-0.5cm]{\large \color{blue}$int*$};
+  \draw[	red,decorate,decoration={brace,raise=6pt,amplitude=3pt},thick] 	
+  (-1.3,-3.6) -- (-2.3,-3.6) node [black,midway,xshift=0cm,yshift=-0.5cm]{\large \color{blue}$int*$};
+  \draw[	red,decorate,decoration={brace,mirror,raise=6pt,amplitude=3pt},thick] 	
+  (-1.3,-3.3) -- (-1.9,-3.3) node [black,midway,xshift=0cm,yshift=0.5cm]{\large \color{cyan}$int$};
+  \draw[	red,decorate,decoration={brace,raise=6pt,amplitude=3pt},thick] 	
+  (-2.8,-5.2) -- (-3.6,-5.2) node [black,midway,xshift=0cm,yshift=-0.5cm]{\large \color{cyan}$int$};
+  \draw[	red,decorate,decoration={brace,raise=6pt,amplitude=3pt},thick] 	
+  (-1.7,-5.2) -- (-2.3,-5.2) node [black,midway,xshift=0cm,yshift=-0.5cm]{\large \color{cyan}$int$};
+  \draw[	red,decorate,decoration={brace,raise=6pt,amplitude=3pt},thick] 	
+  (-2.8,-7.2) -- (-3.6,-7.2) node [black,midway,xshift=0cm,yshift=-0.5cm]{\large \color{cyan}$int$};
+  \draw[	red,decorate,decoration={brace,raise=6pt,amplitude=3pt},thick] 	
+  (-1.7,-7.2) -- (-2.3,-7.2) node [black,midway,xshift=0cm,yshift=-0.5cm]{\large \color{cyan}$int$};
+  \draw[	red,decorate,decoration={brace,mirror,raise=6pt,amplitude=2pt},thick] 	
+  (-2.9,-7) -- (-3.3,-7) node [black,midway,xshift=0cm,yshift=0.5cm]{\large \color{blue}$int*$};
+
+  \node at (3.6,-1.0) {int \hspace{0.4cm}$V[\hspace{0.2cm} ]=\{10,20\}$;};
+  \node at (2.2,-1.7) {int \hspace{0.7cm}$*p$;};
+  \node at (3.7,-3.5) {$p = \&V[0]$;};
+  \node at (3.4,-5.2) {$V[1] = 7$;};
+  \node at (3.8,-7.1) {$*(p+1) = 7$;};
+
+  \draw[	red,decorate,decoration={brace,raise=6pt,amplitude=3pt},thick] 	
+  (4.9,-3.6) -- (3.4,-3.6) node [black,midway,xshift=0cm,yshift=-0.5cm]{\large \color{blue}$int*$};
+  \draw[	red,decorate,decoration={brace,raise=6pt,amplitude=3pt},thick] 	
+  (2.7,-3.6) -- (2,-3.6) node [black,midway,xshift=0cm,yshift=-0.5cm]{\large \color{blue}$int*$};
+  \draw[	red,decorate,decoration={brace,mirror,raise=6pt,amplitude=3pt},thick] 	
+  (4.9,-3.3) -- (3.9,-3.3) node [black,midway,xshift=0cm,yshift=0.5cm]{\large \color{cyan}$int$};
+  \draw[	red,decorate,decoration={brace,raise=6pt,amplitude=3pt},thick] 	
+  (4.6,-5.3) -- (3.9,-5.3) node [black,midway,xshift=0cm,yshift=-0.5cm]{\large \color{cyan}$int$};
+  \draw[	red,decorate,decoration={brace,raise=6pt,amplitude=3pt},thick] 	
+  (3.4,-5.3) -- (2.2,-5.3) node [black,midway,xshift=0cm,yshift=-0.5cm]{\large \color{cyan}$int$};
+  \draw[	red,decorate,decoration={brace,raise=6pt,amplitude=3pt},thick] 	
+  (5.5,-7.2) -- (4.8,-7.2) node [black,midway,xshift=0cm,yshift=-0.5cm]{\large \color{cyan}$int$};
+  \draw[	red,decorate,decoration={brace,raise=6pt,amplitude=3pt},thick] 	
+  (4.2,-7.2) -- (2.1,-7.2) node [black,midway,xshift=0cm,yshift=-0.5cm]{\large \color{cyan}$int$};
+  \draw[	red,decorate,decoration={brace,mirror,raise=6pt,amplitude=2pt},thick] 	
+  (4.2,-6.9) -- (2.6,-6.9) node [black,midway,xshift=0cm,yshift=0.5cm]{\large \color{blue}$int*$};
+  \draw[-](0,0)to [out=-90,in=90] ++(0,-8.6) ; 
+\end{tikzpicture}
+\end{frame}
+
+\end{document}
+
+
