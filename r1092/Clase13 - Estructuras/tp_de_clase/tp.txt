@@ -1,0 +1,31 @@
+Se pide realizar un programa que reemplace el apellido de un alumno por otro.
+El programa se invocará pasando por linea de comandos el los apellidos de esta forma:
+
+./programa apellido_a_reemplazar nuevo_apellido
+
+Para llenar el array de estructuras como el visto en el último ejermplo de clase,
+se iran pidiendo por el id de curso, el apellido y el nombre por el stdin,
+por ejemplo usando scanf. El ingreso finaliza con un id de curso igual a cero.
+
+El programa deberá realizar la siguiente secuencia:
+
+1. verificar que la cantidad de argumentos pasados en la linea de comandos
+sea la correcta, sino debera indicarlo y salir.
+
+2. ingresar los datos por stdin
+
+3. implimir el curso completo
+
+4. buscar el apellido_a_reemplazar indicando a medida que realiza la búsqueda
+si no lo encuentra. En caso de encontrarlo imprimirá todos los datos completos
+del alumno, realizará el cambio e imprimirá los datos completos del alumno con
+el apellido cambiado.
+
+5. finaliza al encontrar el alumno o al terminar de recorrer el curso.
+
+Tip1: Se pueden utilizar las definiciones de estructuras y funciones necesarias
+del último ejemplo visto en clase.
+
+Tip2: Se puede utilizar un archivo auxiliar con los datos de los alumnos,
+y utilizar la redirección del stdin, para no tener que tipear el ingreso
+de datos.

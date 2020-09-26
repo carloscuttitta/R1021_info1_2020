@@ -1,0 +1,4 @@
+gcc -Wall -c -o calc.o calc.c
+gcc -Wall -c -o calc-func.o calc-func.c
+gcc -Wall -o calc calc.o calc-func.o
+

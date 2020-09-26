@@ -1,17 +1,25 @@
 /*
-   Programa que tiene como objetivos:
-   Leer el archivo creado por el programa crear_datos.
-   Crear un registro usando vector de memoria dinámica.
-   Utilizar un puntero a función para que actúe como maquina de estados ( por ahora usar 
-   random luego usaremos IPC para usar esos datos).
-   usar una mascara para que sólo maneje 8 estados posibles.  
-   Generar nombres para los nuevos archivos de salida ( para datos: [nombe de archivco]-salida.dat
-   y para texto: [nombe de archivco]-salida.txt).
-   Crear los nuevos archivos de salida  y guardar el contenido del registro ordenado.
+    Programa que tiene como objetivos:
+    Leer el archivo creado por el programa crear_datos.
+    Crear un registro usando vector de memoria dinámica.
+    Utilizar un puntero a función para que actúe como maquina de estados ( por ahora usar 
+    random luego usaremos IPC para usar esos datos).
+    usar una mascara para que sólo maneje 8 estados posibles.
+    ordTime         para    0x00 
+    ordUnidad       para    0x01
+    promAmpere      para    0x02
+    promTension     para    0x03
+    promVelocidad   para    0x04
+    promFrecuencia  para    0x05
+    promAceleracion para    0x06
+    promFuerza      para    0x07
+    Generar nombres para los nuevos archivos de salida ( para datos: [nombe de archivco]-salida.dat
+    y para texto: [nombe de archivco]-salida.txt).
+    Crear los nuevos archivos de salida  y guardar el contenido del registro ordenado.
 
-   Juan Carlos Cuttitta        
-   carloscuttitta@gmail.com
-   */
+    Juan Carlos Cuttitta        
+    carloscuttitta@gmail.com
+*/
 #include"my.h"
 
 int main( int argc, char **argv )
@@ -35,7 +43,7 @@ int main( int argc, char **argv )
                                                 };
 
     
-    if(argc<2){
+    if(argc !=2){
         printf("ERROR - cantidad de argumentos incorrectos\n");
         return -1;
     }
@@ -78,7 +86,7 @@ int main( int argc, char **argv )
     
     printf("random es %d \n",aleatorio.estado);
     
-    comoOrdeno[aleatorio.bites.b0_b3] (reg, cont_reg); // con 0 ordena por time con 1 ordena unidad
+    comoOrdeno[aleatorio.bites.b0_b3] (reg, cont_reg); 
     
     fclose( fd );
     

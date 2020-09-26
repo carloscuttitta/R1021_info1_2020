@@ -1,0 +1,12 @@
+Hoy tenemos clase práctica.
+
+Tambien vamos a ver el uso de "make" y cómo construir un "Makefile" para nuestros proyectos.
+
+Además vamos a empezar a ver cómo usar un debugger para encontrar fallas en nuestros programas y entender el funcionamiento del stack y el "scope" de las variables cuando llamamos a una función.
+
+Como dijimos la clase anterior hay que tener leídas las guías:
+ - Guia000-Linux
+ - Guia001-HolaMundo
+ - Guia003-make
+
+

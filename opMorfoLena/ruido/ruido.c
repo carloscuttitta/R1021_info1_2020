@@ -17,7 +17,7 @@ int main( int argc, char **argv )
     unsigned short type;            /* 2 bytes identificativos */
     char *arch_salida=NULL;
     
-    if(argc<2){
+    if(argc !=2){
         printf("ERROR - cantidad de argumentos incorrectos\n");
         return -1;
     }

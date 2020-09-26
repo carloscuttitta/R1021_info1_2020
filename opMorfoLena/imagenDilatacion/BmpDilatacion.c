@@ -77,7 +77,6 @@ int main( int argc, char **argv )
 /* Leemos los datos de imagen, tantos bytes como imgsize */
     fread(imgdata, bInfoHeader.imgsize,1, fdin);
         
-    printf("voy a erosionar\n");
     dilata ( imgdata , aux_img , bInfoHeader);
 
     fwrite(imgdata, bInfoHeader.imgsize,1, fdout);

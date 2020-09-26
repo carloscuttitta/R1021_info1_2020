@@ -1,0 +1,31 @@
+// para redireccionar el stdout a un archivo
+// esto crea un nuevo archivo cada vez que se corre el programa
+// si el archivo existia lo borra y lo crea de nuevo
+$./programa >archivo_de_salida
+
+
+// para redireccionar el stdout a un archivo
+// esto agrega los datos al final del archivo si el archivo ya existia
+// si el archivo no existia lo crea
+$./programa >>archivo_de_salida
+
+
+// para redireccionar el stdin desde un archivo
+$./programa <archivo_de_entrada
+
+
+// para combinar stdin y stdout
+$./programa <archivo_de_entrada >archivo_de_salida
+
+
+// para pasar el contenido de un archivo como argumentos en la linea de comandos
+$./programa $(<archivo_con_argumentos)
+
+// esto es igual a hacer
+$./programa $(cat archivo_con_argumentos)
+
+// generalizando
+// para usar la salida de un programa como argumentos en la linea de comandos
+$./programa $(otro_programa)
+
+
