@@ -42,18 +42,16 @@ int main(int ac, char *av[]){
 
 // hasta recibir un mensaje 'chau!'
         while(1){
-//            memset(buf, 0, sizeof(buf));	// limpia el buffer de recepcion (lo llena con ceros)
             read(csock, buf, sizeof(buf));  	// lee el mensaje
 
-for (i=0;buf[i]!='\0';i++){
-            printf("%c", buf[i]);
-}
+            for (i=0;buf[i]!='\0';i++){
+                printf("%c", buf[i]);
+            }
             printf("\n");
 
-//            printf("--- %s\n", buf);
             if(!strcmp(buf,chau))            // si recibe "chau!" cierra la conexion
             {
-                printf("salgo por chau!");
+                puts("salgo por chau!");
                 break;
             }
             if(!strcmp(buf,cerrar)){         // si recibe "chau!" cierra la conexion y sale
@@ -62,12 +60,12 @@ for (i=0;buf[i]!='\0';i++){
                 close(ssock);
                 return 0;
             }
-//            memset(buf, 0, sizeof(buf));	// limpia el buffer de recepcion (lo llena con ceros)
+
             printf(">>> ");
             fgets(buf,100,stdin);  // lee respuesta del teclado
-for (i=0;buf[i]!='\0';i++){
-}
-        buf[i-1]='\0';   // elimino el salto de linea que escribió en nombre corriendo el null
+            for (i=0;buf[i]!='\0';i++){
+            }
+            buf[i-1]='\0';   // elimino el salto de linea que escribió en nombre corriendo el null
             
             printf("---\n ");
             write(csock, buf, strlen(buf)+1);   // envia respuesta

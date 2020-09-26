@@ -1,0 +1,2341 @@
+\documentclass{beamer}
+\usepackage[latin1]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{multicol}
+\usepackage{fancybox}
+\usepackage{beamerthemeshadow}
+\usepackage{times} %font times
+\usepackage[T1]{fontenc} %para que cuando se seleccione un texto las letras acentuadad y las ñ se copien bien Usar la codificación T1
+\usepackage{enumerate}
+\usepackage{listings}
+\usepackage{calligra} 
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{caption}
+\usepackage{tikz}
+\usepackage{verbatim}
+\usepackage{mdwlist}
+\usepackage{ragged2e} % para justificar usando \justify
+\usetikzlibrary{chains,fit,shapes,arrows,calc,decorations.pathreplacing}
+\usetikzlibrary{shapes.geometric,matrix,fit,backgrounds}
+
+\usetikzlibrary{shapes.arrows}
+
+\hypersetup{pdfpagemode=FullScreen}
+
+
+\usefonttheme{professionalfonts}
+
+\newtheorem{defi}{Definición} 
+
+\mode<presentation>{
+\usetheme{Warsaw}
+\setbeamercovered{transparent}
+
+}
+\lstset{
+	frame=Ltb,
+	framerule=0pt,
+	aboveskip=0.5cm,
+	framextopmargin=3pt,
+	framexbottommargin=3pt,
+	framexleftmargin=0.4cm,
+	framesep=0pt,
+	rulesep=.4pt,
+%	backgroundcolor=\color{gray!20},
+	rulesepcolor=\color{black},
+	language=C,
+	captionpos=b,
+	tabsize=3,
+	frame=lines,
+	keywordstyle=\color{blue},
+	commentstyle=\color{gray},
+	stringstyle=\color{red},
+	numbers=left,
+	numberstyle=\tiny,
+	numbersep=5pt,
+	breaklines=true,
+	showstringspaces=false,
+	basicstyle=\normalsize,
+	emph={label},
+	framerule=0pt,
+}
+
+\title{\em INFORMATICA I}
+\subtitle{Uso de los Sockets}
+\author{Ing.Juan Carlos Cuttitta}
+\institute{\Large \calligra{Universidad Tecnológica Nacional\\ Facultad Regional Buenos Aires \\ Departamento de {Ingeniería} {Electrónica}}}
+\date{\today}
+
+%portada
+
+\setbeamertemplate{footline}[frame number]
+%para sacar la barra que tiene beamer por defoult
+\setbeamertemplate{navigation symbols}{} 
+
+\begin{document}
+
+\begin{figure}[ht!]
+  \centering
+%  \includegraphics [width=0.2\textwidth]{informatica.jpg}
+  \includegraphics [width=0.2\textwidth]{informacion.jpg}
+\end{figure}
+\vspace{-1cm} % para subir el titulo 
+\titlepage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\tikzstyle{every picture}+=[remember picture]
+\tikzstyle{na} = [baseline=-.5ex]
+
+\begin{frame}[fragile]
+\frametitle{Uso de los  \textbf{\textit{\color{yellow}sockets orientados a la conexión}}}
+\fontsize{8pt}{10pt}\selectfont
+\justify
+\shadowbox{
+\begin{minipage}[b]{11cm}
+\noindent   %para eliminar la sangria
+Para comunicar dos programas escritos en lenguaje C mediante sockets,es necesario seguir los siguientes pasos, que se ilustra en la figura.
+\end{minipage}}
+ \begin{columns}[c]
+ \column{0.6\textwidth}
+\fontsize{9pt}{10pt}\selectfont
+\begin{enumerate}[<+->]
+\item <+-| alert@+> Crear el socket mediante la función {\color{blue}socket()}.
+\item <+-| alert@+> Asignar una dirección final al socket a la que pueda referirse el otro interlocutor. Función {\color{blue}bind()}.
+\item <+-| alert@+> En sockets tipo stream, es necesario conectar con otro socket cuya dirección debemos conocer y se logra con la función {\color{blue}connect()} para el proceso cliente y las funciones {\color{blue}listen()} y {\color{blue}accept()} para el proceso servidor.
+\item <+-| alert@+> Comunicarse. En sockets tipo stream,basta usar {\color{blue}write()} para volcar datos en el socket que el otro extremo puede leer mediante la función {\color{blue}read()}, y a la inversa.
+\item <+-| alert@+> cuando la comunicación se da por finalizada, ambos deben cerrar el socket con la función {\color{blue}close()}.
+\end{enumerate}
+  \column{0.7\textwidth}
+\fontsize{8pt}{10pt}\selectfont
+\begin{tikzpicture} [
+    auto,
+    block/.style    = { rectangle, draw=blue, thick, 
+                        fill=blue!30, text width=5em, text centered,
+                        rounded corners, minimum height=1.5em },
+    line1/.style     = { draw, thick, -, shorten >=0.5pt },
+    line2/.style     = { draw, thick, <-, shorten >=0.5pt },
+  ]
+  % Define nodes in a matrix
+  \matrix [column sep=10mm, row sep=3mm] {
+    & \node[text centered] (x) {\large servidor}; &\node [text centered] (y) {\large cliente}; \\
+    & \node [block] (track1) {$socket()$}; & \node [block] (track8) {$socket()$};\\
+    & \node [block] (track2) {$bind()$}; & \node [block] (track9) {$bind()$};\\
+    & \node [block] (track3) {$listen()$}; & \\
+    & \node [block] (track4) {$accept()$}; & \node [block] (track10) {$connect()$};\\
+    & \node [block] (track5) {$read()$}; & \node [block] (track11) {$write()$};\\
+    & \node [block] (track6) {$write()$}; & \node [block] (track12) {$read()$};\\
+    & \node [block] (track7) {$close()$}; & \node [block] (track13) {$close()$};\\
+  };
+  % connect all nodes defined above
+  \begin{scope} 
+    \path[line1] (track1)        --    (track2);
+    \path[line1] (track2)        --    (track3);
+    \path[line1] (track3)        --    (track4);
+    \path[line1] (track4)        --    (track5);
+    \path[line1] (track5)        --    (track6);
+    \path[line1] (track6)        --    (track7);
+    \path[line1] (track8)        --    (track9);
+    \path[line1] (track9)        --    (track10);
+    \path[line1] (track10)        --    (track11);
+    \path[line1] (track11)        --    (track12);
+    \path[line1] (track12)        --    (track13);
+    \path[line2] (track4)        --    (track10);
+    \path[line2] (track5)        --    (track11);
+    \path[line2] (track12)        --    (track6);
+  \end{scope}
+\end{tikzpicture}
+ \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Creación del socket: \textbf{\textit{\color{yellow}socket()}}}
+\fontsize{11pt}{11pt}\selectfont
+\begin{block}
+
+La llamada a {\color{blue}socket()} es de la siguiente forma:\\
+\begin{center}
+\shadowbox{
+s = {\color{red}socket}(fam\_pro, tipo\_ser, protocolo);
+}
+\end{center}
+\end{block}
+\begin{enumerate}[<+->]
+\item <+-| alert@+>{\color{red}{s}}: Valor devuelto por la función. Tiene que ser de tipo entero.  
+\begin{itemize}[<+->]
+\item <+-| alert@+> Un valor negativo significa que ha ocurrido un error.
+\item <+-| alert@+> Un valor positivo será el descriptor del socket y es el que se usará en las funciones siguientes. 
+\end{itemize}
+\item <+-| alert@+> {\color{red}{fam\_pro}}: Especifica la familia de protocolos que se usará en la comunicación.
+\begin{itemize}[<+->]
+\item <+-| alert@+> PF\_UNIX: para comunicar procesos UNIX en la misma máquina.
+\item <+-| alert@+> PF\_INET: para comunicar procesos en diferentes máquinas a través de Internet.
+\item <+-| alert@+> Estas constantes están definidas en el fichero {\color{blue}<sys/socket.h>}.
+\end{itemize}
+\end{enumerate}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Creación del socket: \textbf{\textit{\color{yellow}socket()}}}
+\fontsize{11pt}{14pt}\selectfont
+\begin{block}
+
+La llamada a {\color{blue}socket()} es de la siguiente forma:\\
+\begin{center}
+\shadowbox{
+s = {\color{red}socket}(fam\_pro, tipo\_ser, protocolo);
+}
+\end{center}
+\end{block}
+\begin{enumerate}[<+->]
+\item <+-| alert@+>{\color{red}tipo\_ser}: El socket será:
+\begin{itemize}[<+->]
+\item <+-| alert@+> {\color{red}SOCK\_STREAM} para tipo stream.
+\item <+-| alert@+> {\color{red}SOCK\_DGRAM} para tipo datagram.
+\end{itemize}
+\item <+-| alert@+>{\color{red}protocolo}: Especifica que tipo de protocolo:
+\begin{itemize}[<+->]
+\item <+-| alert@+> Para el servicio stream (TCP)
+\item <+-| alert@+> Para el servicio datagram (UDP).
+\item <+-| alert@+> Lo mejor es {\color{blue}poner un cero} que significa que el sistema elija el protocolo más adecuado para el tipo solicitado.
+\end{itemize}
+\begin{block}
+
+Para crear un socket de tipo stream para una comunicación a través de la red, la llamada sería:\\
+\begin{center}
+\shadowbox{
+s = {\color{red}socket}( PF\_INET, SOCK\_STREAM, 0 );
+}
+\end{center}
+\end{block}
+\end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Asignar una dirección al socket: \textbf{\textit{\color{yellow}bind()}}}
+\fontsize{11pt}{14pt}\selectfont
+\begin{enumerate}[<+->]
+\item <+-| alert@+>Un socket queda definido cuando contiene a todos los parámetros siguientes:
+  \begin{itemize}[<+->]
+    \item <+-| alert@+> protocolo
+    \item <+-| alert@+> dirección IP máquina local
+    \item <+-| alert@+> número puerto de protocolo local
+    \item <+-| alert@+> dirección IP máquina remota
+    \item <+-| alert@+> número puerto de protocolo remoto
+  \end{itemize}
+\item <+-| alert@+>Con la función {\color{blue}socket()} se crea un socket y se le asigna el protocolo,pero quedan sin asignar los restantes cuatro parámetros.
+\item <+-| alert@+>la función {\color{blue}bind()} asignará los parámetros
+  \begin{itemize}[<+->]
+    \item <+-| alert@+> dirección IP máquina local
+    \item <+-| alert@+> número puerto de protocolo local
+  \end{itemize}
+\begin{block}{}
+La sintaxis de {\color{blue}bind()} es la siguiente:\\
+\begin{center}
+\shadowbox{
+retcod={\color{red}bind}(s, dir\_fin, lon\_dir\_fin);
+}
+\end{center}
+\end{block}
+\end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Asignar una dirección al socket: \textbf{\textit{\color{yellow}bind()}}}
+\fontsize{11pt}{14pt}\selectfont
+\begin{center}
+\shadowbox{
+retcod={\color{red}bind}(s, dir\_fin, lon\_dir\_fin);
+}
+\end{center}
+\begin{enumerate}[<+->]
+\item <+-| alert@+> {\color{red}s}: Es el descriptor devuelto por la función {\color{blue}socket()}.
+\item <+-| alert@+> {\color{red}dir\_fin}: Es la dirección y puerto local que queremos asignar al socket. Este parámetro es un puntero a una estructura de tipo sockaddr.
+\begin{itemize}[<+->]
+\item <+-| alert@+> {\color{red}sockaddr\_in} para las conexiones de la familia AF\_INET
+\item <+-| alert@+> {\color{red}sockaddr\_un} para las conexiones de la familia AF\_UNIX
+\end{itemize}
+\item <+-| alert@+> {\color{red}lon\_dir\_fin}: Es el tamaño en bytes del parámetro anterior. Lo habitual es usar la macro sizeof para averiguar este tercer parámetro.
+\item <+-| alert@+> {\color{red}retcod}: Código de retorno de la función.
+\begin{itemize}[<+->]
+\item <+-| alert@+> Si retorna 0, la operación se ha completado con éxito.
+\item <+-| alert@+> Si retorna -1 significa que ha ocurrido un error.
+\end{itemize}
+\end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{La estructura  \textbf{\textit{\color{yellow}sockaddr\_in}}}
+\fontsize{10pt}{12pt}\selectfont
+La función {\color{blue}bind()} recibe como segundo parámetro un puntero a una estructura de tipo struct sockaddr\_in, por lo que es necesario hacer un cast.
+El tipo struct sockaddr\_in está definido en <netinet/in.h> . \\
+Su aspecto es como sigue:
+\begin{center}
+\begin{block}{}
+struct sockaddr\_in \{\\
+\hspace{1cm}    short \hspace{1.75cm}          sin\_family;\\	
+\hspace{1cm}    u\_short \hspace{1.35cm}        sin\_port;\\
+\hspace{1cm}    struct in\_addr \hspace{0.4cm} sin\_addr;\\
+\hspace{1cm}    u\_long   \hspace{1.5cm}       sin\_zero[8];\\
+\}\\
+\end{block}
+\end{center}
+{\color{blue}sin\_addr} En algunas máquinas es de tipo {\color{blue}u\_long}\\ 
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{La estructura  \textbf{\textit{\color{yellow}sockaddr\_in}}}
+\fontsize{10pt}{12pt}\selectfont
+
+
+\begin{enumerate}[<+->]
+\item <+-| alert@+> {\color{red}sin\_family}:
+ Es la familia del socket, {\color{blue}AF\_INET} en nuestro caso, ya que estamos interesados sólo en sockets que comuniquen a través de Internet.
+\item <+-| alert@+> {\color{red}sin\_port}: Es el puerto de protocolo local. Este es un número que podemos elegir libremente, siempre que no esté en uso ese mismo puerto por otro proceso. Si usamos puertos libres por encima de 1000 no tendremos conflictos. 
+\item <+-| alert@+> {\color{red}sin\_addr} Es una estructura bastante sencilla.
+\begin{center}
+\begin{block}{}
+struct in\_addr \{\\
+\hspace{1cm} unsigned long \hspace{0.7cm} s\_addr;\\	
+\}\\
+\end{block}
+\end{center}
+\item <+-| alert@+> {\color{red}sin\_zero}: Es un campo de relleno que no utilizaremos.
+\end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{La estructura  \textbf{\textit{\color{yellow}in\_addr}}}
+\fontsize{11pt}{14pt}\selectfont
+{\color{blue}s\_addr} es la dirección IP de nuestra máquina. \\
+Lo normal es poner aquí la constante predefinida {\color{blue}INADDR\_ANY}, ya que una misma máquina puede tener varias direcciones IP (si está conectada a varias redes simultáneamente). Al poner {\color{blue}INADDR\_ANY}estamos dejando indeterminado el dato de {\bf dirección local} con lo que nuestro programa podrá aceptar conexiones de todas las redes a las que pertenezca la máquina.\\
+Lo habitual es que cada máquina pertenezca sólo a una red, por lo que poner {\color{blue}INADDR\_ANY} es igual a poner la dirección IP de la máquina en cuestión, con la ventaja de que no necesitamos conocer esta dirección, y además el programa es más portable, ya que el mismo código fuente compilado en otra máquina (con otra dirección IP) funcionaría igual.
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo de uso de la estructura  \textbf{\textit{\color{yellow}sockaddr\_in}}}
+\fontsize{10pt}{12pt}\selectfont
+  \lstset{basicstyle=\small}
+   \begin{lstlisting}[escapechar=\|,label=noint]
+#include<sys/types.h>
+#include<netinet/in.h>
+#include<sys/socket.h>
+...
+int s;
+struct sockaddr_in   local;
+...
+   s = socket(PF_INET, SOCK_STREAM, 0);
+   ... /* Comprobacion de errores */
+   local.sin_family=AF_INET;
+   local.sin_port=htons(15001);
+   local.sin_addr.s_addr = htonl(INADDR_ANY);
+   bind(s,(struct sockaddr *) &local,sizeof local);
+...
+   \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo de uso de la estructura  \textbf{\textit{\color{yellow}sockaddr\_in}}}
+\fontsize{10pt}{12pt}\selectfont
+Observar las siguientes peculiaridades:\\
+\begin{enumerate}[<+->]
+\item <+-| alert@+> Es necesario hacer un cast en el segundo parámetro de {\color{blue}bind()}.
+\item <+-| alert@+> El tercer parámetro de {\color{blue}bind()} es el tamaño en bytes del segundo parámetro. Lo más cómodo es usar la macro sizeof que nos devuelve este valor.
+\item <+-| alert@+> Está prohibido no comprobar errores !!
+\item <+-| alert@+> El puerto que hemos usado (15001) lo hemos elegido arbitrariamente,pero deberá ser conocido también por el otro interlocutor.
+\item <+-| alert@+> Las funciones {\color{blue}htons()} y {\color{blue}htonl()} se usan para traducir cantidades de más de 1 byte entre el formato utilizado por nuestra computadora y el utilizado por la red. Existen otras dos funciones para la traducción inversa. 
+\end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Funciones\textbf{\textit{\color{yellow}htons(), htonl(), ntohs()} y {\color{yellow}ntohl()} }}
+\fontsize{10pt}{12pt}\selectfont
+\begin{block}{}
+Es necesario hacer estas conversiones porque cada máquina puede tener su propio criterio para ordenar los bytes de estas cantidades (Little Endian o Big Endian), pero el criterio de la red es único, en concreto {\color{blue}Big Endian}.
+\end{block}
+\pause
+El significado de todas estas funciones es:\\
+\begin{enumerate}[<+->]
+\item <+-| alert@+> {\color{red}htons()}: Host to Network Short. Convierte un valor corto (2 bytes) del formato usado por el host (nuestra máquina) al usado por la red.
+\item <+-| alert@+> {\color{red}htonl()}: Host to Network Long. Convierte un valor largo (4 bytes) del formato usado por el host (nuestra máquina) al usado por la red.
+\item <+-| alert@+> {\color{red}ntohs()}: Network to Host Short. Convierte un valor corto (2 bytes) del formato usado por la red al usado por el host (nuestra máquina).
+\item <+-| alert@+> {\color{red}ntohl()}: Network to Host Long. Convierte un valor largo (4 bytes) del formato usado por la red al usado por el host (nuestra máquina).
+\end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{El servidor: \textbf{\textit{\color{yellow}listen()}} y accept()}
+\fontsize{11pt}{14pt}\selectfont
+Después de ejecutar la función {\color{blue}bind()} es necesario llamar a la función {\color{blue}listen()} para que el
+socket quede marcado por el sistema como listo para recibir conexiones. Esta llamada tiene una función doble:
+\begin{itemize}[<+->]
+\item <+-| alert@+> Pone el socket en modo {\bf pasivo} a la espera de conexiones.
+\item <+-| alert@+> Fija el tamaño máximo de la cola de peticiones para ese socket. 
+\end{itemize}
+\vspace{0.7cm}
+\begin{block}{}
+La sintaxis de {\color{blue}listen()} es la siguiente:\\
+\begin{center}
+\shadowbox{
+retcod={\color{red}listen}(s, num\_cola);
+}
+\end{center}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{El servidor: \textbf{\textit{\color{yellow}listen()}} y accept()}
+\fontsize{11pt}{14pt}\selectfont
+\begin{enumerate}[<+->]
+\item <+-| alert@+>{\color{red}s}: Es el descriptor devuelto por {\color{blue}socket()}.
+\item <+-| alert@+>{\color{red}num\_cola}: Es el máximo número de pedidos de conexión que puede esperar en la cola. \\
+Lo normal es que el servidor esté en un bucle aceptando conexiones de diferentes clientes.\\
+Si hay una conexión ya establecida cuando otro cliente intenta conectarse, este segundo cliente es puesto en una cola, y la próxima vez que el servidor llame a {\color{blue}accept()} se establecerá la conexión con este cliente.\\
+El tamaño máximo que puede tener la cola de pedidos de conexión está determinado para cada sistema por el valor de la constante SOMAXCONN.
+\item <+-| alert@+>{\color{blue}retcod}: Es el valor retornado por la función.
+\begin{itemize}[<+->]
+\item <+-| alert@+> 0 indica que se ha completado con éxito
+\item <+-| alert@+> -1 indica que ha ocurrido algún error
+\end{itemize}
+\end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{El servidor: listen() y \textbf{\textit{\color{yellow}accept()}}}
+\fontsize{10pt}{11pt}\selectfont
+Una vez que se ejecuta la función {\color{blue}listen()}, el servidor debe quedar bloqueado esperando que un cliente intente conectarse. Esto lo hace ejecutando la función {\color{blue}accept()}.
+\begin{center}
+\shadowbox{
+n\_sock={\color{red}accept}(s, quien, l\_quien);
+}
+\end{center}
+\pause
+\begin{enumerate}[<+->]
+\item <+-| alert@+> {\color{red}n\_sock}: Descriptor de archivo (tipo int) y es el que se usará en las funciones {\color{blue}read()} o {\color{blue}write()} para transmitir la información a través del socket.
+\item <+-| alert@+> {\color{red}s}: Es el descriptor devuelto por {\color{blue}socket()} en el que
+estamos esperando las conexiones
+\item <+-| alert@+> {\color{red}quien}: Puntero a estructura de tipo {\color{blue}sockaddr\_in} y devuelve información sobre el cliente que se ha conectado ({\color{blue}dirección IP} y el {\color{blue}número de puerto del cliente}).{\color{blue}accept} aceptará conexiones de cualquier proceso que intente conectarse con la dirección de nuestro socket.Si no nos interesa la información de quién se ha conectado, podemos pasar NULL como segundo parámetro de {\color{blue}accept}.
+\item <+-| alert@+> {\color{red}l\_quien}: Es un puntero a entero a través del cual se nos devuelve el tamaño
+en bytes del parámetro anterior. Pondremos NULL si hemos puesto NULL en el parámetro anterior.
+\end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Información en sockets tipo stream:\textbf{\textit{\color{yellow}write() }}y read()}
+\fontsize{10pt}{11pt}\selectfont
+Una vez que la conexión quedó establecida, el descriptor del socket (n\_sock) lo usaremos como un
+descriptor de fichero para las funciones {\color{blue}read()} y {\color{blue}write()}. \\
+La sintaxis de {\color{blue}write()} es la siguiente:\\
+\begin{center}
+\shadowbox{
+retcod={\color{red}write}(n\_sock, buffer, l\_buffer);
+}
+\end{center}
+\pause
+\begin{enumerate}[<+->]
+\item <+-| alert@+> {\color{red}n\_sock}: Descriptor de socket devuelto por {\color{blue}accept()} 
+\item <+-| alert@+> {\color{red}buffer}: Puntero a carácter que apunta a los datos que queremos transmitir.
+\item <+-| alert@+> {\color{red}l\_buffer}: Entero que indica la cantidad de bytes a transmitir.
+\item <+-| alert@+> {\color{red}retcod}: Si la función se ha ejecutado correctamente
+\begin{itemize}[<+->]
+\item <+-| alert@+> contendrá el número de bytes transferidos
+\item <+-| alert@+> En caso contrario, devolverá el valor -1
+\item <+-| alert@+> Si ( {\color{blue}bytes enviado} {\color{red} <} {\color{blue} bytes que se querían enviar}) será necesario volver a escribir en el socket a partir del punto en que se haya detenido la transmisión, hasta completar la cantidad de bytes esperada
+\item <+-| alert@+> Si ({\color{blue}l\_buffer} {\color{red}=} {\color{blue}bytes devuelto por write()}),los datos han llegado a su destino.
+\end{itemize}
+\end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Información en sockets tipo stream:\textbf{\textit write() {\color{yellow}y read() }}}
+\fontsize{10pt}{11pt}\selectfont
+Para el caso de {\color{blue}read()} la sintaxis es la siguiente:\\
+\begin{center}
+\shadowbox{
+retcod={\color{red}read}(n\_sock, buffer, l\_buffer);
+}
+\end{center}
+\pause
+\begin{enumerate}[<+->]
+\item <+-| alert@+> {\color{red}n\_sock}: Descriptor de socket devuelto por {\color{blue}accept()} 
+\item <+-| alert@+> {\color{red}buffer}: Puntero a carácter que apunta a la memoria donde se dejarán los
+datos leídos del socket 
+\item <+-| alert@+> {\color{red}l\_buffer}: Tamaño de la memoria reservada para leer datos del
+socket. Si llegan más datos de los que caben en nuestro buffer, quedarán a la espera de la siguiente llamada a {\color{blue}read()}.
+\item <+-| alert@+> {\color{red}retcod}: La función devuelve un valor de
+\begin{itemize}[<+->]
+\item <+-| alert@+> El número de bytes leídos
+\item <+-| alert@+> En caso de error un número negativo
+\item <+-| alert@+> 0 significa que la conexión ha sido cerrada por el otro interlocutor (es como si hubiéramos leído un {\color{blue}$\setminus$0}),la comunicación puede darse por terminada y podemos cerrar el socket.
+\item <+-| alert@+> Si ( {\color{blue}bytes leídos} {\color{red} <} {\color{blue} bytes esperados}) será necesario volver a leer del socket hasta que hayamos recibido la cantidad de bytes esperada 
+\end{itemize}
+\end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Cerrar la conexión: \textbf{\textit{\color{yellow}close()}}}
+\fontsize{10pt}{14pt}\selectfont
+En los sockets tipo stream cuando los interlocutores no van a intercambiar más información conviene cerrar la conexión. \\
+Esto se hace mediante la función {\color{blue}close()}. \\
+Observar que el servidor cerrará el socket por el cual {\bf dialogaban} (el que llamamos {\color{blue}n\_sock}), pero no cerrará el socket por el que recibe las peticiones de conexión (el que llamamos {\color{blue}s}) si quiere seguir aceptando más clientes.\\
+Cuando un proceso se {\bf mata} (recibe una señal SIGTERM) o cuando sale normalmente con una llamada a {\color{blue}return()}, todos los sockets se cierran automáticamente por el sistema operativo.\\
+Si cuando cerramos un socket aún quedaban en él datos por transmitir,el sistema operativo nos garantiza que los transmitirá todos antes de cerrar.\\
+Si tras varios intentos no lo logra (por ejemplo, porque el otro interlocutor ha cerrado ya o porque hay un fallo en la red) cerrará finalmente el socket y los datos se perderán.
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Cerrar la conexión: \textbf{\textit{\color{yellow}close()}}}
+\fontsize{11pt}{14pt}\selectfont
+La sintaxis de {\color{blue}close()} es muy sencilla:
+\begin{center}
+\shadowbox{
+retcod={\color{red}close}(socket);
+}
+\end{center}
+\begin{enumerate}[<+->]
+\item <+-| alert@+> {\color{red}socket}: Descriptor del socket que queremos cerrar. Normalmente se
+tratará del valor devuelto por {\color{blue}accept()} ({\color{red}n\_sock} para nuestro caso). El socket {\color{blue}s} inicial no suele ser cerrado explícitamente, sino que se deja que el sistema lo cierre cuando nuestro proceso muere.
+\item <+-| alert@+> {\color{red}retcod}: Valor de retorno. 
+\begin{itemize}[<+->]
+\item <+-| alert@+> 0 si la operación se ha completado con éxito
+\item <+-| alert@+> -1 si se ha producido algún tipo de error.
+\end{itemize}
+\end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{El cliente: \textbf{\textit{\color{yellow}connect()}}}
+\fontsize{11pt}{16pt}\selectfont
+El cliente, una vez ejecutado {\color{blue}bind()}, debe intentar establecer conexión con un servidor.\\
+Para ello debe conocer:
+\begin{itemize}[<+->]
+\item <+-| alert@+> la dirección IP del servidor
+\item <+-| alert@+> el puerto del servidor.
+\end{itemize}
+La dirección IP puede averiguarse mediante la función {\color{blue}gethostbyname()} si se conoce el nombre del nodo en el cual se está ejecutando el servidor.\\
+El número de puerto se supone ya conocido porque estamos consultando a un servidor {\bf bien conocido} (cuyo número está documentado en manuales) o bien porque estamos conectando con un servidor programado por nosotros mismos.\\
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{El cliente: \textbf{\textit{\color{yellow}connect()}}}
+\fontsize{10pt}{16pt}\selectfont
+La sintaxis de {\color{blue}connect()} es:
+\begin{center}
+\shadowbox{
+retcod={\color{red}connect}(s, servidor, l\_servidor);
+}
+\end{center}
+\begin{enumerate}[<+->]
+\item <+-| alert@+> {\color{red}s}: Es el valor devuelto por {\color{blue}socket()}.
+\item <+-| alert@+> {\color{red}servidor}: Puntero a estructura del tipo sockaddr en cuyos campos se especificará la dirección del otro interlocutor del socket. En las comunicaciones a través de Internet este parámetro es en realidad de tipo (struct sockaddr\_in *), y contiene la dirección IP y el puerto del interlocutor. 
+\item <+-| alert@+> {\color{red}l\_servidor}: Es el tamaño en bytes del parámetro anterior.  
+\item <+-| alert@+> {\color{red}retcod}: Es el código de retorno de la función
+\begin{itemize}[<+->]
+\item <+-| alert@+> 0 si la operación se ha completado con éxito
+\item <+-| alert@+> -1 si se ha producido algún tipo de error.
+\end{itemize}
+\end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{El cliente: \textbf{\textit{\color{yellow}connect()}}}
+\fontsize{10pt}{12pt}\selectfont
+Antes de llamar a {\color{blue}connect()} hay que rellenar correctamente todos los campos de la estructura {\color{blue}sockaddr\_in} que hay que pasarle como parámetro.
+\begin{enumerate}[<+->]
+\item <+-| alert@+> {\color{red}servidor.sin\_family} debe contener el valor {\color{blue}AF\_INET} para las comunicaciones a través de Internet, que son el caso que nos ocupa.
+\item <+-| alert@+> {\color{red}servidor.sin\_port} debe contener el número del puerto al que queremos conectarnos. Este tiene que ser el puerto del servidor en cuestion (es el que obtuvo el servidor con la función {\color{blue}bind()}).El número de puerto debe ser convertido al formato red mediante la función {\color{blue}htons()}.
+\item <+-| alert@+> {\color{red}servidor.sin\_ addr.s\_ addr} Si conocemos la dirección IP de la máquina donde se halla el servidor, podemos llenar este campo traduciéndolo mediante la función {\color{blue}inet\_addr()}. Si sólo conocemos el nombre, debemos llamar a {\color{blue}gethostbyname()} para que consiga la dirección IP.
+\end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+El ejemplo es lo más sencillo posible.\\
+El servidor
+\begin{enumerate}[<+->]
+\item <+-| alert@+> Espera a que cualquier cliente se conecte con él 
+\item <+-| alert@+> Cuando esto ocurre, lee datos de la conexión y los muestra por pantalla
+\item <+-| alert@+> Se desconecta de ese cliente, quedando listo para admitir otro.
+\end{enumerate}
+El cliente
+\begin{enumerate}[<+->]
+\item <+-| alert@+> Se conecta al servidor
+\item <+-| alert@+> Le envía una cadena de texto 
+\item <+-| alert@+> Se desconecta
+\end{enumerate}
+El puerto del servidor, que debe ser conocido por el cliente, será el 15002.\\
+El servidor corre en la máquina llamada {\color{blue} carlos-R430-R480-R440}.\\
+Los clientes pueden conectarse a él desde cualquier máquina.
+\end{frame}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}servidor.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=3pt}, thick]
+    (2.1,16.4) -- (2.1,15.1) node [black,midway,xshift=-2.3cm]{\scriptsize $librerias$ $necesarias$};
+\fill[color=green](4.5,16.7) -- (1.9,16.7) -- (1.9,15.3) -- (4.5,15.3) -- cycle;
+\fill[color=green](9.7,16.7) -- (5,16.7) -- (5,14.4) -- (9.7,14.4) -- cycle;
+  \node[right] at (5,16.35) {\scriptsize {\color{red}$usada$ $para$ {\color{blue}$printf$}}};
+  \node[right] at (5,16.1) {\scriptsize {\color{red}$usada$ $para$ {\color{blue}$memset$}}};
+  \node[right] at (5,15.85) {\scriptsize {\color{red}$usada$ $para$} {\color{blue}$write$},{\color{blue} $read$} $y$ {\color{blue} $close$}};
+  \node[right] at (5,15.6) {\scriptsize {\color{red}$usada$ $para$ {\color{blue}$struct$ $sockaddr\_in$}}};
+  \node[right] at (6.5,15.3) {\scriptsize {\color{blue}$socket$}, {\color{blue}$bind$}, {\color{blue}$listen$}};
+  \node[right] at (6.5,15) {\scriptsize {\color{blue}$accept$}, {\tiny \color{blue}$PF\_INET$}};
+  \node[right] at (6.5,14.7) {\scriptsize {\tiny \color{blue}$INADDR\_ANY$}};
+
+  \node[right] at (-2,9.8) {\scriptsize  protocolo};
+  \node[right] at (-2,9.5) {\scriptsize  IP local y puerto local};
+  \node[right] at (-2,9.2) {\scriptsize  IP remota y puerto remoto};
+\end{tikzpicture}
+  \column{0.68\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+#include<stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include<netdb.h>
+
+#define PUERTO 15002
+
+int main(void)
+{
+int s;                      
+int n_sock;                 
+struct sockaddr_in local;   
+struct sockaddr_in cliente;  
+socklen_t l_cliente;              
+char buffer[81];            
+int leidos;                 
+  s = socket(PF_INET, SOCK_STREAM, 0);
+  if (s<0) {
+    perror("creando socket:");
+    return(1);
+  }
+  local.sin_family=AF_INET;
+  local.sin_port=htons(PUERTO);
+  local.sin_addr.s_addr = htonl(INADDR_ANY);
+  if (bind(s,(struct sockaddr *) &local,sizeof local)<0) {
+    perror("asignando direccion:");
+    return(2);
+  }
+  listen(s, SOMAXCONN);     
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}servidor.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=3pt}, thick]
+    (2.1,16.4) -- (2.1,15.1) node [black,midway,xshift=-2.3cm]{\scriptsize $librerias$ $necesarias$};
+\fill[color=green](4.5,15) -- (1.9,15) -- (1.9,14.7) -- (4.5,14.7) -- cycle;
+  \node[right] at (-2,14.85) {\scriptsize {\color{red} definimos puerto}};
+  \node[right] at (-2,14.55) {\scriptsize {\color{red}para servidor}};
+  \node[right] at (-2,9.8) {\scriptsize  protocolo};
+  \node[right] at (-2,9.5) {\scriptsize  IP local y puerto local};
+  \node[right] at (-2,9.2) {\scriptsize  IP remota y puerto remoto};
+\end{tikzpicture}
+  \column{0.68\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+#include<stdio.h>
+#include <string.h>
+#include <unistd.h>
+
+#include<netdb.h>
+
+#define PUERTO 15002
+
+int main(void)
+{
+int s;                      
+int n_sock;                 
+struct sockaddr_in local;   
+struct sockaddr_in cliente;  
+socklen_t l_cliente;              
+char buffer[81];            
+int leidos;                 
+  s = socket(PF_INET, SOCK_STREAM, 0);
+  if (s<0) {
+    perror("creando socket:");
+    return(1);
+  }
+  local.sin_family=AF_INET;
+  local.sin_port=htons(PUERTO);
+  local.sin_addr.s_addr = htonl(INADDR_ANY);
+  if (bind(s,(struct sockaddr *) &local,sizeof local)<0) {
+    perror("asignando direccion:");
+    return(2);
+  }
+  listen(s, SOMAXCONN);     
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}servidor.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=3pt}, thick]
+    (2.1,16.4) -- (2.1,15.1) node [black,midway,xshift=-2.3cm]{\scriptsize $librerias$ $necesarias$};
+\fill[color=green](3,13.95) -- (1.9,13.95) -- (1.9,13.7) -- (3,13.7) -- cycle;
+  \node[right] at (-2,14) {\scriptsize  {\color{red}variable para guardar}};
+  \node[right] at (-2,13.6) {\scriptsize {\color{red}el file descriptor}};
+  \node[right] at (-2,13.2) {\scriptsize {\color{red}del socket de conexion}};
+  \node[right] at (-2,12.8) {\scriptsize {\color{red}usada por {\color{blue}socket()}}};
+
+  \node[right] at (-2,9.8) {\scriptsize  {protocolo}};
+  \node[right] at (-2,9.5) {\scriptsize  {IP local y puerto local}};
+  \node[right] at (-2,9.2) {\scriptsize  {IP remota y puerto remoto}};
+\end{tikzpicture}
+  \column{0.68\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+#include<stdio.h>
+#include <string.h>
+#include <unistd.h>
+
+#include<netdb.h>
+
+#define PUERTO 15002
+
+int main(void)
+{
+int s;                      
+int n_sock;                 
+struct sockaddr_in local;   
+struct sockaddr_in cliente;  
+socklen_t l_cliente;              
+char buffer[81];            
+int leidos;                 
+  s = socket(PF_INET, SOCK_STREAM, 0);
+  if (s<0) {
+    perror("creando socket:");
+    return(1);
+  }
+  local.sin_family=AF_INET;
+  local.sin_port=htons(PUERTO);
+  local.sin_addr.s_addr = htonl(INADDR_ANY);
+  if (bind(s,(struct sockaddr *) &local,sizeof local)<0) {
+    perror("asignando direccion:");
+    return(2);
+  }
+  listen(s, SOMAXCONN);     
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}servidor.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=3pt}, thick]
+    (2.1,16.4) -- (2.1,15.1) node [black,midway,xshift=-2.3cm]{\scriptsize $librerias$ $necesarias$};
+
+\fill[color=green](3.5,13.7) -- (1.9,13.7) -- (1.9,13.45) -- (3.5,13.45) -- cycle;
+  \node[right] at (-2,14) {\scriptsize  {\color{red}variable para guardar}};
+  \node[right] at (-2,13.6) {\scriptsize {\color{red}el file descriptor}};
+  \node[right] at (-2,13.2) {\scriptsize {\color{red}del canal de datos}};
+  \node[right] at (-2,12.8) {\scriptsize {\color{red}usada por {\color{blue}accept()}}};
+  
+  \node[right] at (-2,9.8) {\scriptsize  {protocolo}};
+  \node[right] at (-2,9.5) {\scriptsize  {IP local y puerto local}};
+  \node[right] at (-2,9.2) {\scriptsize  {IP remota y puerto remoto}};
+\end{tikzpicture}
+  \column{0.68\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+#include<stdio.h>
+#include <string.h>
+#include <unistd.h>
+
+#include<netdb.h>
+
+#define PUERTO 15002
+
+int main(void)
+{
+int s;                      
+int n_sock;                 
+struct sockaddr_in local;   
+struct sockaddr_in cliente;  
+socklen_t l_cliente;              
+char buffer[81];            
+int leidos;                 
+  s = socket(PF_INET, SOCK_STREAM, 0);
+  if (s<0) {
+    perror("creando socket:");
+    return(1);
+  }
+  local.sin_family=AF_INET;
+  local.sin_port=htons(PUERTO);
+  local.sin_addr.s_addr = htonl(INADDR_ANY);
+  if (bind(s,(struct sockaddr *) &local,sizeof local)<0) {
+    perror("asignando direccion:");
+    return(2);
+  }
+  listen(s, SOMAXCONN);     
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}servidor.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=3pt}, thick]
+(2.1,16.4) -- (2.1,15.1) node [black,midway,xshift=-2.3cm]{\scriptsize $librerias$ $necesarias$};
+\fill[color=green](5.2,13.45) -- (1.9,13.45) -- (1.9,13.2) -- (5.2,13.2) -- cycle;
+  \node[right] at (-2,13.3) {\scriptsize  {\color{red}estructura para}};
+  \node[right] at (-2,13) {\scriptsize {\color{red} colocar datos}};
+  \node[right] at (-2,12.6) {\scriptsize {\color{red} con {\color{blue}bind()}}};
+
+  \node[right] at (-2,9.8) {\scriptsize  {protocolo}};
+  \node[right] at (-2,9.5) {\scriptsize  {IP local y puerto local}};
+  \node[right] at (-2,9.2) {\scriptsize  {IP remota y puerto remoto}};
+\end{tikzpicture}
+  \column{0.68\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+#include<stdio.h>
+#include <string.h>
+#include <unistd.h>
+
+#include<netdb.h>
+
+#define PUERTO 15002
+
+int main(void)
+{
+int s;                      
+int n_sock;                 
+struct sockaddr_in local;   
+struct sockaddr_in cliente;  
+socklen_t l_cliente;              
+char buffer[81];            
+int leidos;                 
+  s = socket(PF_INET, SOCK_STREAM, 0);
+  if (s<0) {
+    perror("creando socket:");
+    return(1);
+  }
+  local.sin_family=AF_INET;
+  local.sin_port=htons(PUERTO);
+  local.sin_addr.s_addr = htonl(INADDR_ANY);
+  if (bind(s,(struct sockaddr *) &local,sizeof local)<0) {
+    perror("asignando direccion:");
+    return(2);
+  }
+  listen(s, SOMAXCONN);     
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}servidor.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=3pt}, thick]
+(2.1,16.4) -- (2.1,15.1) node [black,midway,xshift=-2.3cm]{\scriptsize $librerias$ $necesarias$};
+\fill[color=green](5.35,13.2) -- (1.9,13.2) -- (1.9,12.95) -- (5.35,12.95) -- cycle;
+  \node[right] at (-2,13.3) {\scriptsize  {\color{red}estructura para}};
+  \node[right] at (-2,13) {\scriptsize {\color{red} colocar datos}};
+  \node[right] at (-2,12.6) {\scriptsize {\color{red} con {\color{blue}accept()}}};
+
+  \node[right] at (-2,9.8) {\scriptsize  {protocolo}};
+  \node[right] at (-2,9.5) {\scriptsize  {IP local y puerto local}};
+  \node[right] at (-2,9.2) {\scriptsize  {IP remota y puerto remoto}};
+\end{tikzpicture}
+  \column{0.68\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+#include<stdio.h>
+#include <string.h>
+#include <unistd.h>
+
+#include<netdb.h>
+
+#define PUERTO 15002
+
+int main(void)
+{
+int s;                      
+int n_sock;                 
+struct sockaddr_in local;   
+struct sockaddr_in cliente;  
+socklen_t l_cliente;              
+char buffer[81];            
+int leidos;                 
+  s = socket(PF_INET, SOCK_STREAM, 0);
+  if (s<0) {
+    perror("creando socket:");
+    return(1);
+  }
+  local.sin_family=AF_INET;
+  local.sin_port=htons(PUERTO);
+  local.sin_addr.s_addr = htonl(INADDR_ANY);
+  if (bind(s,(struct sockaddr *) &local,sizeof local)<0) {
+    perror("asignando direccion:");
+    return(2);
+  }
+  listen(s, SOMAXCONN);     
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}servidor.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=3pt}, thick]
+(2.1,16.4) -- (2.1,15.1) node [black,midway,xshift=-2.3cm]{\scriptsize $librerias$ $necesarias$};
+\fill[color=green](4.5,12.95) -- (1.9,12.95) -- (1.9,12.7) -- (4.5,12.7) -- cycle;
+  \node[right] at (-2,13.3) {\scriptsize  {\color{red}variable para guardar}};
+  \node[right] at (-2,13) {\scriptsize {\color{red} tamaño de estructura}};
+  \node[right] at (-2,12.6) {\scriptsize {\color{red} cliente usada en {\color{blue}accept()}}};
+
+  \node[right] at (-2,9.8) {\scriptsize  {protocolo}};
+  \node[right] at (-2,9.5) {\scriptsize  {IP local y puerto local}};
+  \node[right] at (-2,9.2) {\scriptsize  {IP remota y puerto remoto}};
+\end{tikzpicture}
+  \column{0.68\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+#include<stdio.h>
+#include <string.h>
+#include <unistd.h>
+
+#include<netdb.h>
+
+#define PUERTO 15002
+
+int main(void)
+{
+int s;                      
+int n_sock;                 
+struct sockaddr_in local;   
+struct sockaddr_in cliente;  
+socklen_t l_cliente;              
+char buffer[81];            
+int leidos;                 
+  s = socket(PF_INET, SOCK_STREAM, 0);
+  if (s<0) {
+    perror("creando socket:");
+    return(1);
+  }
+  local.sin_family=AF_INET;
+  local.sin_port=htons(PUERTO);
+  local.sin_addr.s_addr = htonl(INADDR_ANY);
+  if (bind(s,(struct sockaddr *) &local,sizeof local)<0) {
+    perror("asignando direccion:");
+    return(2);
+  }
+  listen(s, SOMAXCONN);     
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}servidor.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=3pt}, thick]
+(2.1,16.4) -- (2.1,15.1) node [black,midway,xshift=-2.3cm]{\scriptsize $librerias$ $necesarias$};
+\fill[color=green](4,12.73) -- (1.9,12.73) -- (1.9,12.45) -- (4,12.45) -- cycle;
+  \node[right] at (-2,13.4) {\scriptsize  {\color{red}tamaño del {\color{blue}buffer}}};
+  \node[right] at (-2,13) {\scriptsize {\color{red}usado en función {\color{blue}read()}}};
+
+  \node[right] at (-2,9.8) {\scriptsize  {protocolo}};
+  \node[right] at (-2,9.5) {\scriptsize  {IP local y puerto local}};
+  \node[right] at (-2,9.2) {\scriptsize  {IP remota y puerto remoto}};
+\end{tikzpicture}
+  \column{0.68\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+#include<stdio.h>
+#include <string.h>
+#include <unistd.h>
+
+#include<netdb.h>
+
+#define PUERTO 15002
+
+int main(void)
+{
+int s;                      
+int n_sock;                 
+struct sockaddr_in local;   
+struct sockaddr_in cliente;  
+socklen_t l_cliente;              
+char buffer[81];            
+int leidos;                 
+  s = socket(PF_INET, SOCK_STREAM, 0);
+  if (s<0) {
+    perror("creando socket:");
+    return(1);
+  }
+  local.sin_family=AF_INET;
+  local.sin_port=htons(PUERTO);
+  local.sin_addr.s_addr = htonl(INADDR_ANY);
+  if (bind(s,(struct sockaddr *) &local,sizeof local)<0) {
+    perror("asignando direccion:");
+    return(2);
+  }
+  listen(s, SOMAXCONN);     
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}servidor.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=3pt}, thick]
+(2.1,16.4) -- (2.1,15.1) node [black,midway,xshift=-2.3cm]{\scriptsize $librerias$ $necesarias$};
+\fill[color=green](3.5,12.48) -- (1.9,12.48) -- (1.9,12.2) -- (3.5,12.2) -- cycle;
+  \node[right] at (-2,13.4) {\scriptsize  {\color{red}variable usada para}};
+  \node[right] at (-2,13) {\scriptsize {\color{red}guardar la cantidad de}};
+  \node[right] at (-2,12.6) {\scriptsize {\color{red}caracteres leidos por}};
+  \node[right] at (-2,12.2) {\scriptsize {\color{red} la función {\color{blue}read()}}};
+
+  \node[right] at (-2,9.8) {\scriptsize  {protocolo}};
+  \node[right] at (-2,9.5) {\scriptsize  {IP local y puerto local}};
+  \node[right] at (-2,9.2) {\scriptsize  {IP remota y puerto remoto}};
+\end{tikzpicture}
+  \column{0.68\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+#include<stdio.h>
+#include <string.h>
+#include <unistd.h>
+
+#include<netdb.h>
+
+#define PUERTO 15002
+
+int main(void)
+{
+int s;                      
+int n_sock;                 
+struct sockaddr_in local;   
+struct sockaddr_in cliente;  
+socklen_t l_cliente;              
+char buffer[81];            
+int leidos;                 
+  s = socket(PF_INET, SOCK_STREAM, 0);
+  if (s<0) {
+    perror("creando socket:");
+    return(1);
+  }
+  local.sin_family=AF_INET;
+  local.sin_port=htons(PUERTO);
+  local.sin_addr.s_addr = htonl(INADDR_ANY);
+  if (bind(s,(struct sockaddr *) &local,sizeof local)<0) {
+    perror("asignando direccion:");
+    return(2);
+  }
+  listen(s, SOMAXCONN);     
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}servidor.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=3pt}, thick]
+(2.1,16.4) -- (2.1,15.1) node [black,midway,xshift=-2.3cm]{\scriptsize $librerias$ $necesarias$};
+\fill[color=green](6.8,12.23) -- (1.9,12.23) -- (1.9,11.96) -- (6.8,11.96) -- cycle;
+  \node[right] at (-2,13.4) {\scriptsize  {\color{red}función {\color{blue}socket()} que}};
+  \node[right] at (-2,13) {\scriptsize {\color{red}devuelve su file descriptor}};
+  \node[right] at (-2,12.6) {\scriptsize {\color{red}en {\color{blue}s} y protocolo TCP/IP}};
+
+  \node[right] at (-2,9.8) {\scriptsize  {\color{red}TCP/IP}};
+  \node[right] at (-2,9.5) {\scriptsize  {IP local y puerto local}};
+  \node[right] at (-2,9.2) {\scriptsize  {IP remota y puerto remoto}};
+\end{tikzpicture}
+  \column{0.68\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+#include<stdio.h>
+#include <string.h>
+#include <unistd.h>
+
+#include<netdb.h>
+
+#define PUERTO 15002
+
+int main(void)
+{
+int s;                      
+int n_sock;                 
+struct sockaddr_in local;   
+struct sockaddr_in cliente;  
+socklen_t l_cliente;              
+char buffer[81];            
+int leidos;                 
+  s = socket(PF_INET, SOCK_STREAM, 0);
+  if (s<0) {
+    perror("creando socket:");
+    return(1);
+  }
+  local.sin_family=AF_INET;
+  local.sin_port=htons(PUERTO);
+  local.sin_addr.s_addr = htonl(INADDR_ANY);
+  if (bind(s,(struct sockaddr *) &local,sizeof local)<0) {
+    perror("asignando direccion:");
+    return(2);
+  }
+  listen(s, SOMAXCONN);     
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}servidor.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=3pt}, thick]
+(2.1,16.4) -- (2.1,15.1) node [black,midway,xshift=-2.3cm]{\scriptsize $librerias$ $necesarias$};
+\fill[color=green](6.5,12) -- (1.9,12) -- (1.9,10.95) -- (6.5,10.95) -- cycle;
+  \node[right] at (-2.1,13) {\scriptsize  {\color{red}verifica errores al }};
+  \node[right] at (-2.1,12.7) {\scriptsize {\color{red} crear el {\color{blue}socket()}}};
+  \node[right] at (-2,9.8) {\scriptsize  {\color{red}TCP/IP}};
+  \node[right] at (-2,9.5) {\scriptsize  {IP local y puerto local}};
+  \node[right] at (-2,9.2) {\scriptsize  {IP remota y puerto remoto}};
+\end{tikzpicture}
+  \column{0.68\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+#include<stdio.h>
+#include <string.h>
+#include <unistd.h>
+
+#include<netdb.h>
+
+#define PUERTO 15002
+
+int main(void)
+{
+int s;                      
+int n_sock;                 
+struct sockaddr_in local;   
+struct sockaddr_in cliente;  
+socklen_t l_cliente;              
+char buffer[81];            
+int leidos;                 
+  s = socket(PF_INET, SOCK_STREAM, 0);
+  if (s<0) {
+    perror("creando socket:");
+    return(1);
+  }
+  local.sin_family=AF_INET;
+  local.sin_port=htons(PUERTO);
+  local.sin_addr.s_addr = htonl(INADDR_ANY);
+  if (bind(s,(struct sockaddr *) &local,sizeof local)<0) {
+    perror("asignando direccion:");
+    return(2);
+  }
+  listen(s, SOMAXCONN);     
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}servidor.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=3pt}, thick]
+(2.1,16.4) -- (2.1,15.1) node [black,midway,xshift=-2.3cm]{\scriptsize $librerias$ $necesarias$};
+\fill[color=green](7.5,11) -- (1.9,11) -- (1.9,10.25) -- (7.5,10.25) -- cycle;
+  \node[right] at (-2,13.4) {\scriptsize  {\color{red}completa datos en la}};
+  \node[right] at (-2,13) {\scriptsize {\color{red}estructura {\color{blue}sockaddr\_in}}};
+  \node[right] at (-2,12.6) {\scriptsize {\color{red}que usa {\color{blue}bind()}}};
+
+  \node[right] at (-2,9.8) {\scriptsize  {\color{red}TCP/IP}};
+  \node[right] at (-2,9.5) {\scriptsize  {IP local y puerto local}};
+  \node[right] at (-2,9.2) {\scriptsize  {IP remota y puerto remoto}};
+\end{tikzpicture}
+  \column{0.68\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+#include<stdio.h>
+#include <string.h>
+#include <unistd.h>
+
+#include<netdb.h>
+
+#define PUERTO 15002
+
+int main(void)
+{
+int s;                      
+int n_sock;                 
+struct sockaddr_in local;   
+struct sockaddr_in cliente;  
+socklen_t l_cliente;              
+char buffer[81];            
+int leidos;                 
+  s = socket(PF_INET, SOCK_STREAM, 0);
+  if (s<0) {
+    perror("creando socket:");
+    return(1);
+  }
+  local.sin_family=AF_INET;
+  local.sin_port=htons(PUERTO);
+  local.sin_addr.s_addr = htonl(INADDR_ANY);
+  if (bind(s,(struct sockaddr *) &local,sizeof local)<0) {
+    perror("asignando direccion:");
+    return(2);
+  }
+  listen(s, SOMAXCONN);     
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}servidor.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=3pt}, thick]
+(2.1,16.4) -- (2.1,15.1) node [black,midway,xshift=-2.3cm]{\scriptsize $librerias$ $necesarias$};
+\fill[color=green](9,10.3) -- (1.9,10.3) -- (1.9,10) -- (9,10) -- cycle;
+  \node[right] at (-2.1,12) {\scriptsize  {\color{red}función {\color{blue}bind()} que}};
+  \node[right] at (-2.1,11.7) {\scriptsize {\color{red}completa los campos}};
+  \node[right] at (-2.1,11.4) {\scriptsize {\color{red}IP y puerto local}};
+  \node[right] at (-2.1,11.1) {\scriptsize {\color{red}del socket {\color{blue}s}}};
+
+  \node[right] at (-2,9.8) {\scriptsize  {\color{red}TCP/IP}};
+  \node[right] at (-2,9.5) {\scriptsize  {\color{red}INADDR\_ANY} y {\color{red}PUERTO}};
+  \node[right] at (-2,9.2) {\scriptsize  {IP remota y puerto remoto}};
+\end{tikzpicture}
+  \column{0.68\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+#include<stdio.h>
+#include <string.h>
+#include <unistd.h>
+
+#include<netdb.h>
+
+#define PUERTO 15002
+
+int main(void)
+{
+int s;                      
+int n_sock;                 
+struct sockaddr_in local;   
+struct sockaddr_in cliente;  
+socklen_t l_cliente;              
+char buffer[81];            
+int leidos;                 
+  s = socket(PF_INET, SOCK_STREAM, 0);
+  if (s<0) {
+    perror("creando socket:");
+    return(1);
+  }
+  local.sin_family=AF_INET;
+  local.sin_port=htons(PUERTO);
+  local.sin_addr.s_addr = htonl(INADDR_ANY);
+  if (bind(s,(struct sockaddr *) &local,sizeof local)<0) {
+    perror("asignando direccion:");
+    return(2);
+  }
+  listen(s, SOMAXCONN);     
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}servidor.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=3pt}, thick]
+(2.1,16.4) -- (2.1,15.1) node [black,midway,xshift=-2.3cm]{\scriptsize $librerias$ $necesarias$};
+\fill[color=green](5,9.3) -- (1.9,9.3) -- (1.9,9) -- (5,9) -- cycle;
+  \node[right] at (-2.1,12) {\scriptsize  {\color{red}{\color{blue}listen()} deja al socket}};
+  \node[right] at (-2.1,11.7) {\scriptsize {\color{red}de conexión {\color{blue}s} listo para }};
+  \node[right] at (-2.1,11.4) {\scriptsize {\color{red}aceptar conexiones }};
+
+  \node[right] at (-2,9.8) {\scriptsize  {\color{red}TCP/IP}};
+  \node[right] at (-2,9.5) {\scriptsize  {\color{red}INADDR\_ANY} y {\color{red}PUERTO}};
+  \node[right] at (-2,9.2) {\scriptsize  {IP remota y puerto remoto}};
+\end{tikzpicture}
+  \column{0.68\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+#include<stdio.h>
+#include <string.h>
+#include <unistd.h>
+
+#include<netdb.h>
+
+#define PUERTO 15002
+
+int main(void)
+{
+int s;                      
+int n_sock;                 
+struct sockaddr_in local;   
+struct sockaddr_in cliente;  
+socklen_t l_cliente;              
+char buffer[81];            
+int leidos;                 
+  s = socket(PF_INET, SOCK_STREAM, 0);
+  if (s<0) {
+    perror("creando socket:");
+    return(1);
+  }
+  local.sin_family=AF_INET;
+  local.sin_port=htons(PUERTO);
+  local.sin_addr.s_addr = htonl(INADDR_ANY);
+  if (bind(s,(struct sockaddr *) &local,sizeof local)<0) {
+    perror("asignando direccion:");
+    return(2);
+  }
+  listen(s, SOMAXCONN);     
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}servidor.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=2pt}, thick]
+    (2.1,14.5) -- (2.1,14.1);
+  \node[right] at (-1.1,14.4) {\scriptsize $loop$ $donde$ $solo$ $se$};
+  \node[right] at (-1.1,14.1) {\scriptsize $sale$ $con$ {\color{blue}$Ctrl$ $C$}};
+\fill[color=green](9.3,13.72) -- (1.9,13.72) -- (1.9,13.4) -- (9.3,13.4) -- cycle;
+  \node[right] at (-2.1,12) {\scriptsize  {\color{red}{\color{blue}accept()} completa los}};
+  \node[right] at (-2.1,11.7){\scriptsize {\color{red}datos del cliente en}};
+  \node[right] at (-2.1,11.4){\scriptsize {\color{red}el socket de datos {\color{blue}n\_sock}}};
+
+  \node[right] at (-2,9.8) {\scriptsize  {\color{red}TCP/IP}};
+  \node[right] at (-2,9.5) {\scriptsize  {\color{red}INADDR\_ANY} y {\color{red}PUERTO}};
+  \node[right] at (-2,9.2) {\scriptsize  {\color{red}IP remota} y {\color{red}puerto remoto}};
+\end{tikzpicture}
+  \column{0.7\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+ while (1) {
+   printf("Esperando nueva conexion...\n");
+   l_cliente=sizeof (cliente);
+   n_sock=accept(s,(struct sockaddr *)&cliente,&l_cliente);
+   if (n_sock<0) {
+     perror("aceptando:");
+   }
+   else {
+     memset(buffer, 0, sizeof buffer);
+     while((leidos=read(n_sock,&buffer,sizeof buffer))!=0){
+       if (leidos < 0)
+         perror("leyendo:");
+       else 
+         printf("Cadena recibida -> %s\n", buffer);
+       memset(buffer, 0, sizeof buffer);
+     } 
+     printf("Conexion terminada. \n");
+     close(n_sock);
+   }
+ } 
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}servidor.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=2pt}, thick]
+    (2.1,14.5) -- (2.1,14.1);
+  \node[right] at (-1.1,14.4) {\scriptsize $loop$ $donde$ $solo$ $se$};
+  \node[right] at (-1.1,14.1) {\scriptsize $sale$ $con$ {\color{blue}$Ctrl$ $C$}};
+\fill[color=green](6.7,12.5) -- (2.2,12.5) -- (2.2,12.2) -- (6.7,12.2) -- cycle;
+  \node[right] at (-2.1,12) {\scriptsize  {\color{red}inicializa el buffer con {\color{blue}0}}};
+
+  \node[right] at (-2,9.8) {\scriptsize  {\color{red}TCP/IP}};
+  \node[right] at (-2,9.5) {\scriptsize  {\color{red}INADDR\_ANY} y {\color{red}PUERTO}};
+  \node[right] at (-2,9.2) {\scriptsize  {\color{red}IP remota} y {\color{red}puerto remoto}};
+\end{tikzpicture}
+  \column{0.7\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+ while (1) {
+   printf("Esperando nueva conexion...\n");
+   l_cliente=sizeof (cliente);
+   n_sock=accept(s,(struct sockaddr *)&cliente,&l_cliente);
+   if (n_sock<0) {
+     perror("aceptando:");
+   }
+   else {
+     memset(buffer, 0, sizeof buffer);
+     while((leidos=read(n_sock,&buffer,sizeof buffer))!=0){
+       if (leidos < 0)
+         perror("leyendo:");
+       else 
+         printf("Cadena recibida -> %s\n", buffer);
+       memset(buffer, 0, sizeof buffer);
+     } 
+     printf("Conexion terminada. \n");
+     close(n_sock);
+   }
+ } 
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}servidor.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=2pt}, thick]
+    (2.1,14.5) -- (2.1,14.1);
+  \node[right] at (-1.1,14.4) {\scriptsize $loop$ $donde$ $solo$ $se$};
+  \node[right] at (-1.1,14.1) {\scriptsize $sale$ $con$ {\color{blue}$Ctrl$ $C$}};
+\fill[color=green](9.4,12.2) -- (2.2,12.2) -- (2.2,11.95) -- (9.4,11.95) -- cycle;
+  \node[right] at (-2.1,12) {\scriptsize  {\color{red}lee datos desde {\color{blue}n\_sock}}};
+  \node[right] at (-2.1,11.7) {\scriptsize  {\color{red}y los guarda en {\color{blue}buffer}}};
+
+  \node[right] at (-2,9.8) {\scriptsize  {\color{red}TCP/IP}};
+  \node[right] at (-2,9.5) {\scriptsize  {\color{red}INADDR\_ANY} y {\color{red}PUERTO}};
+  \node[right] at (-2,9.2) {\scriptsize  {\color{red}IP remota} y {\color{red}puerto remoto}};
+\end{tikzpicture}
+  \column{0.7\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+ while (1) {
+   printf("Esperando nueva conexion...\n");
+   l_cliente=sizeof (cliente);
+   n_sock=accept(s,(struct sockaddr *)&cliente,&l_cliente);
+   if (n_sock<0) {
+     perror("aceptando:");
+   }
+   else {
+     memset(buffer, 0, sizeof buffer);
+     while((leidos=read(n_sock,&buffer,sizeof buffer))!=0){
+       if (leidos < 0)
+         perror("leyendo:");
+       else 
+         printf("Cadena recibida -> %s\n", buffer);
+       memset(buffer, 0, sizeof buffer);
+     } 
+     printf("Conexion terminada. \n");
+     close(n_sock);
+   }
+ } 
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}servidor.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=2pt}, thick]
+    (2.1,14.5) -- (2.1,14.1);
+  \node[right] at (-1.1,14.4) {\scriptsize $loop$ $donde$ $solo$ $se$};
+  \node[right] at (-1.1,14.1) {\scriptsize $sale$ $con$ {\color{blue}$Ctrl$ $C$}};
+\fill[color=green](5,10.25) -- (2.2,10.25) -- (2.2,9.95) -- (5,9.95) -- cycle;
+  \node[right] at (-2.1,12) {\scriptsize  {\color{red}cierra el socket de}};
+  \node[right] at (-2.1,11.7) {\scriptsize  {\color{red}datos {\color{blue}n\_sock}}};
+  \node[right] at (-2.1,11.4) {\scriptsize  {\color{red}pero mantiene el}};
+  \node[right] at (-2.1,11.1) {\scriptsize  {\color{red}socket de conexión {\color{blue}s}}};
+
+  \node[right] at (-2,9.8) {\scriptsize  {\color{red}TCP/IP}};
+  \node[right] at (-2,9.5) {\scriptsize  {\color{red}INADDR\_ANY} y {\color{red}PUERTO}};
+  \node[right] at (-2,9.2) {\scriptsize  {\color{red}IP remota} y {\color{red}puerto remoto}};
+\end{tikzpicture}
+  \column{0.7\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+ while (1) {
+   printf("Esperando nueva conexion...\n");
+   l_cliente=sizeof (cliente);
+   n_sock=accept(s,(struct sockaddr *)&cliente,&l_cliente);
+   if (n_sock<0) {
+     perror("aceptando:");
+   }
+   else {
+     memset(buffer, 0, sizeof buffer);
+     while((leidos=read(n_sock,&buffer,sizeof buffer))!=0){
+       if (leidos < 0)
+         perror("leyendo:");
+       else 
+         printf("Cadena recibida -> %s\n", buffer);
+       memset(buffer, 0, sizeof buffer);
+     } 
+     printf("Conexion terminada. \n");
+     close(n_sock);
+   }
+ } 
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}servidor.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=2pt}, thick]
+    (2.1,14.5) -- (2.1,14.1);
+  \node[right] at (-1.1,14.4) {\scriptsize $loop$ $donde$ $solo$ $se$};
+  \node[right] at (-1.1,14.1) {\scriptsize $sale$ $con$ {\color{blue}$Ctrl$ $C$}};
+\fill[color=green](2.2,9.5) -- (1.7,9.5) -- (1.7,9.2) -- (2.2,9.2) -- cycle;
+  \node[right] at (-2.1,12.3) {\scriptsize  {\color{red}el sistema operativo se }};
+  \node[right] at (-2.1,12) {\scriptsize  {\color{red}encarga de cerrar el }};
+  \node[right] at (-2.1,11.7) {\scriptsize  {\color{red}socket de conexión {\color{blue}s}}};
+  \node[right]at(-2.1,11.4){\scriptsize{\color{red}cuando termina con {\color{blue}$Ctrl$ $C$}}};
+  \node[right] at (-2,9.8) {\scriptsize  {\color{red}TCP/IP}};
+  \node[right] at (-2,9.5) {\scriptsize  {\color{red}INADDR\_ANY} y {\color{red}PUERTO}};
+  \node[right] at (-2,9.2) {\scriptsize  {\color{red}IP remota} y {\color{red}puerto remoto}};
+\end{tikzpicture}
+  \column{0.7\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+ while (1) {
+   printf("Esperando nueva conexion...\n");
+   l_cliente=sizeof (cliente);
+   n_sock=accept(s,(struct sockaddr *)&cliente,&l_cliente);
+   if (n_sock<0) {
+     perror("aceptando:");
+   }
+   else {
+     memset(buffer, 0, sizeof buffer);
+     while((leidos=read(n_sock,&buffer,sizeof buffer))!=0){
+       if (leidos < 0)
+         perror("leyendo:");
+       else 
+         printf("Cadena recibida -> %s\n", buffer);
+       memset(buffer, 0, sizeof buffer);
+     } 
+     printf("Conexion terminada. \n");
+     close(n_sock);
+   }
+ } 
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}cliente.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=3pt}, thick]
+(2.1,15.8) -- (2.1,14.4) node [black,midway,xshift=-2.3cm]{\scriptsize $librerias$ $necesarias$};
+\fill[color=green](9.5,14.3) -- (1.9,14.3) -- (1.9,13.8) -- (9.5,13.8) -- cycle;
+  \node[right] at (-2,13) {\scriptsize  {\color{red}define {\color{blue}$puerto$} del servidor}};
+  \node[right] at (-2,12.7) {\scriptsize  {\color{red}y {\color{blue}$datos$} a enviar}};
+
+  \node[right] at (-2,9.8) {\scriptsize  protocolo};
+  \node[right] at (-2,9.5) {\scriptsize  IP cliente y puerto cliente};
+  \node[right] at (-2,9.2) {\scriptsize  IP server y puerto server};
+\end{tikzpicture}
+  \column{0.68\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+#include<stdio.h>	
+#include <string.h>	
+#include <unistd.h> 
+
+#include<netdb.h>   
+
+#define PUERTO 15002
+#define DATOS "Un, dos, tres... probando, probando . . ."
+
+int main(void)
+{
+  int s;
+  struct sockaddr_in local;
+  struct sockaddr_in serv;
+  struct hostent *sv;
+  s = socket(PF_INET, SOCK_STREAM, 0);
+  if (s<0) {
+   perror("creando socket:");
+   return(1);
+  }
+  local.sin_family=AF_INET;
+  local.sin_port=htons(0);
+  local.sin_addr.s_addr = htonl(INADDR_ANY);
+  if (bind(s,(struct sockaddr *) &local,sizeof local)<0){
+    perror("asignando direccion:");
+    return(2);
+  }
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}cliente.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=3pt}, thick]
+(2.1,15.8) -- (2.1,14.4) node [black,midway,xshift=-2.3cm]{\scriptsize $librerias$ $necesarias$};
+\fill[color=green](3,13.1) -- (2.2,13.1) -- (2.2,12.8) -- (3,12.8) -- cycle;
+  \node[right] at (-2,14) {\scriptsize  {\color{red}variable para guardar}};
+  \node[right] at (-2,13.6) {\scriptsize {\color{red}el file descriptor}};
+  \node[right] at (-2,13.2) {\scriptsize {\color{red}del socket de conexion}};
+  \node[right] at (-2,12.8) {\scriptsize {\color{red}usada por {\color{blue}socket()}}};
+
+  \node[right] at (-2,9.8) {\scriptsize  protocolo};
+  \node[right] at (-2,9.5) {\scriptsize  IP cliente y puerto cliente};
+  \node[right] at (-2,9.2) {\scriptsize  IP server y puerto server};
+\end{tikzpicture}
+  \column{0.68\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+#include<stdio.h>	
+#include <string.h>	
+#include <unistd.h> 
+
+#include<netdb.h>   
+
+#define PUERTO 15002
+#define DATOS "Un, dos, tres... probando, probando . . ."
+
+int main(void)
+{
+  int s;
+  struct sockaddr_in local;
+  struct sockaddr_in serv;
+  struct hostent *sv;
+  s = socket(PF_INET, SOCK_STREAM, 0);
+  if (s<0) {
+   perror("creando socket:");
+   return(1);
+  }
+  local.sin_family=AF_INET;
+  local.sin_port=htons(0);
+  local.sin_addr.s_addr = htonl(INADDR_ANY);
+  if (bind(s,(struct sockaddr *) &local,sizeof local)<0){
+    perror("asignando direccion:");
+    return(2);
+  }
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}cliente.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=3pt}, thick]
+(2.1,15.8) -- (2.1,14.4) node [black,midway,xshift=-2.3cm]{\scriptsize $librerias$ $necesarias$};
+\fill[color=green](5.5,12.8) -- (2.2,12.8) -- (2.2,12.55) -- (5.5,12.55) -- cycle;
+  \node[right] at (-2,13.3) {\scriptsize  {\color{red}estructura para usar}};
+  \node[right] at (-2,13) {\scriptsize {\color{red} en función {\color{blue}bind()}}};
+
+  \node[right] at (-2,9.8) {\scriptsize  protocolo};
+  \node[right] at (-2,9.5) {\scriptsize  IP cliente y puerto cliente};
+  \node[right] at (-2,9.2) {\scriptsize  IP server y puerto server};
+\end{tikzpicture}
+  \column{0.68\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+#include<stdio.h>	
+#include <string.h>	
+#include <unistd.h> 
+
+#include<netdb.h>   
+
+#define PUERTO 15002
+#define DATOS "Un, dos, tres... probando, probando . . ."
+
+int main(void)
+{
+  int s;
+  struct sockaddr_in local;
+  struct sockaddr_in serv;
+  struct hostent *sv;
+  s = socket(PF_INET, SOCK_STREAM, 0);
+  if (s<0) {
+   perror("creando socket:");
+   return(1);
+  }
+  local.sin_family=AF_INET;
+  local.sin_port=htons(0);
+  local.sin_addr.s_addr = htonl(INADDR_ANY);
+  if (bind(s,(struct sockaddr *) &local,sizeof local)<0){
+    perror("asignando direccion:");
+    return(2);
+  }
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}cliente.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=3pt}, thick]
+(2.1,15.8) -- (2.1,14.4) node [black,midway,xshift=-2.3cm]{\scriptsize $librerias$ $necesarias$};
+\fill[color=green](5.5,12.55) -- (1.9,12.55) -- (1.9,12.3) -- (5.5,12.3) -- cycle;
+  \node[right] at (-2,13.3) {\scriptsize  {\color{red}estructura para usar}};
+  \node[right] at (-2,13) {\scriptsize {\color{red} en función {\color{blue}connect()}}};
+
+  \node[right] at (-2,9.8) {\scriptsize  protocolo};
+  \node[right] at (-2,9.5) {\scriptsize  IP cliente y puerto cliente};
+  \node[right] at (-2,9.2) {\scriptsize  IP server y puerto server};
+\end{tikzpicture}
+  \column{0.68\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+#include<stdio.h>	
+#include <string.h>	
+#include <unistd.h> 
+ 
+#include<netdb.h>   
+
+#define PUERTO 15002
+#define DATOS "Un, dos, tres... probando, probando . . ."
+
+int main(void)
+{
+  int s;
+  struct sockaddr_in local;
+  struct sockaddr_in serv;
+  struct hostent *sv;
+  s = socket(PF_INET, SOCK_STREAM, 0);
+  if (s<0) {
+   perror("creando socket:");
+   return(1);
+  }
+  local.sin_family=AF_INET;
+  local.sin_port=htons(0);
+  local.sin_addr.s_addr = htonl(INADDR_ANY);
+  if (bind(s,(struct sockaddr *) &local,sizeof local)<0){
+    perror("asignando direccion:");
+    return(2);
+  }
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}cliente.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=3pt}, thick]
+(2.1,15.8) -- (2.1,14.4) node [black,midway,xshift=-2.3cm]{\scriptsize $librerias$ $necesarias$};
+\fill[color=green](5.5,12.3) -- (1.9,12.3) -- (1.9,12.05) -- (5.5,12.05) -- cycle;
+  \node[right] at (-2,13.3) {\scriptsize  {\color{red}estructura para usar en}};
+  \node[right] at (-2,13) {\scriptsize {\color{red}función {\color{blue}gethostbyname()}}};
+
+  \node[right] at (-2,9.8) {\scriptsize  protocolo};
+  \node[right] at (-2,9.5) {\scriptsize  IP cliente y puerto cliente};
+  \node[right] at (-2,9.2) {\scriptsize  IP server y puerto server};
+\end{tikzpicture}
+  \column{0.68\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+#include<stdio.h>	
+#include <string.h>	
+#include <unistd.h> 
+ 
+#include<netdb.h>   
+
+#define PUERTO 15002
+#define DATOS "Un, dos, tres... probando, probando . . ."
+
+int main(void)
+{
+  int s;
+  struct sockaddr_in local;
+  struct sockaddr_in serv;
+  struct hostent *sv;
+  s = socket(PF_INET, SOCK_STREAM, 0);
+  if (s<0) {
+   perror("creando socket:");
+   return(1);
+  }
+  local.sin_family=AF_INET;
+  local.sin_port=htons(0);
+  local.sin_addr.s_addr = htonl(INADDR_ANY);
+  if (bind(s,(struct sockaddr *) &local,sizeof local)<0){
+    perror("asignando direccion:");
+    return(2);
+  }
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}cliente.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=3pt}, thick]
+(2.1,15.8) -- (2.1,14.4) node [black,midway,xshift=-2.3cm]{\scriptsize $librerias$ $necesarias$};
+\fill[color=green](7,12.05) -- (1.9,12.05) -- (1.9,11.8) -- (7,11.8) -- cycle;
+  \node[right] at (-2,13.4) {\scriptsize  {\color{red}función {\color{blue}socket()} que}};
+  \node[right] at (-2,13) {\scriptsize {\color{red}devuelve su file descriptor}};
+  \node[right] at (-2,12.6) {\scriptsize {\color{red}en {\color{blue}s} y protocolo TCP/IP}};
+
+  \node[right] at (-2,9.8) {\scriptsize  {\color{red}TCP/IP}};
+  \node[right] at (-2,9.5) {\scriptsize  IP cliente y puerto cliente};
+  \node[right] at (-2,9.2) {\scriptsize  IP server y puerto server};
+\end{tikzpicture}
+  \column{0.68\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+#include<stdio.h>	
+#include <string.h>	
+#include <unistd.h> 
+
+#include<netdb.h>   
+
+#define PUERTO 15002
+#define DATOS "Un, dos, tres... probando, probando . . ."
+
+int main(void)
+{
+  int s;
+  struct sockaddr_in local;
+  struct sockaddr_in serv;
+  struct hostent *sv;
+  s = socket(PF_INET, SOCK_STREAM, 0);
+  if (s<0) {
+   perror("creando socket:");
+   return(1);
+  }
+  local.sin_family=AF_INET;
+  local.sin_port=htons(0);
+  local.sin_addr.s_addr = htonl(INADDR_ANY);
+  if (bind(s,(struct sockaddr *) &local,sizeof local)<0){
+    perror("asignando direccion:");
+    return(2);
+  }
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}cliente.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=3pt}, thick]
+(2.1,15.8) -- (2.1,14.4) node [black,midway,xshift=-2.3cm]{\scriptsize $librerias$ $necesarias$};
+\fill[color=green](7.5,10.85) -- (1.9,10.85) -- (1.9,10.1) -- (7.5,10.1) -- cycle;
+  \node[right] at (-2,13.4) {\scriptsize  {\color{red}completa datos en la}};
+  \node[right] at (-2,13) {\scriptsize {\color{red}estructura {\color{blue}sockaddr\_in}}};
+  \node[right] at (-2,12.6) {\scriptsize {\color{red}que usa {\color{blue}bind()}}};
+
+  \node[right] at (-2,9.8) {\scriptsize  {\color{red}TCP/IP}};
+  \node[right] at (-2,9.5) {\scriptsize  IP cliente y puerto cliente};
+  \node[right] at (-2,9.2) {\scriptsize  IP server y puerto server};
+\end{tikzpicture}
+  \column{0.68\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+#include<stdio.h>	
+#include <string.h>	
+#include <unistd.h> 
+ 
+#include<netdb.h>   
+
+#define PUERTO 15002
+#define DATOS "Un, dos, tres... probando, probando . . ."
+
+int main(void)
+{
+  int s;
+  struct sockaddr_in local;
+  struct sockaddr_in serv;
+  struct hostent *sv;
+  s = socket(PF_INET, SOCK_STREAM, 0);
+  if (s<0) {
+   perror("creando socket:");
+   return(1);
+  }
+  local.sin_family=AF_INET;
+  local.sin_port=htons(0);
+  local.sin_addr.s_addr = htonl(INADDR_ANY);
+  if (bind(s,(struct sockaddr *) &local,sizeof local)<0){
+    perror("asignando direccion:");
+    return(2);
+  }
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}cliente.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \draw[	decorate,decoration={brace,mirror,raise=6pt,amplitude=3pt}, thick]
+(2.1,15.8) -- (2.1,14.4) node [black,midway,xshift=-2.3cm]{\scriptsize $librerias$ $necesarias$};
+\fill[color=green](9,10.1) -- (1.9,10.1) -- (1.9,9.8) -- (9,9.8) -- cycle;
+  \node[right] at (-2.1,13) {\scriptsize  {\color{red}función {\color{blue}bind()} que}};
+  \node[right] at (-2.1,12.7) {\scriptsize {\color{red}completa los campos}};
+  \node[right] at (-2.1,12.4) {\scriptsize {\color{blue}IP} {\color{red}y} {\color{blue}puerto local}};
+  \node[right] at (-2.1,12.1) {\scriptsize {\color{red}del socket de conexión {\color{blue}s}}};
+  \node[right] at (-2.1,11.4) {\scriptsize {\color{red}{\color{blue}htons(0)} elije un pueto local}};
+  \node[right] at (-2.1,11.1) {\scriptsize {\color{red}libre aleatoriamente}};
+
+  \node[right] at (-2,9.8) {\scriptsize  {\color{red}TCP/IP}};
+  \node[right] at (-2,9.5) {\scriptsize  {\color{red}IP local} y {\color{red}puerto local}};
+  \node[right] at (-2,9.2) {\scriptsize  {IP remota y puerto remoto}};
+\end{tikzpicture}
+  \column{0.68\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+#include<stdio.h>	
+#include <string.h>	
+#include <unistd.h> 
+
+#include<netdb.h>   
+
+#define PUERTO 15002
+#define DATOS "Un, dos, tres... probando, probando . . ."
+
+int main(void)
+{
+  int s;
+  struct sockaddr_in local;
+  struct sockaddr_in serv;
+  struct hostent *sv;
+  s = socket(PF_INET, SOCK_STREAM, 0);
+  if (s<0) {
+   perror("creando socket:");
+   return(1);
+  }
+  local.sin_family=AF_INET;
+  local.sin_port=htons(0);
+  local.sin_addr.s_addr = htonl(INADDR_ANY);
+  if (bind(s,(struct sockaddr *) &local,sizeof local)<0){
+    perror("asignando direccion:");
+    return(2);
+  }
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}cliente.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \node[right] at (-2.1,14.4) {\scriptsize $conocer$ {\color{blue}$nombre$} $o$ {\color{blue}$IP$}};
+  \node[right] at (-2.1,14.1) {\scriptsize $donde$ $esta$ $el$ $servidor$};
+  \node[right] at (-2.1,13.8) {\scriptsize $y$ $el$ {\color{blue}$PUERTO$}};
+\fill[color=green](7.4,14.15) -- (1.9,14.15) -- (1.9,13.9) -- (7.4,13.9) -- cycle;
+  \node[right] at (-2.1,12) {\scriptsize  {\color{red}obtiene {\color{blue}dirección IP}}};
+  \node[right] at (-2.1,11.7) {\scriptsize  {\color{red}conociendo el nombre}};
+  \node[right] at (-2.1,11.4) {\scriptsize  {\color{red}de la {\color{blue}PC} donde}};
+  \node[right] at (-2.1,11.1) {\scriptsize  {\color{red}está el {\color{blue}servidor}}};
+
+  \node[right] at (-2,9.8) {\scriptsize  {\color{red}TCP/IP}};
+  \node[right] at (-2,9.5) {\scriptsize  {\color{red}IP local} y {\color{red}puerto local}};
+  \node[right] at (-2,9.2) {\scriptsize  {IP remota y puerto remoto}};
+\end{tikzpicture}
+  \column{0.68\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+ sv = gethostbyname("carlos-R430-R480-R440");  
+ if (sv==NULL) {
+  fprintf(stderr, "carlos-R430-R480-R440 \n");
+  return(2);
+ }  
+ memcpy(&serv.sin_addr.s_addr,sv->h_addr,sv->h_length);
+ serv.sin_family = AF_INET;
+ serv.sin_port = htons(PUERTO);  
+ if (connect(s,(struct sockaddr *) &serv,sizeof serv)<0) {
+  perror("conectando:");
+  return(3);
+ }  
+ if (write(s, DATOS, sizeof DATOS)<0) {
+  perror("escribiendo el socket:");
+  return(3);
+ }
+ close(s);
+ return(0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}cliente.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \node[right] at (-2.1,14.4) {\scriptsize $conocer$ {\color{blue}$nombre$} $o$ {\color{blue}$IP$}};
+  \node[right] at (-2.1,14.1) {\scriptsize $donde$ $esta$ $el$ $servidor$};
+  \node[right] at (-2.1,13.8) {\scriptsize $y$ $el$ {\color{blue}$PUERTO$}};
+\fill[color=green](9.2,12.9) -- (1.9,12.9) -- (1.9,12.65) -- (9.2,12.65) -- cycle;
+  \node[right] at (-2.1,11.95){\scriptsize{\color{red}copia datos {\color{blue}IP} de la}};
+  \node[right] at (-2.1,11.65) {\scriptsize  {\color{red}estructura {\color{blue}sv} a la}};
+  \node[right] at (-2.1,11.3) {\scriptsize  {\color{red}estructura {\color{blue}serv} que}};
+  \node[right] at (-2.1,11) {\scriptsize  {\color{red}necesita {\color{blue}connect()}}};
+
+  \node[right] at (-2,9.8) {\scriptsize  {\color{red}TCP/IP}};
+  \node[right] at (-2,9.5) {\scriptsize  {\color{red}IP local} y {\color{red}puerto local}};
+  \node[right] at (-2,9.2) {\scriptsize  {IP remota y puerto remoto}};
+\end{tikzpicture}
+  \column{0.68\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+ sv = gethostbyname("carlos-R430-R480-R440");  
+ if (sv==NULL) {
+  fprintf(stderr, "carlos-R430-R480-R440 \n");
+  return(2);
+ }  
+ memcpy(&serv.sin_addr.s_addr,sv->h_addr,sv->h_length);
+ serv.sin_family = AF_INET;
+ serv.sin_port = htons(PUERTO);  
+ if (connect(s,(struct sockaddr *) &serv,sizeof serv)<0) {
+  perror("conectando:");
+  return(3);
+ }  
+ if (write(s, DATOS, sizeof DATOS)<0) {
+  perror("escribiendo el socket:");
+  return(3);
+ }
+ close(s);
+ return(0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}cliente.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \node[right] at (-2.1,14.4) {\scriptsize $conocer$ {\color{blue}$nombre$} $o$ {\color{blue}$IP$}};
+  \node[right] at (-2.1,14.1) {\scriptsize $donde$ $esta$ $el$ $servidor$};
+  \node[right] at (-2.1,13.8) {\scriptsize $y$ $el$ {\color{blue}$PUERTO$}};
+\fill[color=green](6,12.7) -- (1.9,12.7) -- (1.9,12.2) -- (6,12.2) -- cycle;
+  \node[right] at (-2.1,12) {\scriptsize  {\color{red}completa los datos }};
+  \node[right] at (-2.1,11.7) {\scriptsize  {\color{red}restantes en la }};
+  \node[right] at (-2.1,11.4) {\scriptsize  {\color{red}estructura {\color{blue}serv}}};
+
+  \node[right] at (-2,9.8) {\scriptsize  {\color{red}TCP/IP}};
+  \node[right] at (-2,9.5) {\scriptsize  {\color{red}IP local} y {\color{red}puerto local}};
+  \node[right] at (-2,9.2) {\scriptsize  {\color{red}IP remota} y {\color{red}puerto remoto}};
+\end{tikzpicture}
+  \column{0.68\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+ sv = gethostbyname("carlos-R430-R480-R440");  
+ if (sv==NULL) {
+  fprintf(stderr, "carlos-R430-R480-R440 \n");
+  return(2);
+ }  
+ memcpy(&serv.sin_addr.s_addr,sv->h_addr,sv->h_length);
+ serv.sin_family = AF_INET;
+ serv.sin_port = htons(PUERTO);  
+ if (connect(s,(struct sockaddr *) &serv,sizeof serv)<0) {
+  perror("conectando:");
+  return(3);
+ }  
+ if (write(s, DATOS, sizeof DATOS)<0) {
+  perror("escribiendo el socket:");
+  return(3);
+ }
+ close(s);
+ return(0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}cliente.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \node[right] at (-2.1,14.4) {\scriptsize $conocer$ {\color{blue}$nombre$} $o$ {\color{blue}$IP$}};
+  \node[right] at (-2.1,14.1) {\scriptsize $donde$ $esta$ $el$ $servidor$};
+  \node[right] at (-2.1,13.8) {\scriptsize $y$ $el$ {\color{blue}$PUERTO$}};
+\fill[color=green](9,12.2) -- (1.9,12.2) -- (1.9,11.9) -- (9,11.9) -- cycle;
+  \node[right] at (-2.1,12) {\scriptsize  {\color{red}{\color{blue}connect()} establece}};
+  \node[right] at (-2.1,11.7) {\scriptsize  {\color{red}la conexión con el}};
+  \node[right] at (-2.1,11.4) {\scriptsize  {\color{red}servidor }};
+
+  \node[right] at (-2,9.8) {\scriptsize  {\color{red}TCP/IP}};
+  \node[right] at (-2,9.5) {\scriptsize  {\color{red}IP local} y {\color{red}puerto local}};
+  \node[right] at (-2,9.2) {\scriptsize  {\color{red}IP remota} y {\color{red}puerto remoto}};
+\end{tikzpicture}
+  \column{0.68\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+ sv = gethostbyname("carlos-R430-R480-R440");  
+ if (sv==NULL) {
+  fprintf(stderr, "carlos-R430-R480-R440 \n");
+  return(2);
+ }  
+ memcpy(&serv.sin_addr.s_addr,sv->h_addr,sv->h_length);
+ serv.sin_family = AF_INET;
+ serv.sin_port = htons(PUERTO);  
+ if (connect(s,(struct sockaddr *) &serv,sizeof serv)<0) {
+  perror("conectando:");
+  return(3);
+ }  
+ if (write(s, DATOS, sizeof DATOS)<0) {
+  perror("escribiendo el socket:");
+  return(3);
+ }
+ close(s);
+ return(0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}cliente.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \node[right] at (-2.1,14.4) {\scriptsize $conocer$ {\color{blue}$nombre$} $o$ {\color{blue}$IP$}};
+  \node[right] at (-2.1,14.1) {\scriptsize $donde$ $esta$ $el$ $servidor$};
+  \node[right] at (-2.1,13.8) {\scriptsize $y$ $el$ {\color{blue}$PUERTO$}};
+\fill[color=green](7,11.25) -- (1.9,11.25) -- (1.9,11) -- (7,11) -- cycle;
+  \node[right] at (-2.1,12) {\scriptsize  {\color{red}si la conexión}};
+  \node[right] at (-2.1,11.7) {\scriptsize  {\color{red}fué returnosa}};
+  \node[right] at (-2.1,11.4) {\scriptsize  {\color{red}ejecuta {\color{blue}write()}}};
+
+  \node[right] at (-2,9.8) {\scriptsize  {\color{red}TCP/IP}};
+  \node[right] at (-2,9.5) {\scriptsize  {\color{red}IP local} y {\color{red}puerto local}};
+  \node[right] at (-2,9.2) {\scriptsize  {\color{red}IP remota} y {\color{red}puerto remoto}};
+\end{tikzpicture}
+  \column{0.68\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+ sv = gethostbyname("carlos-R430-R480-R440");  
+ if (sv==NULL) {
+  fprintf(stderr, "carlos-R430-R480-R440 \n");
+  return(2);
+ }  
+ memcpy(&serv.sin_addr.s_addr,sv->h_addr,sv->h_length);
+ serv.sin_family = AF_INET;
+ serv.sin_port = htons(PUERTO);  
+ if (connect(s,(struct sockaddr *) &serv,sizeof serv)<0) {
+  perror("conectando:");
+  return(3);
+ }  
+ if (write(s, DATOS, sizeof DATOS)<0) {
+  perror("escribiendo el socket:");
+  return(3);
+ }
+ close(s);
+ return(0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}cliente.c} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+ \begin{columns}[c]
+  \column{0.3\textwidth}
+\begin{tikzpicture} 
+  \node[right] at (-2.1,14.4) {\scriptsize $conocer$ {\color{blue}$nombre$} $o$ {\color{blue}$IP$}};
+  \node[right] at (-2.1,14.1) {\scriptsize $donde$ $esta$ $el$ $servidor$};
+  \node[right] at (-2.1,13.8) {\scriptsize $y$ $el$ {\color{blue}$PUERTO$}};
+\fill[color=green](3.5,10.25) -- (1.9,10.25) -- (1.9,9.75) -- (3.5,9.75) -- cycle;
+  \node[right] at (-2.1,12) {\scriptsize  {\color{red}si {\color{blue}write()} no}};
+  \node[right] at (-2.1,11.7) {\scriptsize  {\color{red}devuelve error}};
+  \node[right] at (-2.1,11.4) {\scriptsize  {\color{red}cerramos el socket {\color{blue}s}}};
+  \node[right] at (-2.1,11.1) {\scriptsize  {\color{red}y salimos}};
+
+  \node[right] at (-2,9.8) {\scriptsize  {\color{red}TCP/IP}};
+  \node[right] at (-2,9.5) {\scriptsize  {\color{red}IP local} y {\color{red}puerto local}};
+  \node[right] at (-2,9.2) {\scriptsize  {\color{red}IP remota} y {\color{red}puerto remoto}};
+\end{tikzpicture}
+  \column{0.68\textwidth}
+  \lstset{basicstyle=\tiny}
+\vspace{-0.4cm}
+   \begin{lstlisting}[numbers=none]
+ sv = gethostbyname("carlos-R430-R480-R440");  
+ if (sv==NULL) {
+  fprintf(stderr, "carlos-R430-R480-R440 \n");
+  return(2);
+ }  
+ memcpy(&serv.sin_addr.s_addr,sv->h_addr,sv->h_length);
+ serv.sin_family = AF_INET;
+ serv.sin_port = htons(PUERTO);  
+ if (connect(s,(struct sockaddr *) &serv,sizeof serv)<0) {
+  perror("conectando:");
+  return(3);
+ }  
+ if (write(s, DATOS, sizeof DATOS)<0) {
+  perror("escribiendo el socket:");
+  return(3);
+ }
+ close(s);
+ return(0);
+}
+   \end{lstlisting}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}cliente - servidor} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{14pt}{12pt}\selectfont
+\begin{center}
+\fontsize{20pt}{12pt}\selectfont
+{\color{blue}$Servidor$}
+\end{center}
+\begin{figure}
+\fontsize{14pt}{12pt}\selectfont
+\centering
+{\textit El servidor se encuentra esperando conexiones}
+  \includegraphics [width=1\textwidth]{server1.jpeg}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}cliente - servidor} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{14pt}{12pt}\selectfont
+\begin{center}
+\fontsize{20pt}{12pt}\selectfont
+{\color{blue}$Cliente$}
+\end{center}
+
+\vspace{1cm}
+\begin{figure}
+\fontsize{14pt}{12pt}\selectfont
+\centering
+{\textit El cliente ya se ejecutó y el mensaje fué enviado correctamente}
+  \includegraphics [width=1\textwidth]{cliente2.jpeg}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Ejemplo {\color{yellow}cliente - servidor} con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{14pt}{12pt}\selectfont
+\begin{center}
+\fontsize{20pt}{12pt}\selectfont
+{\color{blue}$Servidor$}
+\end{center}
+\begin{figure}
+\fontsize{14pt}{12pt}\selectfont
+\centering
+{\textit El servidor ya atendió a un cliente y se encuentra esperando nuevas conexiones}
+  \includegraphics [width=1\textwidth]{server2.jpeg}
+\end{figure}
+\end{frame}
+
+\end{document}

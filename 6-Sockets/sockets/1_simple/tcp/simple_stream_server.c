@@ -1,3 +1,5 @@
+// curl -s ifconfig.me para ver IP WAN
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>

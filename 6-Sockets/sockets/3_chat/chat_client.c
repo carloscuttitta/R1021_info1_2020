@@ -26,7 +26,6 @@ int main(int ac, char *av[]){
 
     while(1){
         printf("...\n");
-//       memset(buf, 0, sizeof(buf));		// limpia el buffer para prepararlo para la recepcion
         fgets(buf,100,stdin);                          // lee mensaje del teclado
 
 
@@ -47,17 +46,12 @@ for (i=0;buf[i]!='\0';i++){
             break;
         }    
 
-//        memset(buf, 0, sizeof(buf));		// limpia el buffer para prepararlo para la recepcion
         read(sock, buf, sizeof(buf));       // lee los bytes recibidos
 
         for (i=0;buf[i]!='\0';i++){
             printf("%c", buf[i]);
 }
             printf("\n");
-
-
-
-//        printf("--- %s\n", buf);            // muestra el mensaje recibido
     }
     close(sock);							// cierra el socket
 
