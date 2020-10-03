@@ -34,7 +34,7 @@ int main(int ac, char *av[]){
     my_addr.sin_family = AF_INET;
     my_addr.sin_port = htons(atoi(av[1]));
     my_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    //  my_addr.sin_addr.s_addr = inet_addr("192.168.0.65");
+//  my_addr.sin_addr.s_addr = inet_addr("192.168.0.65");
 
  //Avisar al sistema que se creo un socket
     if ( (res = bind( ssock, (struct sockaddr *)&my_addr, sizeof(my_addr) ) ) == -1){
@@ -70,21 +70,18 @@ int main(int ac, char *av[]){
                     break;
                 }
                 if ((write(csock, buf, nread)) < 0 ) {
-                printf("40\n");
                     perror(strerror(errno));
                     close(csock);
                     exit(1);
                 }
             }
            if (close(csock) == -1) {  
-                printf("14\n");
                 perror(strerror(errno));
                 exit(1);
             }
             exit(0);
         } /* end fork */
         if (close(csock) == -1) {   // proceso padre
-            printf("5\n");
             perror(strerror(errno));
             exit(1);
         }
