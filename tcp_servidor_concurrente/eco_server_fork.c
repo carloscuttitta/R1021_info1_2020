@@ -8,7 +8,7 @@
 
 #define TAM 1024
 
-// mi IP publica es ("181.230.115.175") y la busco con: curl -s ifconfig.me
+// la busco con: curl -s ifconfig.me
 
 int main(int ac, char *av[]){
     int res,nread;			// resultado de algunas funciones

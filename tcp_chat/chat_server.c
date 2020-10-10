@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <errno.h>
 
-// mi IP publica es ("181.230.115.175") y la busco con: curl -s ifconfig.me
+// la busco con: curl -s ifconfig.me
 
 int main(int ac, char *av[]){
     int res,i;				// resultado de algunas funciones
