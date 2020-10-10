@@ -66,7 +66,6 @@ int main(int ac, char *av[]){
         read(sock, buf, sizeof(buf));       // lee los bytes recibidos
         printf("--- %s\n", buf);            // muestra el mensaje recibido
     }
-    close(res);			    // cierra el socket
     close(sock);			    // cierra el socket
     return 0;
 }
