@@ -26,7 +26,7 @@ int main(void){
 	
 	printf("Padre terminando\n");
 			sleep(30);
-//	wait(NULL); // probar sin wait
+	wait(NULL); // probar sin wait
 	
 	return 0;
 }

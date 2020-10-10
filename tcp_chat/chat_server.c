@@ -31,6 +31,8 @@ int main(int ac, char *av[]){
     my_addr.sin_family = AF_INET;
     my_addr.sin_port = htons(atoi(av[1]));
     my_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    memset((void *) &(my_addr.sin_zero), '\0', 8); // Poner a cero el resto de la estructura
+    
     //  my_addr.sin_addr.s_addr = inet_addr("192.168.0.65");
 
  //Avisar al sistema que se creo un socket
