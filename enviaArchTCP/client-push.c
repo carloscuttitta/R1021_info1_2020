@@ -1,9 +1,3 @@
-#include <stdio.h>		// Standard I/O
-#include <stdlib.h> 	        // Libreria standard de C, para usar exit()
-#include <unistd.h>		// Unix standard, para usar close()
-#include <arpa/inet.h>	        // Estructuras para sockets
-#include <string.h>		// Para usar strlen() y strcmp()
-#include <netdb.h>		// Para usar gethostbyname()
 #include "defs.h"		// Mis propias definiciones
 
 // Abre un socket cliente apuntando a host:port

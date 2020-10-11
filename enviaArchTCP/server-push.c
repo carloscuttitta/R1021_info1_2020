@@ -1,10 +1,12 @@
-#include <stdio.h>		// Standard I/O
-#include <stdlib.h> 	        // Libreria standard de C, para usar exit()
-#include <unistd.h>		// Unix standard, para usar close()
-#include <arpa/inet.h>	        // Estructuras para sockets
-#include <string.h>		// Para usar strlen() y strcmp()
-#include <netdb.h>		// Para usar gethostbyname()
+#include <signal.h>
 #include "defs.h"		// Mis propias definiciones
+
+void usuario(int signum) {
+  // imprime el nro de signal que recibe y sale bien del programa.
+  printf("Recibida signal de usuario: %d\n", signum);
+  exit (SUCCESS);
+}
+
 
 int main (int argc, char ** argv) {
 	
@@ -18,6 +20,8 @@ int main (int argc, char ** argv) {
     char fnrecv[90];
     char filename[100];
     FILE * dest;
+
+    signal(SIGUSR1, usuario);
 
 // verifica los argumentos de la linea de comandos
     if(argc !=2){
@@ -51,11 +55,12 @@ int main (int argc, char ** argv) {
         perror("Error intentando escuchar en puerto");
         exit(ERROR);
     }
-
     printf("Servidor conectado en puerto %d\n",atoi(argv[1]));
 	
 // Y cuando llega una conexion...
     client_length = sizeof(client_addr);
+    printf("Proceso servidor pid: %d\n",getpid() );
+
     while(1) { 
         clientfd = accept(socketfd, (struct sockaddr *) &client_addr, &client_length);
         if(clientfd<0) {
@@ -89,8 +94,8 @@ int main (int argc, char ** argv) {
 // Cierra socket al terminar
         close(clientfd);
     }
-    close(socketfd);
-    return SUCCESS;
+//    close(socketfd);      la señal SIGUSR1 hace el exit(0) 
+//    return SUCCESS;
 }
 
 
