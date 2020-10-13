@@ -25,6 +25,7 @@ int main()
     fd_txt = fopen( "listado.txt" , "w" );
     if( fd_txt==0 ){
         printf("ERROR - no se creo el archivo de salida \n");
+        exit(1);
     }
     
     

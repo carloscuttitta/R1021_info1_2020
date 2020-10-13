@@ -14,5 +14,3 @@
 
 // Buffer size
 #define BUFFER_SIZE 255
-
-

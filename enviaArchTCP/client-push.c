@@ -17,21 +17,32 @@ int main (int argc, char ** argv) {
     char buffer[BUFFER_SIZE];
 
 // verifica los argumentos de la linea de comandos
-    if(argc !=4){
-        printf("invocar %s <archivo> < IP > <port_donde_servir>\n", argv[0]);
+    if(argc !=3){
+        printf("invocar %s < IP > <port_donde_servir>\n", argv[0]);
         return -1;
     }
         
-// Copia el nombre del archivo 
-    strcpy(filename, argv[1]);
-
     // Copia el host y el puerto
-    strcpy(host, argv[2]);
-    port = atoi(argv[3]);
+    strcpy(host, argv[1]);
+    port = atoi(argv[2]);
 
 // Abre un socket
     socketfd = client_socket_open(host, port);
-// Escribe el nombre del archivo 
+
+    size = 0;
+// Lee listado desde el socket 
+    while((result=read(socketfd, buffer, BUFFER_SIZE))) {
+        size += result;
+        fwrite(buffer, 1, result, stdout);
+        if (result != BUFFER_SIZE){
+            break;
+        }
+    }
+    printf("Recibimos %d bytes desde el socket\n", size);
+    
+// Escribe el nombre del archivo
+    printf("elija un archivo !!\n");
+    scanf("%s",filename);
     write(socketfd, filename, 90);
 
 // Lee el acknowledge
@@ -52,7 +63,6 @@ int main (int argc, char ** argv) {
             size += result;
             fwrite(buffer, 1, result, src);
         }
-
         printf("Recibimos %d bytes de %s desde el socket\n", size, filename);
         fclose(src);
     }

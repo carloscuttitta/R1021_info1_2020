@@ -1,4 +1,8 @@
 #include <signal.h>
+
+#include <sys/types.h>          // usado para obtener nombres de archivos
+#include <dirent.h>             // usado para obtener nombres de archivos
+
 #include "defs.h"		// Mis propias definiciones
 
 void usuario(int signum) {
@@ -7,6 +11,7 @@ void usuario(int signum) {
   exit (SUCCESS);
 }
 
+int listar_archivos(void);
 
 int main (int argc, char ** argv) {
 	
@@ -20,6 +25,7 @@ int main (int argc, char ** argv) {
     char fnrecv[90];
     char filename[100];
     FILE * dest;
+    FILE *fd_txt;
 
     signal(SIGUSR1, usuario);
 
@@ -61,12 +67,29 @@ int main (int argc, char ** argv) {
     client_length = sizeof(client_addr);
     printf("Proceso servidor pid: %d\n",getpid() );
 
+    listar_archivos();
+    
+    fd_txt = fopen( "listado.txt" , "r" );
+    if( fd_txt==0 ){
+        printf("ERROR - no se creo el archivo de salida \n");
+        exit(1);
+    }
+    
     while(1) { 
         clientfd = accept(socketfd, (struct sockaddr *) &client_addr, &client_length);
         if(clientfd<0) {
             perror("Error recibiendo conexion");
             exit(ERROR);
         }
+        size = 0;
+        while((result = fread(buffer, 1, BUFFER_SIZE, fd_txt))) {
+            size += result;
+            if(result>0) {
+                write(clientfd, buffer, result);
+            }
+        }
+        printf("Enviados %d bytes de '%s' hacia el socket\n", size, "listado.txt");
+        fclose(fd_txt);
 			
 // recibe el nombre del archivo
         read(clientfd, fnrecv, 90);
@@ -96,6 +119,45 @@ int main (int argc, char ** argv) {
     }
 //    close(socketfd);      la señal SIGUSR1 hace el exit(0) 
 //    return SUCCESS;
+}
+
+
+int listar_archivos(void)
+{
+    char *token;
+    char cadena[100];
+    FILE *fd_txt1;
+
+/* Con un puntero a DIR abriremos el directorio */
+    DIR *dir;
+/* en *ent habrá información sobre el archivo que se está "sacando" a cada momento */
+    struct dirent *ent;
+/* Empezaremos a leer en el directorio actual */
+    dir = opendir ("./sent");
+/* Miramos que no haya error */
+    if (dir == NULL){
+        printf("No puedo abrir el directorio");
+        exit(1);
+    }
+    fd_txt1 = fopen( "listado.txt" , "w" );
+    if( fd_txt1==0 ){
+        printf("ERROR - no se creo el archivo de salida \n");
+        exit(1);
+    }
+/* Leyendo uno a uno todos los archivos que hay */
+    while ((ent = readdir (dir)) != NULL){
+/* Nos devolverá el directorio actual (.) y el anterior (..), como hace ls */
+        if ( ( strcmp(ent->d_name, ".") !=0 ) && (strcmp(ent->d_name, "..")!=0) ){
+            strcpy(cadena,ent->d_name);
+            token = strtok(ent->d_name, ".");
+            if( (token != NULL) && ( (strcmp(cadena,token) != 0) ) ){
+                fprintf(fd_txt1,"%s\n",cadena);   
+            }
+        }
+    }
+    fclose(fd_txt1);
+    closedir (dir);
+    return 0;
 }
 
 
