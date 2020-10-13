@@ -1,0 +1,15 @@
+\frametitle{Ejemplo con \textbf{\textit{\color{yellow}sockets tipo stream}}}
+\fontsize{10pt}{12pt}\selectfont
+El ejemplo es lo más sencillo posible.\\
+El servidor
+\begin{enumerate}[<+->]
+\item <+-| alert@+> Espera a que cualquier cliente se conecte con él
+\item <+-| alert@+> Cuando esto ocurre, lee datos de la conexión y los muestra por pantalla
+\item <+-| alert@+> Se desconecta de ese cliente, quedando listo para admitir otro.
+\end{enumerate}
+El cliente
+\begin{enumerate}[<+->]
+\item <+-| alert@+> Se conecta al servidor
+\item <+-| alert@+> Le envía una cadena de texto
+\item <+-| alert@+> Se desconecta
+\end{enumerate}
