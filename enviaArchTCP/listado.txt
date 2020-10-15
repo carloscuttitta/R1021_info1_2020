@@ -2,8 +2,8 @@ Doxygen.pdf
 super-homer.jpg
 Grandpa-Simpson.jpg
 Ned-Flanders.jpg
+socket.pdf
 homerx-old.jpg
 guia_beej_ipcs_es.pdf
-deitel-edicion4.pdf
 Desbordamiento-de-la-pila-Linux-x86.pdf
 proyect-final.pdf

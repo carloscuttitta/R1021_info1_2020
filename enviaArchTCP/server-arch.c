@@ -11,6 +11,31 @@ void usuario(int signum) {
   exit (SUCCESS);
 }
 
+void interrumpir(int signum) {
+  // Ctrl-C o kill -SIGINT [pid]
+  // Static define una variable que mantiene su valor en múltiples invocaciones de la función.
+  // Por más que lo inicialice con un valor, dicha inicializacion sucede una vez sola.
+  static int count = 5;
+
+  if (count > 0) {
+    printf("Terminando en %d\n", count);
+    count --;
+  }
+  else {
+    // Termino "limpiamente" mi programa
+    // Cierro archivos, conexiones, etc.
+    exit(signum);
+  }
+}
+
+void terminar(int signum) {
+  // Termino mi programa
+  // kill -SIGTERM [PID]
+  printf("!!! Hachazo !!!\n");
+  exit(signum);
+}
+
+
 int listar_archivos(void);
 
 int main (int argc, char ** argv) {
@@ -28,6 +53,8 @@ int main (int argc, char ** argv) {
     FILE *fd_txt;
 
     signal(SIGUSR1, usuario);
+    signal(SIGINT, interrumpir); 
+    signal(SIGTERM, terminar); 
 
 // verifica los argumentos de la linea de comandos
     if(argc !=2){
