@@ -40,10 +40,10 @@ int listar_archivos(void);
 
 int main (int argc, char ** argv) {
 	
-    int result, size;
-    int socketfd, clientfd;
-    socklen_t client_length;
-    struct sockaddr_in server_addr, client_addr;
+    int                 result, size;
+    int                 socketfd, clientfd;
+    socklen_t           client_length;
+    struct sockaddr_in  server_addr, client_addr;
 
 // Buffer para mandar y recibir datos
     char buffer[BUFFER_SIZE];
@@ -94,8 +94,10 @@ int main (int argc, char ** argv) {
     client_length = sizeof(client_addr);
     printf("Proceso servidor pid: %d\n",getpid() );
 
+// guardo en listado.txt los nombres de los archivos que tengo disponible para servir    
     listar_archivos();
-    
+
+// abro el archivo para enviarle al cliente el nombre de los archivos que puedo servir    
     fd_txt = fopen( "listado.txt" , "r" );
     if( fd_txt==0 ){
         printf("ERROR - no se creo el archivo de salida \n");
@@ -123,8 +125,8 @@ int main (int argc, char ** argv) {
 
 // Construye un nombre de archivo y lo abre
         sprintf(filename, "sent/%s", fnrecv);
-        dest = fopen(filename, "r");
         printf("Solicitando archivo '%s'\n", filename);
+        dest = fopen(filename, "r");
         if(dest == NULL) {
             write(clientfd, "ER", 3);
             printf("El archivo pedido %s es invalido\n", filename);
