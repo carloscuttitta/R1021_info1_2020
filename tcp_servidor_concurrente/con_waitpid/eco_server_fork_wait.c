@@ -15,8 +15,7 @@ void sig_child(int signo)
     pid_t   pid;
     int     stat;
 //waitpid - espera por el final de un proceso    
-    while ( (pid = waitpid(-1,&stat,WNOHANG) ) > 0 )
-    {
+    while ( (pid = waitpid(-1,&stat,WNOHANG) ) > 0 ){
         printf("termino CHILD %d \n",pid);
     }
     return;
@@ -73,7 +72,7 @@ int main(int ac, char *av[]){
     my_addr.sin_addr.s_addr = htonl(INADDR_ANY);
     memset((void *) &(my_addr.sin_zero), '\0', 8); // Poner a cero el resto de la estructura
 
- //Avisar al sistema que se creo un socket
+//Avisar al sistema que se creo un socket
     if ( (res = bind( ssock, (struct sockaddr *)&my_addr, sizeof(my_addr) ) ) == -1){
     	perror(strerror(errno));
         return -1;
@@ -86,10 +85,11 @@ int main(int ac, char *av[]){
         return -1;
     }
         
-    signal (SIGCHLD, sig_child);    //dede llamar a waitpid()
+    signal (SIGCHLD, sig_child);    //debe llamar a waitpid()
     signal (SIGINT, interrumpir); 
     signal (SIGTERM, terminar); 
-
+    
+//muestro el PID del servidor para poder mandarle las señales
     printf("Proceso servidor pid: %d\n",getpid() );
     
     while(1){
